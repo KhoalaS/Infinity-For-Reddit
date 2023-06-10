@@ -68,6 +68,16 @@ abstract class NetworkModule {
     }
 
     @Provides
+    @Named("login")
+    static Retrofit provideLoginRetrofit(@Named("base") Retrofit retrofit,
+                                         @Named("default") OkHttpClient okHttpClient) {
+        return retrofit.newBuilder()
+                .baseUrl(APIUtils.LOGIN_BASE_URL)
+                .client(okHttpClient)
+                .build();
+    }
+
+    @Provides
     @Named("default")
     @Singleton
     static OkHttpClient provideOkHttpClient(@Named("base") OkHttpClient httpClient,

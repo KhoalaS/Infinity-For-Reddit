@@ -25,6 +25,10 @@ public class APIUtils {
     public static final String REVEDDIT_API_BASE_URI = "https://api.reveddit.com/";
     public static final String STRAPI_BASE_URI = "https://strapi.reddit.com";
     public static final String STREAMABLE_API_BASE_URI = "https://api.streamable.com";
+    public static final String LOGIN_BASE_URL = "https://accounts.reddit.com";
+    public static final String ACCESS_TOKEN_URL = "https://accounts.reddit.com/api/access_token";
+
+    public static final String CLIENT_VENDOR_ID = "1b7c1823-bea0-40c8-8a6f-1dc8c0c336ee";
 
     public static final String CLIENT_ID_KEY = "client_id";
     public static final String CLIENT_SECRET_KEY = "client_secret";
@@ -126,6 +130,15 @@ public class APIUtils {
         String credentials = String.format("%s:%s", APIUtils.CLIENT_ID, "");
         String auth = "Basic " + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
         params.put(APIUtils.AUTHORIZATION_KEY, auth);
+        params.put("client-vendor-id", APIUtils.CLIENT_VENDOR_ID);
+        params.put(APIUtils.USER_AGENT_KEY, APIUtils.USER_AGENT);
+        params.put("content-type", "application/json; charset=UTF-8");
+        params.put("x-reddit-compression", "1");
+        params.put("x-reddit-qos", "down-rate-mbps=25.586");
+        params.put("x-reddit-retry", "algo=no-retries");
+        params.put("x-reddit-media-codecs",
+                 "available-codecs=video/avc, video/hevc, video/x-vnd.on2.vp9");
+        params.put("accept-encoding",  "gzip");
         return params;
     }
 
@@ -133,6 +146,13 @@ public class APIUtils {
         Map<String, String> params = new HashMap<>();
         params.put(APIUtils.AUTHORIZATION_KEY, APIUtils.AUTHORIZATION_BASE + accessToken);
         params.put(APIUtils.USER_AGENT_KEY, APIUtils.USER_AGENT);
+        params.put("client-vendor-id", APIUtils.CLIENT_VENDOR_ID);
+        params.put("content-type", "application/json; charset=UTF-8");
+        params.put("x-reddit-compression", "1");
+        params.put("x-reddit-qos", "down-rate-mbps=25.586");
+        params.put("x-reddit-retry", "algo=no-retries");
+        params.put("x-reddit-media-codecs",
+                "available-codecs=video/avc, video/hevc, video/x-vnd.on2.vp9");
         return params;
     }
 
