@@ -345,7 +345,7 @@ public class LoginActivity extends BaseActivity {
         }
         textUsername.setTextColor(mCustomThemeWrapper.getPrimaryTextColor());
         textPassword.setTextColor(mCustomThemeWrapper.getPrimaryTextColor());
-        loginButton.setBackgroundColor(mCustomThemeWrapper.getColorPrimary());
+        loginButton.setBackgroundColor(customThemeWrapper.getColorAccent());
 
     }
 
