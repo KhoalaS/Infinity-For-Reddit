@@ -23,11 +23,12 @@ public class APIUtils {
     public static final String IMGUR_API_BASE_URI = "https://api.imgur.com/3/";
     public static final String PUSHSHIFT_API_BASE_URI = "https://api.pushshift.io/";
     public static final String REVEDDIT_API_BASE_URI = "https://api.reveddit.com/";
+    public static final String STRAPI_BASE_URI = "https://strapi.reddit.com";
     public static final String STREAMABLE_API_BASE_URI = "https://api.streamable.com";
 
     public static final String CLIENT_ID_KEY = "client_id";
     public static final String CLIENT_SECRET_KEY = "client_secret";
-    public static final String CLIENT_ID = "NOe2iKrPPzwscA";
+    public static final String CLIENT_ID = "ohXpoqrZYub1kg";
     public static final String IMGUR_CLIENT_ID = "Client-ID cc671794e0ab397";
     public static final String REDGIFS_CLIENT_ID = "1828d0bcc93-15ac-bde6-0005-d2ecbe8daab3";
     public static final String REDGIFS_CLIENT_SECRET = "TJBlw7jRXW65NAGgFBtgZHu97WlzRXHYybK81sZ9dLM=";
@@ -42,11 +43,12 @@ public class APIUtils {
     public static final String SCOPE_KEY = "scope";
     public static final String SCOPE = "identity edit flair history modconfig modflair modlog modposts modwiki mysubreddits privatemessages read report save submit subscribe vote wikiedit wikiread creddits modcontributors modmail modothers livemanage account modself";
     public static final String ACCESS_TOKEN_KEY = "access_token";
+    public static final String SIGNING_KEY = "8c7abaa5f905f70400c81bf3a1a101e75f7210104b1991f0cd5240aa80c4d99d";
 
     public static final String AUTHORIZATION_KEY = "Authorization";
     public static final String AUTHORIZATION_BASE = "bearer ";
     public static final String USER_AGENT_KEY = "User-Agent";
-    public static final String USER_AGENT = "android:ml.docilealligator.infinityforreddit:v6.2.5 (by /u/Hostilenemy)";
+    public static final String USER_AGENT = "Reddit/Version 2023.21.0/Build 956283/Android 11";
 
     public static final String GRANT_TYPE_KEY = "grant_type";
     public static final String GRANT_TYPE_REFRESH_TOKEN = "refresh_token";
@@ -113,6 +115,11 @@ public class APIUtils {
     public static final String REVEDDIT_ORIGIN = "https://www.reveddit.com";
     public static final String REFERER_KEY = "Referer";
     public static final String REVEDDIT_REFERER = "https://www.reveddit.com/";
+
+    /*public static final String HOST_KEY = "Host";
+    public static final String REDGIFS_HOST = "api.redgifs.com";
+    public static final String CONTENT_TYPE_KEY = "Content-Type";
+    public static final String */
 
     public static Map<String, String> getHttpBasicAuthHeader() {
         Map<String, String> params = new HashMap<>();
