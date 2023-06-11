@@ -1,8 +1,6 @@
 package ml.docilealligator.infinityforreddit;
 
 import android.content.SharedPreferences;
-import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
-
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,11 +9,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 import ml.docilealligator.infinityforreddit.account.Account;
-import ml.docilealligator.infinityforreddit.apis.RedditAPI;
 import ml.docilealligator.infinityforreddit.apis.RedditAccountsAPI;
 import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
