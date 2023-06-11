@@ -134,7 +134,6 @@ public class APIUtils {
         params.put(APIUtils.AUTHORIZATION_KEY, auth);
         params.put("client-vendor-id", APIUtils.CLIENT_VENDOR_ID);
         params.put(APIUtils.USER_AGENT_KEY, APIUtils.USER_AGENT);
-        params.put("content-type", "application/json; charset=UTF-8");
         params.put("x-reddit-compression", "1");
         params.put("x-reddit-qos", "down-rate-mbps=25.586");
         params.put("x-reddit-retry", "algo=no-retries");
@@ -149,7 +148,6 @@ public class APIUtils {
         params.put(APIUtils.AUTHORIZATION_KEY, APIUtils.AUTHORIZATION_BASE + accessToken);
         params.put(APIUtils.USER_AGENT_KEY, APIUtils.USER_AGENT);
         params.put("client-vendor-id", APIUtils.CLIENT_VENDOR_ID);
-        params.put("content-type", "application/json; charset=UTF-8");
         params.put("x-reddit-compression", "1");
         params.put("x-reddit-qos", "down-rate-mbps=25.586");
         params.put("x-reddit-retry", "algo=no-retries");
