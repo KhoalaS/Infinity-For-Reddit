@@ -74,10 +74,6 @@ class AccessTokenAuthenticator implements Authenticator {
 
         RedditAccountsAPI api = mRetrofit.create(RedditAccountsAPI.class);
 
-        Map<String, String> params = new HashMap<>();
-        params.put(APIUtils.GRANT_TYPE_KEY, APIUtils.GRANT_TYPE_REFRESH_TOKEN);
-        params.put(APIUtils.REFRESH_TOKEN_KEY, refreshToken);
-
         String reddit_session = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.SESSION_COOKIE, "");
         Map<String, String> accessTokenHeaders = APIUtils.getHttpBasicAuthHeader();
         accessTokenHeaders.put("cookie", reddit_session);
