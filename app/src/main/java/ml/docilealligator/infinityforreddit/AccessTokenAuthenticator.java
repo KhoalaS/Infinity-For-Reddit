@@ -29,7 +29,7 @@ class AccessTokenAuthenticator implements Authenticator {
     private SharedPreferences mCurrentAccountSharedPreferences;
 
     AccessTokenAuthenticator(Retrofit retrofit, RedditDataRoomDatabase accountRoomDatabase, SharedPreferences currentAccountSharedPreferences) {
-        mRetrofit = retrofit;
+        mRetrofit = retrofit.newBuilder().baseUrl(APIUtils.LOGIN_BASE_URL).build();
         mRedditDataRoomDatabase = accountRoomDatabase;
         mCurrentAccountSharedPreferences = currentAccountSharedPreferences;
     }
@@ -66,11 +66,10 @@ class AccessTokenAuthenticator implements Authenticator {
     }
 
     private String refreshAccessToken(Account account) {
-        String refreshToken = mRedditDataRoomDatabase.accountDao().getCurrentAccount().getRefreshToken();
-
         RedditAccountsAPI api = mRetrofit.create(RedditAccountsAPI.class);
 
-        String reddit_session = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.SESSION_COOKIE, "");
+
+        String reddit_session = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.REDDIT_SESSION, "");
         Map<String, String> accessTokenHeaders = APIUtils.getHttpBasicAuthHeader();
         accessTokenHeaders.put("cookie", reddit_session);
 
@@ -80,12 +79,8 @@ class AccessTokenAuthenticator implements Authenticator {
             if (response.isSuccessful() && response.body() != null) {
                 JSONObject jsonObject = new JSONObject(response.body());
                 String newAccessToken = jsonObject.getString(APIUtils.ACCESS_TOKEN_KEY);
-                String newRefreshToken = jsonObject.has(APIUtils.REFRESH_TOKEN_KEY) ? jsonObject.getString(APIUtils.REFRESH_TOKEN_KEY) : null;
-                if (newRefreshToken == null) {
-                    mRedditDataRoomDatabase.accountDao().updateAccessToken(account.getAccountName(), newAccessToken);
-                } else {
-                    mRedditDataRoomDatabase.accountDao().updateAccessTokenAndRefreshToken(account.getAccountName(), newAccessToken, newRefreshToken);
-                }
+                mRedditDataRoomDatabase.accountDao().updateAccessToken(account.getAccountName(), newAccessToken);
+
                 if (mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCOUNT_NAME, "").equals(account.getAccountName())) {
                     mCurrentAccountSharedPreferences.edit().putString(SharedPreferencesUtils.ACCESS_TOKEN, newAccessToken).apply();
                 }

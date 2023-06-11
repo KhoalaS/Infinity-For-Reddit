@@ -20,7 +20,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +30,7 @@ import ml.docilealligator.infinityforreddit.account.Account;
 import ml.docilealligator.infinityforreddit.activities.InboxActivity;
 import ml.docilealligator.infinityforreddit.activities.LinkResolverActivity;
 import ml.docilealligator.infinityforreddit.apis.RedditAPI;
+import ml.docilealligator.infinityforreddit.apis.RedditAccountsAPI;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.message.FetchMessage;
 import ml.docilealligator.infinityforreddit.message.Message;
@@ -51,6 +51,9 @@ public class PullNotificationWorker extends Worker {
     @Inject
     @Named("no_oauth")
     Retrofit mRetrofit;
+    @Inject
+    @Named("login")
+    Retrofit mLoginRetrofit;
     @Inject
     RedditDataRoomDatabase mRedditDataRoomDatabase;
     @Inject
@@ -240,29 +243,24 @@ public class PullNotificationWorker extends Worker {
     }
 
     private String refreshAccessToken(Account account) {
-        String refreshToken = account.getRefreshToken();
+        RedditAccountsAPI api = mLoginRetrofit.create(RedditAccountsAPI.class);
 
-        RedditAPI api = mRetrofit.create(RedditAPI.class);
+        String reddit_session = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.REDDIT_SESSION, "");
+        Map<String, String> accessTokenHeaders = APIUtils.getHttpBasicAuthHeader();
+        accessTokenHeaders.put("cookie", reddit_session);
 
-        Map<String, String> params = new HashMap<>();
-        params.put(APIUtils.GRANT_TYPE_KEY, APIUtils.GRANT_TYPE_REFRESH_TOKEN);
-        params.put(APIUtils.REFRESH_TOKEN_KEY, refreshToken);
-
-        Call<String> accessTokenCall = api.getAccessToken(APIUtils.getHttpBasicAuthHeader(), params);
+        Call<String> accessTokenCall = api.getAccessToken(accessTokenHeaders, APIUtils.SCOPE_ALL);
         try {
-            Response<String> response = accessTokenCall.execute();
+            retrofit2.Response<String> response = accessTokenCall.execute();
             if (response.isSuccessful() && response.body() != null) {
                 JSONObject jsonObject = new JSONObject(response.body());
                 String newAccessToken = jsonObject.getString(APIUtils.ACCESS_TOKEN_KEY);
-                String newRefreshToken = jsonObject.has(APIUtils.REFRESH_TOKEN_KEY) ? jsonObject.getString(APIUtils.REFRESH_TOKEN_KEY) : null;
-                if (newRefreshToken == null) {
-                    mRedditDataRoomDatabase.accountDao().updateAccessToken(account.getAccountName(), newAccessToken);
-                } else {
-                    mRedditDataRoomDatabase.accountDao().updateAccessTokenAndRefreshToken(account.getAccountName(), newAccessToken, newRefreshToken);
-                }
+                mRedditDataRoomDatabase.accountDao().updateAccessToken(account.getAccountName(), newAccessToken);
+
                 if (mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCOUNT_NAME, "").equals(account.getAccountName())) {
                     mCurrentAccountSharedPreferences.edit().putString(SharedPreferencesUtils.ACCESS_TOKEN, newAccessToken).apply();
                 }
+
                 return newAccessToken;
             }
             return "";

@@ -95,6 +95,9 @@ public class CommentActivity extends BaseActivity implements UploadImageEnabledA
     @Named("no_oauth")
     Retrofit mRetrofit;
     @Inject
+    @Named("login")
+    Retrofit mLoginRetrofit;
+    @Inject
     @Named("oauth")
     Retrofit mOauthRetrofit;
     @Inject
@@ -389,7 +392,7 @@ public class CommentActivity extends BaseActivity implements UploadImageEnabledA
             Snackbar sendingSnackbar = Snackbar.make(binding.commentCoordinatorLayout, R.string.sending_comment, Snackbar.LENGTH_INDEFINITE);
             sendingSnackbar.show();
 
-            Retrofit newAuthenticatorOauthRetrofit = mOauthRetrofit.newBuilder().client(new OkHttpClient.Builder().authenticator(new AnyAccountAccessTokenAuthenticator(mRetrofit, mRedditDataRoomDatabase, selectedAccount, mCurrentAccountSharedPreferences))
+            Retrofit newAuthenticatorOauthRetrofit = mOauthRetrofit.newBuilder().client(new OkHttpClient.Builder().authenticator(new AnyAccountAccessTokenAuthenticator(mLoginRetrofit, mRedditDataRoomDatabase, selectedAccount, mCurrentAccountSharedPreferences))
                     .connectTimeout(30, TimeUnit.SECONDS)
                     .readTimeout(30, TimeUnit.SECONDS)
                     .writeTimeout(30, TimeUnit.SECONDS)

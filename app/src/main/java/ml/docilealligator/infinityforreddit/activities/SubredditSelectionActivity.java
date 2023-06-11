@@ -76,6 +76,9 @@ public class SubredditSelectionActivity extends BaseActivity implements Activity
     @Named("no_oauth")
     Retrofit mRetrofit;
     @Inject
+    @Named("login")
+    Retrofit mLoginRetrofit;
+    @Inject
     @Named("oauth")
     Retrofit mOauthRetrofit;
     @Inject
@@ -141,7 +144,7 @@ public class SubredditSelectionActivity extends BaseActivity implements Activity
                 mAccountName = specifiedAccount.getAccountName();
                 mAccountProfileImageUrl = specifiedAccount.getProfileImageUrl();
 
-                mOauthRetrofit = mOauthRetrofit.newBuilder().client(new OkHttpClient.Builder().authenticator(new AnyAccountAccessTokenAuthenticator(mRetrofit, mRedditDataRoomDatabase, specifiedAccount, mCurrentAccountSharedPreferences))
+                mOauthRetrofit = mOauthRetrofit.newBuilder().client(new OkHttpClient.Builder().authenticator(new AnyAccountAccessTokenAuthenticator(mLoginRetrofit, mRedditDataRoomDatabase, specifiedAccount, mCurrentAccountSharedPreferences))
                         .connectTimeout(30, TimeUnit.SECONDS)
                         .readTimeout(30, TimeUnit.SECONDS)
                         .writeTimeout(30, TimeUnit.SECONDS)
