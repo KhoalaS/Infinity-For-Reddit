@@ -191,11 +191,10 @@ public class LoginActivity extends BaseActivity {
                                 String sessionCookie = response.headers().get("set-cookie");
                                 String reddit_session = sessionCookie.split("; ")[0];
                                 mCurrentAccountSharedPreferences.edit().putString(SharedPreferencesUtils.SESSION_COOKIE, sessionCookie).putString(SharedPreferencesUtils.REDDIT_SESSION, reddit_session).apply();
-                                String scope = "{\"scopes\":[\"*\",\"email\",\"pii\"]}";
 
                                 Map<String, String> accessTokenHeaders = APIUtils.getHttpBasicAuthHeader();
                                 accessTokenHeaders.put("cookie", reddit_session);
-                                Call<String> accessTokenCall = api.getAccessToken(accessTokenHeaders, scope);
+                                Call<String> accessTokenCall = api.getAccessToken(accessTokenHeaders, APIUtils.SCOPE_ALL);
                                 accessTokenCall.enqueue(new Callback<String>() {
                                     @Override
                                     public void onResponse(Call<String> call, Response<String> response) {
@@ -210,7 +209,7 @@ public class LoginActivity extends BaseActivity {
                                             try {
                                                 responseJSON = new JSONObject(accountResponse);
                                                 String accessToken = responseJSON.getString(APIUtils.ACCESS_TOKEN_KEY);
-                                                int expiry = responseJSON.getInt("expiry_ts");
+                                                int expiry = responseJSON.getInt(APIUtils.EXPIRY_TS_KEY);
 
                                                 FetchMyInfo.fetchAccountInfo(mOauthRetrofit, mRedditDataRoomDatabase,
                                                         accessToken, new FetchMyInfo.FetchMyInfoListener() {
@@ -218,7 +217,7 @@ public class LoginActivity extends BaseActivity {
                                                             public void onFetchMyInfoSuccess(String name, String profileImageUrl, String bannerImageUrl, int karma) {
                                                                 mCurrentAccountSharedPreferences.edit().putString(SharedPreferencesUtils.ACCESS_TOKEN, accessToken)
                                                                         .putString(SharedPreferencesUtils.ACCOUNT_NAME, name)
-                                                                        .putInt("expiry_ts", expiry)
+                                                                        .putInt(APIUtils.EXPIRY_TS_KEY, expiry)
                                                                         .putString(SharedPreferencesUtils.ACCOUNT_IMAGE_URL, profileImageUrl).apply();
                                                                 ParseAndInsertNewAccount.parseAndInsertNewAccount(mExecutor, new Handler(), name, accessToken, "", profileImageUrl, bannerImageUrl,
                                                                         karma, authCode, mRedditDataRoomDatabase.accountDao(),

@@ -1,6 +1,8 @@
 package ml.docilealligator.infinityforreddit;
 
 import android.content.SharedPreferences;
+import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
+
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,6 +16,7 @@ import java.util.Map;
 
 import ml.docilealligator.infinityforreddit.account.Account;
 import ml.docilealligator.infinityforreddit.apis.RedditAPI;
+import ml.docilealligator.infinityforreddit.apis.RedditAccountsAPI;
 import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import okhttp3.Authenticator;
@@ -69,13 +72,17 @@ class AccessTokenAuthenticator implements Authenticator {
     private String refreshAccessToken(Account account) {
         String refreshToken = mRedditDataRoomDatabase.accountDao().getCurrentAccount().getRefreshToken();
 
-        RedditAPI api = mRetrofit.create(RedditAPI.class);
+        RedditAccountsAPI api = mRetrofit.create(RedditAccountsAPI.class);
 
         Map<String, String> params = new HashMap<>();
         params.put(APIUtils.GRANT_TYPE_KEY, APIUtils.GRANT_TYPE_REFRESH_TOKEN);
         params.put(APIUtils.REFRESH_TOKEN_KEY, refreshToken);
 
-        Call<String> accessTokenCall = api.getAccessToken(APIUtils.getHttpBasicAuthHeader(), params);
+        String reddit_session = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.SESSION_COOKIE, "");
+        Map<String, String> accessTokenHeaders = APIUtils.getHttpBasicAuthHeader();
+        accessTokenHeaders.put("cookie", reddit_session);
+
+        Call<String> accessTokenCall = api.getAccessToken(accessTokenHeaders, APIUtils.SCOPE_ALL);
         try {
             retrofit2.Response<String> response = accessTokenCall.execute();
             if (response.isSuccessful() && response.body() != null) {

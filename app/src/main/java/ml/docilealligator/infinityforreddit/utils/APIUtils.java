@@ -48,6 +48,8 @@ public class APIUtils {
     public static final String SCOPE = "identity edit flair history modconfig modflair modlog modposts modwiki mysubreddits privatemessages read report save submit subscribe vote wikiedit wikiread creddits modcontributors modmail modothers livemanage account modself";
     public static final String ACCESS_TOKEN_KEY = "access_token";
     public static final String SIGNING_KEY = "8c7abaa5f905f70400c81bf3a1a101e75f7210104b1991f0cd5240aa80c4d99d";
+    public static final String EXPIRY_TS_KEY = "expiry_ts";
+    public static final String SCOPE_ALL = "{\"scopes\":[\"*\",\"email\",\"pii\"]}";
 
     public static final String AUTHORIZATION_KEY = "Authorization";
     public static final String AUTHORIZATION_BASE = "bearer ";
