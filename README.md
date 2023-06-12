@@ -1,7 +1,13 @@
 <h1 align="center">
-  Infinity For Reddit <a href="https://www.patreon.com/docile_alligator"><img src="https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white" alt="Patreon"></a>
+  Infinity For Reddit Fork </a>
   
 </h1>
+
+## Changes
+
+This Fork enables a user to login via the official Reddit Accounts endpoint (no 3P authorize). The App will make requests that look like they are coming from the official Reddit App. 
+
+---
 
 <div align="center">
 
