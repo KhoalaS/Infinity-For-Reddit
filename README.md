@@ -7,6 +7,12 @@
 
 This Fork enables a user to login via the official Reddit Accounts endpoint (no 3P authorize). The App will make requests that look like they are coming from the official Reddit App. 
 
+## ⚠️ Warning
+
+Asking users to input their credentials directly in the app is a big __security risk__. 
+
+I implore everyone who uses this fork and similar projects to look at the commits yourself and reassure that the credentials are not being stolen.
+
 ---
 
 <div align="center">
