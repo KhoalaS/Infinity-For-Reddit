@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -13,7 +12,6 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.webkit.CookieManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -186,7 +184,7 @@ public class LoginActivity extends BaseActivity {
 
                                 Map<String, String> accessTokenHeaders = APIUtils.getHttpBasicAuthHeader();
                                 accessTokenHeaders.put("cookie", reddit_session);
-                                Call<String> accessTokenCall = api.getAccessToken(accessTokenHeaders, APIUtils.SCOPE_ALL);
+                                Call<String> accessTokenCall = api.getAccessToken(accessTokenHeaders, APIUtils.SCOPE);
                                 accessTokenCall.enqueue(new Callback<String>() {
                                     @Override
                                     public void onResponse(Call<String> call, Response<String> response) {
@@ -290,20 +288,6 @@ public class LoginActivity extends BaseActivity {
         if (enableDom) {
             twoFAInfoTextView.setVisibility(View.GONE);
         }
-
-        Uri baseUri = Uri.parse(APIUtils.OAUTH_URL);
-        Uri.Builder uriBuilder = baseUri.buildUpon();
-        uriBuilder.appendQueryParameter(APIUtils.CLIENT_ID_KEY, APIUtils.CLIENT_ID);
-        uriBuilder.appendQueryParameter(APIUtils.RESPONSE_TYPE_KEY, APIUtils.RESPONSE_TYPE);
-        uriBuilder.appendQueryParameter(APIUtils.STATE_KEY, APIUtils.STATE);
-        uriBuilder.appendQueryParameter(APIUtils.REDIRECT_URI_KEY, APIUtils.REDIRECT_URI);
-        uriBuilder.appendQueryParameter(APIUtils.DURATION_KEY, APIUtils.DURATION);
-        uriBuilder.appendQueryParameter(APIUtils.SCOPE_KEY, APIUtils.SCOPE);
-
-        String url = uriBuilder.toString();
-
-        CookieManager.getInstance().removeAllCookies(aBoolean -> {
-        });
 
     }
 

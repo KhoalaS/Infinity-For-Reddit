@@ -11,7 +11,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 
 import ml.docilealligator.infinityforreddit.account.Account;
-import ml.docilealligator.infinityforreddit.apis.RedditAPI;
 import ml.docilealligator.infinityforreddit.apis.RedditAccountsAPI;
 import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
@@ -70,7 +69,7 @@ public class AnyAccountAccessTokenAuthenticator implements Authenticator {
     private String refreshAccessToken(Account account) {
         RedditAccountsAPI api = mRetrofit.create(RedditAccountsAPI.class);
 
-        Call<String> accessTokenCall = api.getAccessToken(APIUtils.getHttpBasicAuthHeader(), APIUtils.SCOPE_ALL);
+        Call<String> accessTokenCall = api.getAccessToken(APIUtils.getHttpBasicAuthHeader(), APIUtils.SCOPE);
         try {
             retrofit2.Response<String> response = accessTokenCall.execute();
             if (response.isSuccessful() && response.body() != null) {

@@ -13,7 +13,6 @@ import okhttp3.RequestBody;
  */
 
 public class APIUtils {
-    public static final String OAUTH_URL = "https://www.reddit.com/api/v1/authorize.compact";
     public static final String OAUTH_API_BASE_URI = "https://oauth.reddit.com";
     public static final String API_BASE_URI = "https://www.reddit.com";
     public static final String API_UPLOAD_MEDIA_URI = "https://reddit-uploaded-media.s3-accelerate.amazonaws.com";
@@ -26,7 +25,6 @@ public class APIUtils {
     public static final String STRAPI_BASE_URI = "https://strapi.reddit.com";
     public static final String STREAMABLE_API_BASE_URI = "https://api.streamable.com";
     public static final String LOGIN_BASE_URL = "https://accounts.reddit.com";
-    public static final String ACCESS_TOKEN_URL = "https://accounts.reddit.com/api/access_token";
 
     public static final String CLIENT_VENDOR_ID = "1b7c1823-bea0-40c8-8a6f-1dc8c0c336ee";
 
@@ -36,20 +34,11 @@ public class APIUtils {
     public static final String IMGUR_CLIENT_ID = "Client-ID cc671794e0ab397";
     public static final String REDGIFS_CLIENT_ID = "1828d0bcc93-15ac-bde6-0005-d2ecbe8daab3";
     public static final String REDGIFS_CLIENT_SECRET = "TJBlw7jRXW65NAGgFBtgZHu97WlzRXHYybK81sZ9dLM=";
-    public static final String RESPONSE_TYPE_KEY = "response_type";
-    public static final String RESPONSE_TYPE = "code";
-    public static final String STATE_KEY = "state";
-    public static final String STATE = "23ro8xlxvzp4asqd";
-    public static final String REDIRECT_URI_KEY = "redirect_uri";
-    public static final String REDIRECT_URI = "infinity://localhost";
-    public static final String DURATION_KEY = "duration";
-    public static final String DURATION = "permanent";
-    public static final String SCOPE_KEY = "scope";
-    public static final String SCOPE = "identity edit flair history modconfig modflair modlog modposts modwiki mysubreddits privatemessages read report save submit subscribe vote wikiedit wikiread creddits modcontributors modmail modothers livemanage account modself";
+
     public static final String ACCESS_TOKEN_KEY = "access_token";
     public static final String SIGNING_KEY = "8c7abaa5f905f70400c81bf3a1a101e75f7210104b1991f0cd5240aa80c4d99d";
     public static final String EXPIRY_TS_KEY = "expiry_ts";
-    public static final String SCOPE_ALL = "{\"scopes\":[\"*\",\"email\",\"pii\"]}";
+    public static final String SCOPE = "{\"scopes\":[\"*\",\"email\",\"pii\"]}";
 
     public static final String AUTHORIZATION_KEY = "Authorization";
     public static final String AUTHORIZATION_BASE = "bearer ";
@@ -57,9 +46,7 @@ public class APIUtils {
     public static final String USER_AGENT = "Reddit/Version 2023.21.0/Build 956283/Android 11";
 
     public static final String GRANT_TYPE_KEY = "grant_type";
-    public static final String GRANT_TYPE_REFRESH_TOKEN = "refresh_token";
     public static final String GRANT_TYPE_CLIENT_CREDENTIALS = "client_credentials";
-    public static final String REFRESH_TOKEN_KEY = "refresh_token";
 
     public static final String DIR_KEY = "dir";
     public static final String ID_KEY = "id";
@@ -139,7 +126,6 @@ public class APIUtils {
         params.put("x-reddit-retry", "algo=no-retries");
         params.put("x-reddit-media-codecs",
                  "available-codecs=video/avc, video/hevc, video/x-vnd.on2.vp9");
-        params.put("accept-encoding",  "gzip");
         return params;
     }
 

@@ -73,7 +73,7 @@ class AccessTokenAuthenticator implements Authenticator {
         Map<String, String> accessTokenHeaders = APIUtils.getHttpBasicAuthHeader();
         accessTokenHeaders.put("cookie", reddit_session);
 
-        Call<String> accessTokenCall = api.getAccessToken(accessTokenHeaders, APIUtils.SCOPE_ALL);
+        Call<String> accessTokenCall = api.getAccessToken(accessTokenHeaders, APIUtils.SCOPE);
         try {
             retrofit2.Response<String> response = accessTokenCall.execute();
             if (response.isSuccessful() && response.body() != null) {
