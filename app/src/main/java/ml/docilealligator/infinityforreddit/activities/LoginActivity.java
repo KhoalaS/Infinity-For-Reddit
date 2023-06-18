@@ -12,7 +12,6 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,8 +22,11 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.progressindicator.CircularProgressIndicatorSpec;
+import com.google.android.material.progressindicator.IndeterminateDrawable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -63,7 +65,7 @@ public class LoginActivity extends BaseActivity {
     private static final String IS_AGREE_TO_USER_AGGREMENT_STATE = "IATUAS";
 
     @BindView(R.id.login_btn)
-    Button loginButton;
+    MaterialButton loginButton;
     @BindView(R.id.text_username)
     EditText textUsername;
     @BindView(R.id.text_password)
@@ -141,125 +143,143 @@ public class LoginActivity extends BaseActivity {
             enableDom = savedInstanceState.getBoolean(ENABLE_DOM_STATE);
         }
 
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.d("LOGMOD", "click");
-                RedditAccountsAPI api = mLoginRetrofit.create(RedditAccountsAPI.class);
-                String username = textUsername.getText().toString();
-                String password = textPassword.getText().toString();
+        CircularProgressIndicatorSpec spec = new CircularProgressIndicatorSpec(LoginActivity.this, null, 0, com.google.android.material.R.style.Widget_Material3_CircularProgressIndicator_ExtraSmall);
+        IndeterminateDrawable<CircularProgressIndicatorSpec> progressIndicatorDrawable =
+                IndeterminateDrawable.createCircularDrawable(LoginActivity.this, spec);
 
-                String body = String.format("{\"username\":\"%s\",\"password\":\"%s\"}", username, password);
+        loginButton.setOnClickListener(view -> {
+            loginButton.setClickable(false);
+            loginButton.setIcon(progressIndicatorDrawable);
+            RedditAccountsAPI api = mLoginRetrofit.create(RedditAccountsAPI.class);
+            String username = textUsername.getText().toString();
+            String password = textPassword.getText().toString();
 
-                Map<String, String> loginHeaders = APIUtils.getHttpBasicAuthHeader();
-
-                Locale locale = Locale.US;
-                long seconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
-                String msg = String.format(locale, "Epoch:%d|Body:%s",
-                        Arrays.copyOf(new Object[] { Long.valueOf(seconds), body }, 2));
-
-                String hmacBody = XHmac.getSignedHexString(msg);
-                loginHeaders.put("x-hmac-signed-body",formatting(hmacBody, seconds));
-
-                String result = String.format(locale, "Epoch:%d|User-Agent:%s|Client-Vendor-ID:%s",
-                        Arrays.copyOf(new Object[] { Long.valueOf(seconds), APIUtils.USER_AGENT, APIUtils.CLIENT_VENDOR_ID }, 3));
-                String hmacResult = XHmac.getSignedHexString(result);
-                loginHeaders.put("x-hmac-signed-result",formatting(hmacResult, seconds));
-
-
-                Call<String> loginCall = api.login(loginHeaders, body);
-
-                loginCall.enqueue(new Callback<String>() {
-                    @Override
-                    public void onResponse(Call<String> call, Response<String> response) {
-                        if (response.isSuccessful()) {
-                            try {
-                                JSONObject responseJSON = new JSONObject(response.body());
-                                if(!responseJSON.getBoolean("success")){
-                                    return;
-                                }
-                                String sessionCookie = response.headers().get("set-cookie");
-                                String reddit_session = sessionCookie.split("; ")[0];
-                                mCurrentAccountSharedPreferences.edit().putString(SharedPreferencesUtils.SESSION_COOKIE, sessionCookie).putString(SharedPreferencesUtils.REDDIT_SESSION, reddit_session).apply();
-
-                                Map<String, String> accessTokenHeaders = APIUtils.getHttpBasicAuthHeader();
-                                accessTokenHeaders.put("cookie", reddit_session);
-                                Call<String> accessTokenCall = api.getAccessToken(accessTokenHeaders, APIUtils.SCOPE);
-                                accessTokenCall.enqueue(new Callback<String>() {
-                                    @Override
-                                    public void onResponse(Call<String> call, Response<String> response) {
-                                        if (response.isSuccessful()) {
-                                            String accountResponse = response.body();
-                                            if (accountResponse == null) {
-                                                //Handle error
-                                                return;
-                                            }
-
-                                            JSONObject responseJSON = null;
-                                            try {
-                                                responseJSON = new JSONObject(accountResponse);
-                                                String accessToken = responseJSON.getString(APIUtils.ACCESS_TOKEN_KEY);
-                                                int expiry = responseJSON.getInt(APIUtils.EXPIRY_TS_KEY);
-
-                                                FetchMyInfo.fetchAccountInfo(mOauthRetrofit, mRedditDataRoomDatabase,
-                                                        accessToken, new FetchMyInfo.FetchMyInfoListener() {
-                                                            @Override
-                                                            public void onFetchMyInfoSuccess(String name, String profileImageUrl, String bannerImageUrl, int karma) {
-                                                                mCurrentAccountSharedPreferences.edit().putString(SharedPreferencesUtils.ACCESS_TOKEN, accessToken)
-                                                                        .putString(SharedPreferencesUtils.ACCOUNT_NAME, name)
-                                                                        .putInt(APIUtils.EXPIRY_TS_KEY, expiry)
-                                                                        .putString(SharedPreferencesUtils.ACCOUNT_IMAGE_URL, profileImageUrl).apply();
-                                                                ParseAndInsertNewAccount.parseAndInsertNewAccount(mExecutor, new Handler(), name, accessToken, "", profileImageUrl, bannerImageUrl,
-                                                                        karma, authCode, mRedditDataRoomDatabase.accountDao(),
-                                                                        () -> {
-                                                                            Intent resultIntent = new Intent();
-                                                                            setResult(Activity.RESULT_OK, resultIntent);
-                                                                            finish();
-                                                                        });
-                                                            }
-
-                                                            @Override
-                                                            public void onFetchMyInfoFailed(boolean parseFailed) {
-                                                                if (parseFailed) {
-                                                                    Toast.makeText(LoginActivity.this, R.string.parse_user_info_error, Toast.LENGTH_SHORT).show();
-                                                                } else {
-                                                                    Toast.makeText(LoginActivity.this, R.string.cannot_fetch_user_info, Toast.LENGTH_SHORT).show();
-                                                                }
-
-                                                                finish();
-                                                            }
-                                                        });
-                                            } catch (JSONException e) {
-                                                e.printStackTrace();
-                                            }
-
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onFailure(Call<String> call, Throwable t) {
-                                        Toast.makeText(LoginActivity.this, R.string.retrieve_token_error, Toast.LENGTH_SHORT).show();
-                                        t.printStackTrace();
-                                        finish();
-                                    }
-                                });
-                            } catch (JSONException e){
-
-                            }
-
-
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<String> call, Throwable t) {
-                        Toast.makeText(LoginActivity.this, "Login Error", Toast.LENGTH_SHORT).show();
-                        t.printStackTrace();
-                        finish();
-                    }
-                });
-
+            if(username.isBlank() || password.isBlank()){
+                Toast.makeText(LoginActivity.this, "Username or password is blank", Toast.LENGTH_LONG).show();
+                loginButton.setIcon(null);
+                loginButton.setClickable(true);
+                return;
             }
+
+            String body = String.format("{\"username\":\"%s\",\"password\":\"%s\"}", username, password);
+
+            Map<String, String> loginHeaders = APIUtils.getHttpBasicAuthHeader();
+
+            Locale locale = Locale.US;
+            long seconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+            String msg = String.format(locale, "Epoch:%d|Body:%s",
+                    Arrays.copyOf(new Object[] { Long.valueOf(seconds), body }, 2));
+
+            String hmacBody = XHmac.getSignedHexString(msg);
+            loginHeaders.put("x-hmac-signed-body",formatting(hmacBody, seconds));
+
+            String result = String.format(locale, "Epoch:%d|User-Agent:%s|Client-Vendor-ID:%s",
+                    Arrays.copyOf(new Object[] { Long.valueOf(seconds), APIUtils.USER_AGENT, APIUtils.CLIENT_VENDOR_ID }, 3));
+            String hmacResult = XHmac.getSignedHexString(result);
+            loginHeaders.put("x-hmac-signed-result",formatting(hmacResult, seconds));
+
+
+            Call<String> loginCall = api.login(loginHeaders, body);
+
+            loginCall.enqueue(new Callback<>() {
+                @Override
+                public void onResponse(Call<String> call, Response<String> response) {
+                    if (response.isSuccessful()) {
+                        try {
+                            JSONObject responseJSON = new JSONObject(response.body());
+                            if (!responseJSON.getBoolean("success")) {
+                                String explanation = responseJSON.getJSONObject("error").getString("explanation");
+                                Toast.makeText(LoginActivity.this, explanation, Toast.LENGTH_LONG).show();
+                                loginButton.setIcon(null);
+                                loginButton.setClickable(true);
+                                return;
+                            }
+                            String sessionCookie = response.headers().get("set-cookie");
+                            String reddit_session = sessionCookie.split("; ")[0];
+                            mCurrentAccountSharedPreferences.edit().putString(SharedPreferencesUtils.SESSION_COOKIE, sessionCookie).putString(SharedPreferencesUtils.REDDIT_SESSION, reddit_session).apply();
+
+                            Map<String, String> accessTokenHeaders = APIUtils.getHttpBasicAuthHeader();
+                            accessTokenHeaders.put("cookie", reddit_session);
+                            Call<String> accessTokenCall = api.getAccessToken(accessTokenHeaders, APIUtils.SCOPE);
+                            accessTokenCall.enqueue(new Callback<>() {
+                                @Override
+                                public void onResponse(Call<String> call, Response<String> response) {
+                                    if (response.isSuccessful()) {
+                                        String accountResponse = response.body();
+                                        if (accountResponse == null) {
+                                            //Handle error
+                                            loginButton.setIcon(null);
+                                            loginButton.setClickable(true);
+                                            return;
+                                        }
+
+                                        JSONObject responseJSON;
+                                        try {
+                                            responseJSON = new JSONObject(accountResponse);
+                                            String accessToken = responseJSON.getString(APIUtils.ACCESS_TOKEN_KEY);
+                                            int expiry = responseJSON.getInt(APIUtils.EXPIRY_TS_KEY);
+
+                                            FetchMyInfo.fetchAccountInfo(mOauthRetrofit, mRedditDataRoomDatabase,
+                                                    accessToken, new FetchMyInfo.FetchMyInfoListener() {
+                                                        @Override
+                                                        public void onFetchMyInfoSuccess(String name, String profileImageUrl, String bannerImageUrl, int karma) {
+                                                            mCurrentAccountSharedPreferences.edit().putString(SharedPreferencesUtils.ACCESS_TOKEN, accessToken)
+                                                                    .putString(SharedPreferencesUtils.ACCOUNT_NAME, name)
+                                                                    .putInt(APIUtils.EXPIRY_TS_KEY, expiry)
+                                                                    .putString(SharedPreferencesUtils.ACCOUNT_IMAGE_URL, profileImageUrl).apply();
+                                                            ParseAndInsertNewAccount.parseAndInsertNewAccount(mExecutor, new Handler(), name, accessToken, "", profileImageUrl, bannerImageUrl,
+                                                                    karma, authCode, mRedditDataRoomDatabase.accountDao(),
+                                                                    () -> {
+                                                                        Intent resultIntent = new Intent();
+                                                                        setResult(Activity.RESULT_OK, resultIntent);
+                                                                        finish();
+                                                                    });
+                                                        }
+
+                                                        @Override
+                                                        public void onFetchMyInfoFailed(boolean parseFailed) {
+                                                            if (parseFailed) {
+                                                                Toast.makeText(LoginActivity.this, R.string.parse_user_info_error, Toast.LENGTH_SHORT).show();
+                                                            } else {
+                                                                Toast.makeText(LoginActivity.this, R.string.cannot_fetch_user_info, Toast.LENGTH_SHORT).show();
+                                                            }
+
+                                                            finish();
+                                                        }
+                                                    });
+                                        } catch (JSONException e) {
+                                            loginButton.setIcon(null);
+                                            loginButton.setClickable(true);
+                                            e.printStackTrace();
+                                        }
+
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<String> call, Throwable t) {
+                                    Toast.makeText(LoginActivity.this, R.string.retrieve_token_error, Toast.LENGTH_SHORT).show();
+                                    t.printStackTrace();
+                                    finish();
+                                }
+                            });
+                        } catch (JSONException e) {
+                            loginButton.setIcon(null);
+                            loginButton.setClickable(true);
+                        }
+
+
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<String> call, Throwable t) {
+                    Toast.makeText(LoginActivity.this, "Login Error", Toast.LENGTH_SHORT).show();
+                    t.printStackTrace();
+                    finish();
+                }
+            });
+
         });
 
         fab.setOnClickListener(view -> {

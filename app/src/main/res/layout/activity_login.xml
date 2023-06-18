@@ -63,8 +63,9 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/password_label" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/login_btn"
+            style="@style/Widget.Material3.Button.OutlinedButton.Icon"
             android:layout_width="166dp"
             android:layout_height="48dp"
             android:layout_marginTop="40dp"
@@ -72,7 +73,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.497"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/text_password" />
+            app:layout_constraintTop_toBottomOf="@+id/text_password"
+            app:strokeWidth="2dp" />
 
         <TextView
             android:id="@+id/two_fa_infO_text_view_login_activity"
