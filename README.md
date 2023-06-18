@@ -13,6 +13,11 @@ Asking users to input their credentials directly in the app is a big __security 
 
 I implore everyone who uses this fork and similar projects to look at the commits yourself and reassure that the credentials are not being stolen.
 
+## TODO (First Party Features)
+
+- [ ] Chat
+- [ ] Inline Subreddit Emotes, (needs some richtext parser, SpannableString stuff)
+
 ---
 
 <div align="center">
