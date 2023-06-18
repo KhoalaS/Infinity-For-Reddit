@@ -798,6 +798,8 @@ public class MainActivity extends BaseActivity implements SortTypeSelectionCallb
                             intent = new Intent(MainActivity.this, HistoryActivity.class);
                         } else if (stringId == R.string.trending) {
                             intent = new Intent(MainActivity.this, TrendingActivity.class);
+                        } else if (stringId == R.string.chat) {
+                            intent = new Intent(MainActivity.this, ChatActivity.class);
                         } else if (stringId == R.string.upvoted) {
                             intent = new Intent(MainActivity.this, AccountPostsActivity.class);
                             intent.putExtra(AccountPostsActivity.EXTRA_USER_WHERE, PostPagingSource.USER_WHERE_UPVOTED);

@@ -8,6 +8,7 @@ import dagger.BindsInstance;
 import dagger.Component;
 import ml.docilealligator.infinityforreddit.activities.AccountPostsActivity;
 import ml.docilealligator.infinityforreddit.activities.AccountSavedThingActivity;
+import ml.docilealligator.infinityforreddit.activities.ChatActivity;
 import ml.docilealligator.infinityforreddit.activities.CommentActivity;
 import ml.docilealligator.infinityforreddit.activities.CreateMultiRedditActivity;
 import ml.docilealligator.infinityforreddit.activities.CustomThemeListingActivity;
@@ -306,6 +307,8 @@ public interface AppComponent {
     void inject(HistoryActivity historyActivity);
 
     void inject(MorePostsInfoFragment morePostsInfoFragment);
+
+    void inject(ChatActivity chatActivity);
 
     @Component.Factory
     interface Factory {

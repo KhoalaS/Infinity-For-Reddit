@@ -1,6 +1,7 @@
 <resources>
     <string name="application_name" translatable="false">Infinity</string>
     <string name="login_activity_label">Login</string>
+    <string name="Chat_activity_label">Chat</string>
     <string name="search_activity_label" translatable="false"> </string>
     <string name="comment_activity_label">Send Comment</string>
     <string name="comment_activity_label_is_replying">Reply</string>
@@ -101,6 +102,7 @@
 
     <string name="parse_json_response_error">Error occurred when parsing the JSON response</string>
     <string name="retrieve_token_error">Error Retrieving the token</string>
+    <string name="wrong_credentials_error">Incorrect username or password</string>
     <string name="something_went_wrong">Something went wrong. Try again later.</string>
     <string name="access_denied">Access denied</string>
     <string name="parse_user_info_error">Error occurred when parsing the user info</string>
@@ -141,6 +143,7 @@
     <string name="inbox">Inbox</string>
     <string name="inbox_with_count">Inbox (%1$,d)</string>
     <string name="trending">Trending</string>
+    <string name="chat">Chat</string>
     <string name="upvoted">Upvoted</string>
     <string name="downvoted">Downvoted</string>
     <string name="hidden">Hidden</string>
@@ -365,6 +368,7 @@
 
     <string name="label_account">Account</string>
     <string name="label_reddit">Reddit</string>
+    <string name="label_chat">Chat</string>
     <string name="label_post">Post</string>
     <string name="label_preferences">Preferences</string>
 
