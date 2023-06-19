@@ -33,12 +33,12 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.splashscreen.SplashScreen;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
@@ -92,7 +92,6 @@ import ml.docilealligator.infinityforreddit.bottomsheetfragments.FABMoreOptionsB
 import ml.docilealligator.infinityforreddit.bottomsheetfragments.PostLayoutBottomSheetFragment;
 import ml.docilealligator.infinityforreddit.bottomsheetfragments.PostTypeBottomSheetFragment;
 import ml.docilealligator.infinityforreddit.bottomsheetfragments.RandomBottomSheetFragment;
-import ml.docilealligator.infinityforreddit.bottomsheetfragments.ImportantInfoBottomSheetFragment;
 import ml.docilealligator.infinityforreddit.bottomsheetfragments.SortTimeBottomSheetFragment;
 import ml.docilealligator.infinityforreddit.bottomsheetfragments.SortTypeBottomSheetFragment;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
@@ -237,8 +236,6 @@ public class MainActivity extends BaseActivity implements SortTypeSelectionCallb
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        SplashScreen.installSplashScreen(this);
-
         ((Infinity) getApplication()).getAppComponent().inject(this);
 
         setTheme(R.style.AppTheme_NoActionBarWithTransparentStatusBar);
@@ -338,13 +335,6 @@ public class MainActivity extends BaseActivity implements SortTypeSelectionCallb
             mMessageFullname = getIntent().getStringExtra(EXTRA_MESSSAGE_FULLNAME);
             mNewAccountName = getIntent().getStringExtra(EXTRA_NEW_ACCOUNT_NAME);
         }
-
-        /*if (!mInternalSharedPreferences.getBoolean(SharedPreferencesUtils.DO_NOT_SHOW_REDDIT_API_INFO_V2_AGAIN, false)) {
-            ImportantInfoBottomSheetFragment fragment = new ImportantInfoBottomSheetFragment();
-            fragment.setCancelable(false);
-            fragment.show(getSupportFragmentManager(), fragment.getTag());
-        }*/
-
         initializeNotificationAndBindView();
     }
 
@@ -799,7 +789,7 @@ public class MainActivity extends BaseActivity implements SortTypeSelectionCallb
                         } else if (stringId == R.string.trending) {
                             intent = new Intent(MainActivity.this, TrendingActivity.class);
                         } else if (stringId == R.string.chat) {
-                            intent = new Intent(MainActivity.this, ChatActivity.class);
+                            intent = new Intent(MainActivity.this, ChatOverviewActivity.class);
                         } else if (stringId == R.string.upvoted) {
                             intent = new Intent(MainActivity.this, AccountPostsActivity.class);
                             intent.putExtra(AccountPostsActivity.EXTRA_USER_WHERE, PostPagingSource.USER_WHERE_UPVOTED);
@@ -956,7 +946,7 @@ public class MainActivity extends BaseActivity implements SortTypeSelectionCallb
 
         loadSubscriptions();
 
-        multiRedditViewModel = new ViewModelProvider(this, new MultiRedditViewModel.Factory(getApplication(),
+        multiRedditViewModel = new ViewModelProvider((ViewModelStoreOwner) this, (ViewModelProvider.Factory) new MultiRedditViewModel.Factory(getApplication(),
                 mRedditDataRoomDatabase, mAccountName == null ? "-" : mAccountName))
                 .get(MultiRedditViewModel.class);
 
@@ -972,8 +962,8 @@ public class MainActivity extends BaseActivity implements SortTypeSelectionCallb
             }
         });
 
-        subscribedSubredditViewModel = new ViewModelProvider(this,
-                new SubscribedSubredditViewModel.Factory(getApplication(), mRedditDataRoomDatabase, mAccountName == null ? "-" : mAccountName))
+        subscribedSubredditViewModel = new ViewModelProvider((ViewModelStoreOwner) this,
+                (ViewModelProvider.Factory) new SubscribedSubredditViewModel.Factory(getApplication(), mRedditDataRoomDatabase, mAccountName == null ? "-" : mAccountName))
                 .get(SubscribedSubredditViewModel.class);
         subscribedSubredditViewModel.getAllSubscribedSubreddits().observe(this,
                 subscribedSubredditData -> {
@@ -989,8 +979,8 @@ public class MainActivity extends BaseActivity implements SortTypeSelectionCallb
             }
         });
 
-        accountViewModel = new ViewModelProvider(this,
-                new AccountViewModel.Factory(mRedditDataRoomDatabase)).get(AccountViewModel.class);
+        accountViewModel = new ViewModelProvider((ViewModelStoreOwner) this,
+                (ViewModelProvider.Factory) new AccountViewModel.Factory(mRedditDataRoomDatabase)).get(AccountViewModel.class);
         accountViewModel.getAccountsExceptCurrentAccountLiveData().observe(this, adapter::changeAccountsDataset);
         accountViewModel.getCurrentAccountLiveData().observe(this, account -> {
             if (account != null) {
@@ -1537,10 +1527,6 @@ public class MainActivity extends BaseActivity implements SortTypeSelectionCallb
     @Override
     public void markPostAsRead(Post post) {
         InsertReadPost.insertReadPost(mRedditDataRoomDatabase, mExecutor, mAccountName, post.getId());
-    }
-
-    public void doNotShowRedditAPIInfoAgain() {
-        mInternalSharedPreferences.edit().putBoolean(SharedPreferencesUtils.DO_NOT_SHOW_REDDIT_API_INFO_V2_AGAIN, true).apply();
     }
 
     private class SectionsPagerAdapter extends FragmentStateAdapter {

@@ -391,7 +391,7 @@
             android:parentActivityName=".activities.MainActivity"
             android:theme="@style/AppTheme.Slidable" />
         <activity
-            android:name=".activities.ChatActivity"
+            android:name=".activities.ChatOverviewActivity"
             android:configChanges="orientation|screenLayout|screenSize|layoutDirection"
             android:label="@string/Chat_activity_label"
             android:parentActivityName=".activities.MainActivity"
