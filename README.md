@@ -3,6 +3,16 @@
   
 </h1>
 
+## Use your own Client-ID
+
+This fork enables a user to input their own Client-ID during login.
+
+### TODO
+- [x] allow user to input custom Client-ID
+- [ ] allow user to input custom User-Agent
+
+<hr>
+
 <div align="center">
 
 A Reddit client on Android written in Java. It does not have any ads and it features a clean UI and smooth browsing experience
