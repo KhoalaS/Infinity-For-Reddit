@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.InflateException;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.CookieManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -167,22 +168,21 @@ public class LoginActivity extends BaseActivity {
             loadLoginWebview(client_id);
         }
 
-        clientApplyButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                view.setClickable(false);
+        clientApplyButton.setOnClickListener(view -> {
+            view.setClickable(false);
+            InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
+            inputMethodManager.hideSoftInputFromWindow(view.getApplicationWindowToken(),0);
 
-                String client_id = clientIdInputEditText.getText().toString();
+            String client_id1 = clientIdInputEditText.getText().toString();
 
-                if(client_id.isBlank()){
-                    Toast.makeText(LoginActivity.this, "Please input a Client-ID first", Toast.LENGTH_LONG).show();
-                    view.setClickable(true);
-                    return;
-                }
-                mCurrentAccountSharedPreferences.edit().putString(APIUtils.CLIENT_ID_KEY, client_id).apply();
+            if(client_id1.isBlank()){
+                Toast.makeText(LoginActivity.this, "Please input a Client-ID first", Toast.LENGTH_LONG).show();
                 view.setClickable(true);
-                loadLoginWebview(client_id);
+                return;
             }
+            mCurrentAccountSharedPreferences.edit().putString(APIUtils.CLIENT_ID_KEY, client_id1).apply();
+            view.setClickable(true);
+            loadLoginWebview(client_id1);
         });
 
 
