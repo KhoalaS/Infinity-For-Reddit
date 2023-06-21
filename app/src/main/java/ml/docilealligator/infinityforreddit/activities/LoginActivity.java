@@ -365,6 +365,8 @@ public class LoginActivity extends BaseActivity {
         clientIdInfoTextView.setTextColor(mCustomThemeWrapper.getPrimaryTextColor());
         clientIdInputEditText.setTextColor(mCustomThemeWrapper.getPrimaryTextColor());
         clientApplyButton.setBackgroundTintList(ColorStateList.valueOf(customThemeWrapper.getColorAccent()));
+        clientApplyButton.setTextColor(mCustomThemeWrapper.getButtonTextColor());
+
     }
 
     @Override
