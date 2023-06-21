@@ -3,6 +3,7 @@ package ml.docilealligator.infinityforreddit.activities;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -17,6 +18,8 @@ import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -75,6 +78,12 @@ public class LoginActivity extends BaseActivity {
     WebView webView;
     @BindView(R.id.fab_login_activity)
     FloatingActionButton fab;
+    @BindView(R.id.client_id_info)
+    TextView clientIdInfoTextView;
+    @BindView(R.id.client_id_input)
+    EditText clientIdInputEditText;
+    @BindView(R.id.client_id_apply)
+    Button clientApplyButton;
     @Inject
     @Named("no_oauth")
     Retrofit mRetrofit;
@@ -150,9 +159,66 @@ public class LoginActivity extends BaseActivity {
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(enableDom);
 
+        String client_id = mCurrentAccountSharedPreferences.getString(APIUtils.CLIENT_ID_KEY, "");
+        if(!client_id.isBlank()){
+            clientApplyButton.setText("Update");
+            clientIdInfoTextView.setText(R.string.login_activity_input_client_id_update);
+            clientIdInputEditText.setText(client_id);
+            loadLoginWebview(client_id);
+        }
+
+        clientApplyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                view.setClickable(false);
+
+                String client_id = clientIdInputEditText.getText().toString();
+
+                if(client_id.isBlank()){
+                    Toast.makeText(LoginActivity.this, "Please input a Client-ID first", Toast.LENGTH_LONG).show();
+                    view.setClickable(true);
+                    return;
+                }
+                mCurrentAccountSharedPreferences.edit().putString(APIUtils.CLIENT_ID_KEY, client_id).apply();
+                view.setClickable(true);
+                loadLoginWebview(client_id);
+            }
+        });
+
+
+
+
+        if (!isAgreeToUserAgreement) {
+            TextView messageTextView = new TextView(this);
+            int padding = (int) Utils.convertDpToPixel(24, this);
+            messageTextView.setPaddingRelative(padding, padding, padding, padding);
+            SpannableString message = new SpannableString(getString(R.string.user_agreement_message, "https://www.redditinc.com/policies/user-agreement-september-12-2021", "https://docile-alligator.github.io"));
+            Linkify.addLinks(message, Linkify.WEB_URLS);
+            messageTextView.setMovementMethod(BetterLinkMovementMethod.newInstance().setOnLinkClickListener(new BetterLinkMovementMethod.OnLinkClickListener() {
+                @Override
+                public boolean onClick(TextView textView, String url) {
+                    Intent intent = new Intent(LoginActivity.this, LinkResolverActivity.class);
+                    intent.setData(Uri.parse(url));
+                    startActivity(intent);
+                    return true;
+                }
+            }));
+            messageTextView.setLinkTextColor(getResources().getColor(R.color.colorAccent));
+            messageTextView.setText(message);
+            new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialogTheme)
+                    .setTitle(getString(R.string.user_agreement_dialog_title))
+                    .setView(messageTextView)
+                    .setPositiveButton(R.string.agree, (dialogInterface, i) -> isAgreeToUserAgreement = true)
+                    .setNegativeButton(R.string.do_not_agree, (dialogInterface, i) -> finish())
+                    .setCancelable(false)
+                    .show();
+        }
+    }
+
+    void loadLoginWebview(String client_id){
         Uri baseUri = Uri.parse(APIUtils.OAUTH_URL);
         Uri.Builder uriBuilder = baseUri.buildUpon();
-        uriBuilder.appendQueryParameter(APIUtils.CLIENT_ID_KEY, APIUtils.CLIENT_ID);
+        uriBuilder.appendQueryParameter(APIUtils.CLIENT_ID_KEY, client_id);
         uriBuilder.appendQueryParameter(APIUtils.RESPONSE_TYPE_KEY, APIUtils.RESPONSE_TYPE);
         uriBuilder.appendQueryParameter(APIUtils.STATE_KEY, APIUtils.STATE);
         uriBuilder.appendQueryParameter(APIUtils.REDIRECT_URI_KEY, APIUtils.REDIRECT_URI);
@@ -180,7 +246,7 @@ public class LoginActivity extends BaseActivity {
                         params.put("redirect_uri", APIUtils.REDIRECT_URI);
 
                         RedditAPI api = mRetrofit.create(RedditAPI.class);
-                        Call<String> accessTokenCall = api.getAccessToken(APIUtils.getHttpBasicAuthHeader(), params);
+                        Call<String> accessTokenCall = api.getAccessToken(APIUtils.getHttpBasicAuthHeader(client_id), params);
                         accessTokenCall.enqueue(new Callback<String>() {
                             @Override
                             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
@@ -222,7 +288,7 @@ public class LoginActivity extends BaseActivity {
 
                                                         finish();
                                                     }
-                                        });
+                                                });
                                     } catch (JSONException e) {
                                         e.printStackTrace();
                                         Toast.makeText(LoginActivity.this, R.string.parse_json_response_error, Toast.LENGTH_SHORT).show();
@@ -266,32 +332,6 @@ public class LoginActivity extends BaseActivity {
                 super.onPageFinished(view, url);
             }
         });
-
-        if (!isAgreeToUserAgreement) {
-            TextView messageTextView = new TextView(this);
-            int padding = (int) Utils.convertDpToPixel(24, this);
-            messageTextView.setPaddingRelative(padding, padding, padding, padding);
-            SpannableString message = new SpannableString(getString(R.string.user_agreement_message, "https://www.redditinc.com/policies/user-agreement-september-12-2021", "https://docile-alligator.github.io"));
-            Linkify.addLinks(message, Linkify.WEB_URLS);
-            messageTextView.setMovementMethod(BetterLinkMovementMethod.newInstance().setOnLinkClickListener(new BetterLinkMovementMethod.OnLinkClickListener() {
-                @Override
-                public boolean onClick(TextView textView, String url) {
-                    Intent intent = new Intent(LoginActivity.this, LinkResolverActivity.class);
-                    intent.setData(Uri.parse(url));
-                    startActivity(intent);
-                    return true;
-                }
-            }));
-            messageTextView.setLinkTextColor(getResources().getColor(R.color.colorAccent));
-            messageTextView.setText(message);
-            new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialogTheme)
-                    .setTitle(getString(R.string.user_agreement_dialog_title))
-                    .setView(messageTextView)
-                    .setPositiveButton(R.string.agree, (dialogInterface, i) -> isAgreeToUserAgreement = true)
-                    .setNegativeButton(R.string.do_not_agree, (dialogInterface, i) -> finish())
-                    .setCancelable(false)
-                    .show();
-        }
     }
 
     @Override
@@ -322,6 +362,9 @@ public class LoginActivity extends BaseActivity {
         if (typeface != null) {
             twoFAInfoTextView.setTypeface(typeface);
         }
+        clientIdInfoTextView.setTextColor(mCustomThemeWrapper.getPrimaryTextColor());
+        clientIdInputEditText.setTextColor(mCustomThemeWrapper.getPrimaryTextColor());
+        clientApplyButton.setBackgroundTintList(ColorStateList.valueOf(customThemeWrapper.getColorAccent()));
     }
 
     @Override

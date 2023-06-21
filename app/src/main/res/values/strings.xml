@@ -1053,6 +1053,11 @@
     <string name="top_score">%1$s pts</string>
 
     <string name="login_activity_2fa_prompt">If you have 2-factor authentication enabled, kindly type your password like the following: &lt;password&gt;:&lt;2FA code&gt;.\nExample: yourpass:123456</string>
+    <string name="login_activity_input_client_id">Please paste your own Client-ID here. Also please set your Redirect-URI to http://localhost:9999. After clicking on "Apply" you will be able to login as usual.</string>
+    <string name="login_activity_input_client_id_update">Looks like you already set a Client-ID in the past. If you want to use a different ID, paste it below and press the "Update" button.</string>
+    <string name="login_activity_apply">Apply</string>
+
+
 
     <string name="block_user">Block User</string>
     <string name="block_user_success">Blocked</string>

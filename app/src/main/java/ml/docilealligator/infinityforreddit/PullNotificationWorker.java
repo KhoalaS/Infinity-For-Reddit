@@ -248,7 +248,9 @@ public class PullNotificationWorker extends Worker {
         params.put(APIUtils.GRANT_TYPE_KEY, APIUtils.GRANT_TYPE_REFRESH_TOKEN);
         params.put(APIUtils.REFRESH_TOKEN_KEY, refreshToken);
 
-        Call<String> accessTokenCall = api.getAccessToken(APIUtils.getHttpBasicAuthHeader(), params);
+        String client_id = mCurrentAccountSharedPreferences.getString(APIUtils.CLIENT_ID_KEY, "");
+
+        Call<String> accessTokenCall = api.getAccessToken(APIUtils.getHttpBasicAuthHeader(client_id), params);
         try {
             Response<String> response = accessTokenCall.execute();
             if (response.isSuccessful() && response.body() != null) {

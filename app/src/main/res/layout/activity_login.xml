@@ -2,9 +2,9 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinator_layout_login_activity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/coordinator_layout_login_activity"
     tools:application="ml.docilealligator.infinityforreddit.activities.LoginActivity">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -18,8 +18,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="?attr/actionBarSize"
-            app:popupTheme="@style/AppTheme.PopupOverlay"
-            app:navigationIcon="?attr/homeAsUpIndicator" />
+            app:navigationIcon="?attr/homeAsUpIndicator"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -33,11 +33,39 @@
             android:id="@+id/two_fa_infO_text_view_login_activity"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
             android:drawablePadding="32dp"
+            android:fontFamily="?attr/font_family"
+            android:padding="16dp"
             android:text="@string/login_activity_2fa_prompt"
-            android:textSize="?attr/font_default"
-            android:fontFamily="?attr/font_family" />
+            android:textSize="?attr/font_default" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/client_id_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/login_activity_input_client_id" />
+
+
+            <EditText
+                android:id="@+id/client_id_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="text" />
+
+            <Button
+                android:id="@+id/client_id_apply"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/login_activity_apply" />
+        </LinearLayout>
 
         <ml.docilealligator.infinityforreddit.customviews.LollipopBugFixedWebView
             android:id="@+id/webview_login_activity"
@@ -50,8 +78,8 @@
         android:id="@+id/fab_login_activity"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/fab_margin"
         android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
         android:src="@drawable/ic_help_24dp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
