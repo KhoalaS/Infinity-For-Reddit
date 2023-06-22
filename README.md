@@ -18,6 +18,9 @@ I implore everyone who uses this fork and similar projects to look at the commit
 Check out the [Sub-Branch](https://github.com/KhoalaS/Infinity-For-Reddit/tree/sub). You will be prompted to enter a Client-ID during login. It is using
 a dummy User-Agent for the tim being. You might want to change that to something more descriptive. 
 
+https://github.com/KhoalaS/Infinity-For-Reddit/assets/83372697/5b4fcdd5-a78e-4ed9-9fa0-f3917db8c041
+
+
 ## TODO (First Party Features)
 
 - [ ] Chat
