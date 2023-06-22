@@ -18,10 +18,10 @@ public class BlockUser {
         void failed();
     }
 
-    public static void blockUser(Retrofit oauthRetrofit, String accessToken, String username, BlockUserListener blockUserListener) {
+    public static void blockUser(Retrofit oauthRetrofit, String accessToken,String useragent, String username, BlockUserListener blockUserListener) {
         Map<String, String> params = new HashMap<>();
         params.put(APIUtils.NAME_KEY, username);
-        oauthRetrofit.create(RedditAPI.class).blockUser(APIUtils.getOAuthHeader(accessToken), params).enqueue(new Callback<String>() {
+        oauthRetrofit.create(RedditAPI.class).blockUser(APIUtils.getOAuthHeader(accessToken, useragent), params).enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                 if (response.isSuccessful()) {

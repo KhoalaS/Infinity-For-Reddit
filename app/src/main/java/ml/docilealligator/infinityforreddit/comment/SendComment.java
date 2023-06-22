@@ -20,9 +20,9 @@ import retrofit2.Retrofit;
 public class SendComment {
     public static void sendComment(Executor executor, Handler handler, String commentMarkdown,
                                    String thingFullname, int parentDepth,
-                                   Retrofit newAuthenticatorOauthRetrofit, Account account,
+                                   Retrofit newAuthenticatorOauthRetrofit, Account account, String useragent,
                                    SendCommentListener sendCommentListener) {
-        Map<String, String> headers = APIUtils.getOAuthHeader(account.getAccessToken());
+        Map<String, String> headers = APIUtils.getOAuthHeader(account.getAccessToken(), useragent);
         Map<String, String> params = new HashMap<>();
         params.put(APIUtils.API_TYPE_KEY, "json");
         params.put(APIUtils.RETURN_RTJSON_KEY, "true");

@@ -12,16 +12,18 @@ public class SubredditListingDataSourceFactory extends DataSource.Factory {
     private String query;
     private SortType sortType;
     private String accessToken;
+    private String userAgent;
     private boolean nsfw;
 
     private SubredditListingDataSource subredditListingDataSource;
     private MutableLiveData<SubredditListingDataSource> subredditListingDataSourceMutableLiveData;
 
-    SubredditListingDataSourceFactory(Retrofit retrofit, String query, SortType sortType, String accessToken, boolean nsfw) {
+    SubredditListingDataSourceFactory(Retrofit retrofit, String query, SortType sortType, String accessToken, String userAgent, boolean nsfw) {
         this.retrofit = retrofit;
         this.query = query;
         this.sortType = sortType;
         this.accessToken = accessToken;
+        this.userAgent = userAgent;
         this.nsfw = nsfw;
         subredditListingDataSourceMutableLiveData = new MutableLiveData<>();
     }
@@ -29,7 +31,7 @@ public class SubredditListingDataSourceFactory extends DataSource.Factory {
     @NonNull
     @Override
     public DataSource create() {
-        subredditListingDataSource = new SubredditListingDataSource(retrofit, query, sortType, accessToken, nsfw);
+        subredditListingDataSource = new SubredditListingDataSource(retrofit, query, sortType, accessToken, userAgent, nsfw);
         subredditListingDataSourceMutableLiveData.postValue(subredditListingDataSource);
         return subredditListingDataSource;
     }

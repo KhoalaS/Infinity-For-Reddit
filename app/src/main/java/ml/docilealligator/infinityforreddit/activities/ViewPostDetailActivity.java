@@ -81,6 +81,7 @@ import ml.docilealligator.infinityforreddit.post.Post;
 import ml.docilealligator.infinityforreddit.post.PostPagingSource;
 import ml.docilealligator.infinityforreddit.postfilter.PostFilter;
 import ml.docilealligator.infinityforreddit.readpost.ReadPost;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
 import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import retrofit2.Call;
@@ -178,6 +179,8 @@ public class ViewPostDetailActivity extends BaseActivity implements SortTypeSele
     private SectionsPagerAdapter sectionsPagerAdapter;
     private String mAccessToken;
     private String mAccountName;
+    private String mUserAgent;
+
     private long postFragmentId;
     private int postListPosition;
     private int orientation;
@@ -230,6 +233,11 @@ public class ViewPostDetailActivity extends BaseActivity implements SortTypeSele
                 }
             }
         }
+
+        String _username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUserAgent = UseragentUtil.getUserAgent(appname, _username);
+
 
         boolean swipeBetweenPosts = mSharedPreferences.getBoolean(SharedPreferencesUtils.SWIPE_BETWEEN_POSTS, false);
         if (!swipeBetweenPosts) {
@@ -452,7 +460,7 @@ public class ViewPostDetailActivity extends BaseActivity implements SortTypeSele
     public void saveComment(@NonNull Comment comment, int position) {
         if (comment.isSaved()) {
             comment.setSaved(false);
-            SaveThing.unsaveThing(mOauthRetrofit, mAccessToken, comment.getFullName(), new SaveThing.SaveThingListener() {
+            SaveThing.unsaveThing(mOauthRetrofit, mAccessToken, mUserAgent, comment.getFullName(), new SaveThing.SaveThingListener() {
                 @Override
                 public void success() {
                     ViewPostDetailFragment fragment = sectionsPagerAdapter.getCurrentFragment();
@@ -473,7 +481,7 @@ public class ViewPostDetailActivity extends BaseActivity implements SortTypeSele
             });
         } else {
             comment.setSaved(true);
-            SaveThing.saveThing(mOauthRetrofit, mAccessToken, comment.getFullName(), new SaveThing.SaveThingListener() {
+            SaveThing.saveThing(mOauthRetrofit, mAccessToken, mUserAgent, comment.getFullName(), new SaveThing.SaveThingListener() {
                 @Override
                 public void success() {
                     ViewPostDetailFragment fragment = sectionsPagerAdapter.getCurrentFragment();
@@ -537,7 +545,7 @@ public class ViewPostDetailActivity extends BaseActivity implements SortTypeSele
                             call = api.getSubredditBestPosts(subredditName, sortType, sortTime, afterKey);
                         } else {
                             call = api.getSubredditBestPostsOauth(subredditName, sortType,
-                                   sortTime, afterKey, APIUtils.getOAuthHeader(mAccessToken));
+                                   sortTime, afterKey, APIUtils.getOAuthHeader(mAccessToken, mUserAgent));
                         }
                         break;
                     case PostPagingSource.TYPE_USER:
@@ -545,7 +553,7 @@ public class ViewPostDetailActivity extends BaseActivity implements SortTypeSele
                             call = api.getUserPosts(username, afterKey, sortType, sortTime);
                         } else {
                             call = api.getUserPostsOauth(username, userWhere, afterKey, sortType,
-                                    sortTime, APIUtils.getOAuthHeader(mAccessToken));
+                                    sortTime, APIUtils.getOAuthHeader(mAccessToken, mUserAgent));
                         }
                         break;
                     case PostPagingSource.TYPE_SEARCH:
@@ -555,7 +563,7 @@ public class ViewPostDetailActivity extends BaseActivity implements SortTypeSele
                                         trendingSource);
                             } else {
                                 call = api.searchPostsOauth(query, afterKey, sortType,
-                                        sortTime, trendingSource, APIUtils.getOAuthHeader(mAccessToken));
+                                        sortTime, trendingSource, APIUtils.getOAuthHeader(mAccessToken, mUserAgent));
                             }
                         } else {
                             if (mAccessToken == null) {
@@ -564,7 +572,7 @@ public class ViewPostDetailActivity extends BaseActivity implements SortTypeSele
                             } else {
                                 call = api.searchPostsInSpecificSubredditOauth(subredditName, query,
                                         sortType, sortTime, afterKey,
-                                        APIUtils.getOAuthHeader(mAccessToken));
+                                        APIUtils.getOAuthHeader(mAccessToken, mUserAgent));
                             }
                         }
                         break;
@@ -573,7 +581,7 @@ public class ViewPostDetailActivity extends BaseActivity implements SortTypeSele
                             call = api.getMultiRedditPosts(multiPath, afterKey, sortTime);
                         } else {
                             call = api.getMultiRedditPostsOauth(multiPath, afterKey,
-                                    sortTime, APIUtils.getOAuthHeader(mAccessToken));
+                                    sortTime, APIUtils.getOAuthHeader(mAccessToken, mUserAgent));
                         }
                         break;
                     case PostPagingSource.TYPE_ANONYMOUS_FRONT_PAGE:
@@ -582,7 +590,7 @@ public class ViewPostDetailActivity extends BaseActivity implements SortTypeSele
                         break;
                     default:
                         call = api.getBestPosts(sortType, sortTime, afterKey,
-                                APIUtils.getOAuthHeader(mAccessToken));
+                                APIUtils.getOAuthHeader(mAccessToken, mUserAgent));
                 }
 
                 try {
@@ -662,7 +670,7 @@ public class ViewPostDetailActivity extends BaseActivity implements SortTypeSele
 
                 Call<String> historyPosts;
                 if (mAccessToken != null && !mAccessToken.isEmpty()) {
-                    historyPosts = mOauthRetrofit.create(RedditAPI.class).getInfoOauth(ids.toString(), APIUtils.getOAuthHeader(mAccessToken));
+                    historyPosts = mOauthRetrofit.create(RedditAPI.class).getInfoOauth(ids.toString(), APIUtils.getOAuthHeader(mAccessToken, mUserAgent));
                 } else {
                     historyPosts = mRetrofit.create(RedditAPI.class).getInfo(ids.toString());
                 }

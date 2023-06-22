@@ -58,6 +58,7 @@ import ml.docilealligator.infinityforreddit.events.SwitchAccountEvent;
 import ml.docilealligator.infinityforreddit.fragments.InboxFragment;
 import ml.docilealligator.infinityforreddit.message.FetchMessage;
 import ml.docilealligator.infinityforreddit.message.Message;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
 import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import ml.docilealligator.infinityforreddit.utils.Utils;
@@ -107,6 +108,7 @@ public class InboxActivity extends BaseActivity implements ActivityToolbarInterf
     private FragmentManager fragmentManager;
     private String mAccessToken;
     private String mAccountName;
+    private String mUserAgent;
     private String mNewAccountName;
 
     @Override
@@ -159,6 +161,10 @@ public class InboxActivity extends BaseActivity implements ActivityToolbarInterf
 
         mAccessToken = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCESS_TOKEN, null);
         mAccountName = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCOUNT_NAME, null);
+
+        String username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUserAgent = UseragentUtil.getUserAgent(appname, username);
 
         if (savedInstanceState != null) {
             mNewAccountName = savedInstanceState.getString(NEW_ACCOUNT_NAME_STATE);
@@ -302,7 +308,7 @@ public class InboxActivity extends BaseActivity implements ActivityToolbarInterf
         } else if (item.getItemId() == R.id.action_read_all_messages_inbox_activity) {
             if (mAccessToken != null) {
                 Toast.makeText(this, R.string.please_wait, Toast.LENGTH_SHORT).show();
-                mOauthRetrofit.create(RedditAPI.class).readAllMessages(APIUtils.getOAuthHeader(mAccessToken))
+                mOauthRetrofit.create(RedditAPI.class).readAllMessages(APIUtils.getOAuthHeader(mAccessToken, mUserAgent))
                         .enqueue(new Callback<>() {
                             @Override
                             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {

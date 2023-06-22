@@ -47,6 +47,8 @@ import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.customviews.LinearLayoutManagerBugFixed;
 import ml.docilealligator.infinityforreddit.subreddit.SubredditData;
 import ml.docilealligator.infinityforreddit.subreddit.SubredditListingViewModel;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import retrofit2.Retrofit;
 
@@ -95,12 +97,15 @@ public class SubredditListingFragment extends Fragment implements FragmentCommun
     @Inject
     CustomThemeWrapper mCustomThemeWrapper;
     @Inject
+    @Named("current_account")
+    SharedPreferences mCurrentAccountSharedPreferences;
+    @Inject
     Executor mExecutor;
     private LinearLayoutManagerBugFixed mLinearLayoutManager;
     private SubredditListingRecyclerViewAdapter mAdapter;
     private BaseActivity mActivity;
     private SortType sortType;
-
+    private String mUserAgent;
     public SubredditListingFragment() {
         // Required empty public constructor
     }
@@ -133,6 +138,11 @@ public class SubredditListingFragment extends Fragment implements FragmentCommun
         mLinearLayoutManager = new LinearLayoutManagerBugFixed(getActivity());
         mSubredditListingRecyclerView.setLayoutManager(mLinearLayoutManager);
 
+        String _username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUserAgent = UseragentUtil.getUserAgent(appname, _username);
+
+
         String query = getArguments().getString(EXTRA_QUERY);
         boolean isGettingSubredditInfo = getArguments().getBoolean(EXTRA_IS_GETTING_SUBREDDIT_INFO);
         String accessToken = getArguments().getString(EXTRA_ACCESS_TOKEN);
@@ -143,7 +153,7 @@ public class SubredditListingFragment extends Fragment implements FragmentCommun
         boolean nsfw = !mSharedPreferences.getBoolean(SharedPreferencesUtils.DISABLE_NSFW_FOREVER, false) && mNsfwAndSpoilerSharedPreferences.getBoolean((accountName == null ? "" : accountName) + SharedPreferencesUtils.NSFW_BASE, false);
 
         mAdapter = new SubredditListingRecyclerViewAdapter(mActivity, mExecutor, mOauthRetrofit, mRetrofit,
-                mCustomThemeWrapper, accessToken, accountName,
+                mCustomThemeWrapper, accessToken, mUserAgent, accountName,
                 mRedditDataRoomDatabase, getArguments().getBoolean(EXTRA_IS_MULTI_SELECTION, false),
                 new SubredditListingRecyclerViewAdapter.Callback() {
                     @Override
@@ -179,7 +189,7 @@ public class SubredditListingFragment extends Fragment implements FragmentCommun
         }
 
         SubredditListingViewModel.Factory factory = new SubredditListingViewModel.Factory(
-                accessToken == null ? mRetrofit : mOauthRetrofit, query, sortType, accessToken, nsfw);
+                accessToken == null ? mRetrofit : mOauthRetrofit, query, sortType, accessToken, mUserAgent, nsfw);
         mSubredditListingViewModel = new ViewModelProvider(this, factory).get(SubredditListingViewModel.class);
         mSubredditListingViewModel.getSubreddits().observe(getViewLifecycleOwner(), subredditData -> mAdapter.submitList(subredditData));
 

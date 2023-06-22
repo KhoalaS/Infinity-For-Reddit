@@ -61,6 +61,7 @@ public class UserListingRecyclerViewAdapter extends PagedListAdapter<UserData, R
     private Retrofit retrofit;
     private String accessToken;
     private String accountName;
+    private String userAgent;
     private RedditDataRoomDatabase redditDataRoomDatabase;
     private boolean isMultiSelection;
 
@@ -74,7 +75,7 @@ public class UserListingRecyclerViewAdapter extends PagedListAdapter<UserData, R
     private final Callback callback;
 
     public UserListingRecyclerViewAdapter(BaseActivity activity, Executor executor, Retrofit oauthRetrofit, Retrofit retrofit,
-                                          CustomThemeWrapper customThemeWrapper, String accessToken,
+                                          CustomThemeWrapper customThemeWrapper, String accessToken, String userAgent,
                                           String accountName, RedditDataRoomDatabase redditDataRoomDatabase,
                                           boolean isMultiSelection, Callback callback) {
         super(DIFF_CALLBACK);
@@ -87,6 +88,7 @@ public class UserListingRecyclerViewAdapter extends PagedListAdapter<UserData, R
         this.redditDataRoomDatabase = redditDataRoomDatabase;
         this.isMultiSelection = isMultiSelection;
         this.callback = callback;
+        this.userAgent = userAgent;
         glide = Glide.with(activity);
         primaryTextColor = customThemeWrapper.getPrimaryTextColor();
         buttonTextColor = customThemeWrapper.getButtonTextColor();
@@ -150,7 +152,7 @@ public class UserListingRecyclerViewAdapter extends PagedListAdapter<UserData, R
                                     ((DataViewHolder) holder).subscribeButton.setVisibility(View.VISIBLE);
                                     ((DataViewHolder) holder).subscribeButton.setOnClickListener(view -> {
                                         UserFollowing.followUser(oauthRetrofit, retrofit,
-                                                accessToken, userData.getName(), accountName, redditDataRoomDatabase,
+                                                accessToken, userAgent, userData.getName(), accountName, redditDataRoomDatabase,
                                                 new UserFollowing.UserFollowingListener() {
                                                     @Override
                                                     public void onUserFollowingSuccess() {

@@ -28,9 +28,9 @@ public class FetchMultiRedditInfo {
         void failed();
     }
 
-    public static void fetchMultiRedditInfo(Retrofit retrofit, String accessToken, String multipath,
+    public static void fetchMultiRedditInfo(Retrofit retrofit, String accessToken, String useragent, String multipath,
                                             FetchMultiRedditInfoListener fetchMultiRedditInfoListener) {
-        retrofit.create(RedditAPI.class).getMultiRedditInfo(APIUtils.getOAuthHeader(accessToken), multipath).enqueue(new Callback<String>() {
+        retrofit.create(RedditAPI.class).getMultiRedditInfo(APIUtils.getOAuthHeader(accessToken, useragent), multipath).enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                 if (response.isSuccessful()) {

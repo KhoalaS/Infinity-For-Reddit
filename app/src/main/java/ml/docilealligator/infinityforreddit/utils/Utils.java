@@ -362,7 +362,7 @@ public final class Utils {
     }
 
     public static void uploadImageToReddit(Context context, Executor executor, Retrofit oauthRetrofit,
-                                           Retrofit uploadMediaRetrofit, String accessToken, EditText editText,
+                                           Retrofit uploadMediaRetrofit, String accessToken, String userAgent, EditText editText,
                                            CoordinatorLayout coordinatorLayout, Uri imageUri,
                                            ArrayList<UploadedImage> uploadedImages) {
         Toast.makeText(context, R.string.uploading_image, Toast.LENGTH_SHORT).show();
@@ -370,7 +370,7 @@ public final class Utils {
         executor.execute(() -> {
             try {
                 Bitmap bitmap = Glide.with(context).asBitmap().load(imageUri).submit().get();
-                String imageUrlOrError = UploadImageUtils.uploadImage(oauthRetrofit, uploadMediaRetrofit, accessToken, bitmap);
+                String imageUrlOrError = UploadImageUtils.uploadImage(oauthRetrofit, uploadMediaRetrofit, accessToken, userAgent, bitmap);
                 handler.post(() -> {
                     if (imageUrlOrError != null && !imageUrlOrError.startsWith("Error: ")) {
                         String fileName = Utils.getFileName(context, imageUri);

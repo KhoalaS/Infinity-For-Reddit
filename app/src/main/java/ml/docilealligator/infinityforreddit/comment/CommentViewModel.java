@@ -23,9 +23,9 @@ public class CommentViewModel extends ViewModel {
     private LiveData<PagedList<Comment>> comments;
     private MutableLiveData<SortType> sortTypeLiveData;
 
-    public CommentViewModel(Retrofit retrofit, Locale locale, String accessToken, String username, SortType sortType,
+    public CommentViewModel(Retrofit retrofit, Locale locale, String accessToken, String useragent, String username, SortType sortType,
                             boolean areSavedComments) {
-        commentDataSourceFactory = new CommentDataSourceFactory(retrofit, locale, accessToken, username, sortType,
+        commentDataSourceFactory = new CommentDataSourceFactory(retrofit, locale, accessToken, useragent, username, sortType,
                 areSavedComments);
 
         initialLoadingState = Transformations.switchMap(commentDataSourceFactory.getCommentDataSourceLiveData(),
@@ -85,8 +85,9 @@ public class CommentViewModel extends ViewModel {
         private String username;
         private SortType sortType;
         private boolean areSavedComments;
+        private String userAgent;
 
-        public Factory(Retrofit retrofit, Locale locale, String accessToken, String username,
+        public Factory(Retrofit retrofit, Locale locale, String accessToken, String userAgent, String username,
                        SortType sortType, boolean areSavedComments) {
             this.retrofit = retrofit;
             this.locale = locale;
@@ -94,12 +95,13 @@ public class CommentViewModel extends ViewModel {
             this.username = username;
             this.sortType = sortType;
             this.areSavedComments = areSavedComments;
+            this.userAgent = userAgent;
         }
 
         @NonNull
         @Override
         public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-            return (T) new CommentViewModel(retrofit, locale, accessToken, username, sortType, areSavedComments);
+            return (T) new CommentViewModel(retrofit, locale, accessToken, userAgent, username, sortType, areSavedComments);
         }
     }
 }

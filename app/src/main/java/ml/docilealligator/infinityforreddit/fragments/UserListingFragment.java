@@ -47,6 +47,8 @@ import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.customviews.LinearLayoutManagerBugFixed;
 import ml.docilealligator.infinityforreddit.user.UserData;
 import ml.docilealligator.infinityforreddit.user.UserListingViewModel;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import retrofit2.Retrofit;
 
@@ -93,6 +95,9 @@ public class UserListingFragment extends Fragment implements FragmentCommunicato
     @Named("nsfw_and_spoiler")
     SharedPreferences mNsfwAndSpoilerSharedPreferences;
     @Inject
+    @Named("current_account")
+    SharedPreferences mCurrentAccountSharedPreferences;
+    @Inject
     CustomThemeWrapper mCustomThemeWrapper;
     @Inject
     Executor mExecutor;
@@ -101,6 +106,7 @@ public class UserListingFragment extends Fragment implements FragmentCommunicato
     private UserListingRecyclerViewAdapter mAdapter;
     private BaseActivity mActivity;
     private SortType sortType;
+    private String userAgent;
 
     public UserListingFragment() {
         // Required empty public constructor
@@ -120,6 +126,12 @@ public class UserListingFragment extends Fragment implements FragmentCommunicato
         applyTheme();
 
         Resources resources = getResources();
+
+        String _username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        userAgent = UseragentUtil.getUserAgent(appname, _username);
+
+
 
         if ((mActivity instanceof BaseActivity && ((BaseActivity) mActivity).isImmersiveInterface())) {
             mUserListingRecyclerView.setPadding(0, 0, 0, ((BaseActivity) mActivity).getNavBarHeight());
@@ -143,7 +155,7 @@ public class UserListingFragment extends Fragment implements FragmentCommunicato
         boolean nsfw = !mSharedPreferences.getBoolean(SharedPreferencesUtils.DISABLE_NSFW_FOREVER, false) && mNsfwAndSpoilerSharedPreferences.getBoolean((accountName == null ? "" : accountName) + SharedPreferencesUtils.NSFW_BASE, false);
 
         mAdapter = new UserListingRecyclerViewAdapter(mActivity, mExecutor, mOauthRetrofit, mRetrofit,
-                mCustomThemeWrapper, accessToken, accountName, mRedditDataRoomDatabase,
+                mCustomThemeWrapper, accessToken, userAgent, accountName, mRedditDataRoomDatabase,
                 getArguments().getBoolean(EXTRA_IS_MULTI_SELECTION, false),
                 new UserListingRecyclerViewAdapter.Callback() {
                     @Override

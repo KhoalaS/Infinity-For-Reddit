@@ -35,6 +35,7 @@ import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.message.FetchMessage;
 import ml.docilealligator.infinityforreddit.message.Message;
 import ml.docilealligator.infinityforreddit.message.ParseMessage;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
 import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.JSONUtils;
 import ml.docilealligator.infinityforreddit.utils.NotificationUtils;
@@ -218,9 +219,13 @@ public class PullNotificationWorker extends Worker {
         if (retryCount < 0) {
             return null;
         }
+        String username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        String useragent = UseragentUtil.getUserAgent(appname, username);
+
 
         Call<String> call = mOauthWithoutAuthenticatorRetrofit.create(RedditAPI.class)
-                .getMessages(APIUtils.getOAuthHeader(account.getAccessToken()),
+                .getMessages(APIUtils.getOAuthHeader(account.getAccessToken(), useragent),
                         FetchMessage.WHERE_UNREAD, null);
         Response<String> response = call.execute();
 

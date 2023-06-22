@@ -18,12 +18,12 @@ public class AddSubredditOrUserToMultiReddit {
         void failed(int code);
     }
 
-    public static void addSubredditOrUserToMultiReddit(Retrofit oauthRetrofit, String accessToken, String multipath,
+    public static void addSubredditOrUserToMultiReddit(Retrofit oauthRetrofit, String accessToken, String useragent, String multipath,
                                                        String subredditName,
                                                        AddSubredditOrUserToMultiRedditListener addSubredditOrUserToMultiRedditListener) {
         Map<String, String> params = new HashMap<>();
         params.put(APIUtils.MODEL_KEY, "{\"name\":\"" + subredditName + "\"}");
-        oauthRetrofit.create(RedditAPI.class).addSubredditToMultiReddit(APIUtils.getOAuthHeader(accessToken), params, multipath, subredditName)
+        oauthRetrofit.create(RedditAPI.class).addSubredditToMultiReddit(APIUtils.getOAuthHeader(accessToken, useragent), params, multipath, subredditName)
                 .enqueue(new Callback<String>() {
                     @Override
                     public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {

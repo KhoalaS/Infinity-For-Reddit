@@ -43,6 +43,7 @@ import ml.docilealligator.infinityforreddit.R;
 import ml.docilealligator.infinityforreddit.apis.DownloadFile;
 import ml.docilealligator.infinityforreddit.broadcastreceivers.DownloadedMediaDeleteActionBroadcastReceiver;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
 import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.NotificationUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
@@ -73,6 +74,9 @@ public class DownloadMediaService extends Service {
     @Named("default")
     SharedPreferences mSharedPreferences;
     @Inject
+    @Named("current_account")
+    SharedPreferences mCurrentAccountSharedPreferences;
+    @Inject
     CustomThemeWrapper mCustomThemeWrapper;
     private NotificationManagerCompat notificationManager;
     private NotificationCompat.Builder builder;
@@ -95,6 +99,10 @@ public class DownloadMediaService extends Service {
         }
         @Override
         public void handleMessage(Message msg) {
+            String username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+            String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+            String useragent = UseragentUtil.getUserAgent(appname, username);
+
             int randomNotificationIdOffset = msg.arg1;
             Bundle intent = msg.getData();
             downloadFinished = false;
@@ -132,7 +140,7 @@ public class DownloadMediaService extends Service {
                     .addInterceptor(chain -> chain.proceed(
                             chain.request()
                                     .newBuilder()
-                                    .header("User-Agent", APIUtils.USER_AGENT)
+                                    .header("User-Agent", useragent)
                                     .build()
                     ))
                     .build();

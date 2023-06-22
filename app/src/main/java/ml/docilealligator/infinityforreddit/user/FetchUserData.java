@@ -14,18 +14,18 @@ import retrofit2.Retrofit;
 
 public class FetchUserData {
     public static void fetchUserData(Retrofit retrofit, String userName, FetchUserDataListener fetchUserDataListener) {
-        fetchUserData(null, retrofit, null, userName, fetchUserDataListener);
+        fetchUserData(null, retrofit, null, "", userName, fetchUserDataListener);
     }
 
     public static void fetchUserData(RedditDataRoomDatabase redditDataRoomDatabase, Retrofit retrofit,
-                                     String accessToken, String userName, FetchUserDataListener fetchUserDataListener) {
+                                     String accessToken, String useragent, String userName, FetchUserDataListener fetchUserDataListener) {
         RedditAPI api = retrofit.create(RedditAPI.class);
 
         Call<String> userInfo;
         if (redditDataRoomDatabase == null) {
             userInfo = api.getUserData(userName);
         } else {
-            userInfo = api.getUserDataOauth(APIUtils.getOAuthHeader(accessToken), userName);
+            userInfo = api.getUserDataOauth(APIUtils.getOAuthHeader(accessToken, useragent), userName);
         }
         userInfo.enqueue(new Callback<>() {
             @Override

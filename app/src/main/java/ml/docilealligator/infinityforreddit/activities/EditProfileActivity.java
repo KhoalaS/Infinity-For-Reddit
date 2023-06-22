@@ -51,6 +51,8 @@ import ml.docilealligator.infinityforreddit.events.SubmitChangeBannerEvent;
 import ml.docilealligator.infinityforreddit.events.SubmitSaveProfileEvent;
 import ml.docilealligator.infinityforreddit.services.EditProfileService;
 import ml.docilealligator.infinityforreddit.user.UserViewModel;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.EditProfileUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import ml.docilealligator.infinityforreddit.utils.Utils;
@@ -101,6 +103,7 @@ public class EditProfileActivity extends BaseActivity {
 
     private String mAccountName;
     private String mAccessToken;
+    private String mUserAgent;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -116,6 +119,10 @@ public class EditProfileActivity extends BaseActivity {
         EventBus.getDefault().register(this);
 
         applyCustomTheme();
+
+        String _username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUserAgent = UseragentUtil.getUserAgent(appname, _username);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && isChangeStatusBarIconColor()) {
             addOnOffsetChangedListener(appBarLayout);
@@ -170,6 +177,7 @@ public class EditProfileActivity extends BaseActivity {
                             .setPositiveButton(R.string.yes, (dialogInterface, i)
                                     -> EditProfileUtils.deleteBanner(mOauthRetrofit,
                                     mAccessToken,
+                                    mUserAgent,
                                     mAccountName,
                                     new EditProfileUtils.EditProfileUtilsListener() {
                                         @Override
@@ -213,6 +221,7 @@ public class EditProfileActivity extends BaseActivity {
                             .setPositiveButton(R.string.yes, (dialogInterface, i)
                                     -> EditProfileUtils.deleteAvatar(mOauthRetrofit,
                                     mAccessToken,
+                                    mUserAgent,
                                     mAccountName,
                                     new EditProfileUtils.EditProfileUtilsListener() {
                                         @Override

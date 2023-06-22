@@ -69,6 +69,8 @@ import ml.docilealligator.infinityforreddit.multireddit.MultiReddit;
 import ml.docilealligator.infinityforreddit.subreddit.SubredditData;
 import ml.docilealligator.infinityforreddit.subscribedsubreddit.SubscribedSubredditData;
 import ml.docilealligator.infinityforreddit.subscribeduser.SubscribedUserData;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import ml.docilealligator.infinityforreddit.utils.Utils;
 import retrofit2.Retrofit;
@@ -114,6 +116,7 @@ public class SubscribedThingListingActivity extends BaseActivity implements Acti
     Executor mExecutor;
     private String mAccessToken;
     private String mAccountName;
+    private String mUserAgent;
     private boolean mInsertSuccess = false;
     private boolean mInsertMultiredditSuccess = false;
     private boolean showMultiReddits = false;
@@ -168,6 +171,11 @@ public class SubscribedThingListingActivity extends BaseActivity implements Acti
 
         mAccessToken = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCESS_TOKEN, null);
         mAccountName = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCOUNT_NAME, "-");
+
+        String _username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUserAgent = UseragentUtil.getUserAgent(appname, _username);
+
 
         if (savedInstanceState != null) {
             mInsertSuccess = savedInstanceState.getBoolean(INSERT_SUBSCRIBED_SUBREDDIT_STATE);
@@ -318,7 +326,7 @@ public class SubscribedThingListingActivity extends BaseActivity implements Acti
 
     public void loadSubscriptions(boolean forceLoad) {
         if (mAccessToken != null && !(!forceLoad && mInsertSuccess)) {
-            FetchSubscribedThing.fetchSubscribedThing(mOauthRetrofit, mAccessToken, mAccountName, null,
+            FetchSubscribedThing.fetchSubscribedThing(mOauthRetrofit, mAccessToken, mUserAgent, mAccountName, null,
                     new ArrayList<>(), new ArrayList<>(),
                     new ArrayList<>(),
                     new FetchSubscribedThing.FetchSubscribedThingListener() {
@@ -369,7 +377,7 @@ public class SubscribedThingListingActivity extends BaseActivity implements Acti
 
     private void loadMultiReddits() {
         if (mAccessToken != null) {
-            FetchMyMultiReddits.fetchMyMultiReddits(mOauthRetrofit, mAccessToken, new FetchMyMultiReddits.FetchMyMultiRedditsListener() {
+            FetchMyMultiReddits.fetchMyMultiReddits(mOauthRetrofit, mAccessToken, mUserAgent, new FetchMyMultiReddits.FetchMyMultiRedditsListener() {
                 @Override
                 public void success(ArrayList<MultiReddit> multiReddits) {
                     InsertMultireddit.insertMultireddits(mExecutor, new Handler(), mRedditDataRoomDatabase, multiReddits, mAccountName, () -> {
@@ -400,7 +408,7 @@ public class SubscribedThingListingActivity extends BaseActivity implements Acti
                                         R.string.delete_multi_reddit_success, Toast.LENGTH_SHORT).show());
                     } else {
                         DeleteMultiReddit.deleteMultiReddit(mExecutor, new Handler(), mOauthRetrofit, mRedditDataRoomDatabase,
-                                mAccessToken, mAccountName, multiReddit.getPath(), new DeleteMultiReddit.DeleteMultiRedditListener() {
+                                mAccessToken, mUserAgent, mAccountName, multiReddit.getPath(), new DeleteMultiReddit.DeleteMultiRedditListener() {
                                     @Override
                                     public void success() {
                                         Toast.makeText(SubscribedThingListingActivity.this,

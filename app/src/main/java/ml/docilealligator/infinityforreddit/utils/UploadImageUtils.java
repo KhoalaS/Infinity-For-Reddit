@@ -28,20 +28,20 @@ import retrofit2.Retrofit;
 public class UploadImageUtils {
     @Nullable
     public static String uploadImage(Retrofit oauthRetrofit, Retrofit uploadMediaRetrofit,
-                                     String accessToken, Bitmap image) throws IOException, JSONException, XmlPullParserException {
-        return uploadImage(oauthRetrofit, uploadMediaRetrofit, accessToken, image, false);
+                                     String accessToken, String useragent, Bitmap image) throws IOException, JSONException, XmlPullParserException {
+        return uploadImage(oauthRetrofit, uploadMediaRetrofit, accessToken, useragent, image, false);
     }
 
     @Nullable
     public static String uploadImage(Retrofit oauthRetrofit, Retrofit uploadMediaRetrofit,
-                                      String accessToken, Bitmap image, boolean returnResponseForGallerySubmission) throws IOException, JSONException, XmlPullParserException {
+                                      String accessToken, String useragent, Bitmap image, boolean returnResponseForGallerySubmission) throws IOException, JSONException, XmlPullParserException {
         RedditAPI api = oauthRetrofit.create(RedditAPI.class);
 
         Map<String, String> uploadImageParams = new HashMap<>();
         uploadImageParams.put(APIUtils.FILEPATH_KEY, "post_image.jpg");
         uploadImageParams.put(APIUtils.MIMETYPE_KEY, "image/jpeg");
 
-        Call<String> uploadImageCall = api.uploadImage(APIUtils.getOAuthHeader(accessToken), uploadImageParams);
+        Call<String> uploadImageCall = api.uploadImage(APIUtils.getOAuthHeader(accessToken, useragent), uploadImageParams);
         Response<String> uploadImageResponse = uploadImageCall.execute();
         if (uploadImageResponse.isSuccessful()) {
             Map<String, RequestBody> nameValuePairsMap = parseJSONResponseFromAWS(uploadImageResponse.body());

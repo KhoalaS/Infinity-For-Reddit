@@ -143,7 +143,7 @@ abstract class NetworkModule {
                 .addInterceptor(chain -> chain.proceed(
                         chain.request()
                                 .newBuilder()
-                                .header("User-Agent", APIUtils.USER_AGENT)
+                                .header("User-Agent", "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.130 Mobile Safari/537.36")
                                 .build()
                 ))
                 .addInterceptor(accessTokenAuthenticator)

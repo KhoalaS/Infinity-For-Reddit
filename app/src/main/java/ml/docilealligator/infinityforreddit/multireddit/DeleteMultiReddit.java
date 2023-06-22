@@ -24,9 +24,9 @@ public class DeleteMultiReddit {
 
     public static void deleteMultiReddit(Executor executor, Handler handler, Retrofit oauthRetrofit,
                                          RedditDataRoomDatabase redditDataRoomDatabase,
-                                         String accessToken, String accountName, String multipath,
+                                         String accessToken, String useragent, String accountName, String multipath,
                                          DeleteMultiRedditListener deleteMultiRedditListener) {
-        oauthRetrofit.create(RedditAPI.class).deleteMultiReddit(APIUtils.getOAuthHeader(accessToken),
+        oauthRetrofit.create(RedditAPI.class).deleteMultiReddit(APIUtils.getOAuthHeader(accessToken, useragent),
                 multipath).enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {

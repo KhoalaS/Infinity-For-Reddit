@@ -95,6 +95,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
     private Markwon mCommentMarkwon;
     private String mAccessToken;
     private String mAccountName;
+    private String mUserAgent;
     private Post mPost;
     private ArrayList<Comment> mVisibleComments;
     private Locale mLocale;
@@ -156,7 +157,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
     public CommentsRecyclerViewAdapter(BaseActivity activity, ViewPostDetailFragment fragment,
                                        CustomThemeWrapper customThemeWrapper,
                                        Executor executor, Retrofit retrofit, Retrofit oauthRetrofit,
-                                       String accessToken, String accountName,
+                                       String accessToken, String useragent, String accountName,
                                        Post post, Locale locale, String singleCommentId,
                                        boolean isSingleCommentThreadMode,
                                        SharedPreferences sharedPreferences,
@@ -209,6 +210,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
         recycledViewPool = new RecyclerView.RecycledViewPool();
         mAccessToken = accessToken;
         mAccountName = accountName;
+        mUserAgent = useragent;
         mPost = post;
         mVisibleComments = new ArrayList<>();
         mLocale = locale;
@@ -629,7 +631,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
 
                         Retrofit retrofit = mAccessToken == null ? mRetrofit : mOauthRetrofit;
                         SortType.Type sortType = mCommentRecyclerViewAdapterCallback.getSortType();
-                        FetchComment.fetchMoreComment(mExecutor, new Handler(), retrofit, mAccessToken,
+                        FetchComment.fetchMoreComment(mExecutor, new Handler(), retrofit, mAccessToken, mUserAgent,
                                 parentComment.getMoreChildrenIds(),
                                 mExpandChildren, mPost.getFullName(), sortType, new FetchComment.FetchMoreCommentListener() {
                                     @Override
@@ -1424,7 +1426,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
                                         comment.getScore() + comment.getVoteType())));
                     }
 
-                    VoteThing.voteThing(mActivity, mOauthRetrofit, mAccessToken, new VoteThing.VoteThingListener() {
+                    VoteThing.voteThing(mActivity, mOauthRetrofit, mAccessToken, mUserAgent, new VoteThing.VoteThingListener() {
                         @Override
                         public void onVoteThingSuccess(int position) {
                             int currentPosition = getBindingAdapterPosition();
@@ -1506,7 +1508,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
                     }
 
                     int position = getBindingAdapterPosition();
-                    VoteThing.voteThing(mActivity, mOauthRetrofit, mAccessToken, new VoteThing.VoteThingListener() {
+                    VoteThing.voteThing(mActivity, mOauthRetrofit, mAccessToken, mUserAgent, new VoteThing.VoteThingListener() {
                         @Override
                         public void onVoteThingSuccess(int position1) {
                             int currentPosition = getBindingAdapterPosition();
@@ -1551,7 +1553,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
                     int position = getBindingAdapterPosition();
                     if (comment.isSaved()) {
                         comment.setSaved(false);
-                        SaveThing.unsaveThing(mOauthRetrofit, mAccessToken, comment.getFullName(), new SaveThing.SaveThingListener() {
+                        SaveThing.unsaveThing(mOauthRetrofit, mAccessToken, mUserAgent, comment.getFullName(), new SaveThing.SaveThingListener() {
                             @Override
                             public void success() {
                                 comment.setSaved(false);
@@ -1572,7 +1574,7 @@ public class CommentsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
                         });
                     } else {
                         comment.setSaved(true);
-                        SaveThing.saveThing(mOauthRetrofit, mAccessToken, comment.getFullName(), new SaveThing.SaveThingListener() {
+                        SaveThing.saveThing(mOauthRetrofit, mAccessToken, mUserAgent, comment.getFullName(), new SaveThing.SaveThingListener() {
                             @Override
                             public void success() {
                                 comment.setSaved(true);

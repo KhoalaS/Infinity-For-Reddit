@@ -18,10 +18,10 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 public class FetchFlairs {
-    public static void fetchFlairsInSubreddit(Retrofit oauthRetrofit, String accessToken, String subredditName, FetchFlairsInSubredditListener fetchFlairsInSubredditListener) {
+    public static void fetchFlairsInSubreddit(Retrofit oauthRetrofit, String accessToken, String useragent, String subredditName, FetchFlairsInSubredditListener fetchFlairsInSubredditListener) {
         RedditAPI api = oauthRetrofit.create(RedditAPI.class);
 
-        Call<String> flairsCall = api.getFlairs(APIUtils.getOAuthHeader(accessToken), subredditName);
+        Call<String> flairsCall = api.getFlairs(APIUtils.getOAuthHeader(accessToken, useragent), subredditName);
         flairsCall.enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {

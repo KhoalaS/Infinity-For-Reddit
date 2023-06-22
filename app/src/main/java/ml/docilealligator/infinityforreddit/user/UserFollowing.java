@@ -21,10 +21,10 @@ import retrofit2.Retrofit;
 
 public class UserFollowing {
     public static void followUser(Retrofit oauthRetrofit, Retrofit retrofit,
-                                  String accessToken, String username, String accountName,
+                                  String accessToken, String useragent, String username, String accountName,
                                   RedditDataRoomDatabase redditDataRoomDatabase,
                                   UserFollowingListener userFollowingListener) {
-        userFollowing(oauthRetrofit, retrofit, accessToken, username, accountName, "sub",
+        userFollowing(oauthRetrofit, retrofit, accessToken, useragent, username, accountName, "sub",
                 redditDataRoomDatabase.subscribedUserDao(), userFollowingListener);
     }
 
@@ -53,10 +53,10 @@ public class UserFollowing {
     }
 
     public static void unfollowUser(Retrofit oauthRetrofit, Retrofit retrofit,
-                                    String accessToken, String username, String accountName,
+                                    String accessToken, String useragent, String username, String accountName,
                                     RedditDataRoomDatabase redditDataRoomDatabase,
                                     UserFollowingListener userFollowingListener) {
-        userFollowing(oauthRetrofit, retrofit, accessToken, username, accountName, "unsub",
+        userFollowing(oauthRetrofit, retrofit, accessToken, useragent, username, accountName, "unsub",
                 redditDataRoomDatabase.subscribedUserDao(), userFollowingListener);
     }
 
@@ -70,7 +70,7 @@ public class UserFollowing {
         });
     }
 
-    private static void userFollowing(Retrofit oauthRetrofit, Retrofit retrofit, String accessToken,
+    private static void userFollowing(Retrofit oauthRetrofit, Retrofit retrofit, String accessToken, String useragent,
                                       String username, String accountName, String action, SubscribedUserDao subscribedUserDao,
                                       UserFollowingListener userFollowingListener) {
         RedditAPI api = oauthRetrofit.create(RedditAPI.class);
@@ -79,7 +79,7 @@ public class UserFollowing {
         params.put(APIUtils.ACTION_KEY, action);
         params.put(APIUtils.SR_NAME_KEY, "u_" + username);
 
-        Call<String> subredditSubscriptionCall = api.subredditSubscription(APIUtils.getOAuthHeader(accessToken), params);
+        Call<String> subredditSubscriptionCall = api.subredditSubscription(APIUtils.getOAuthHeader(accessToken, useragent), params);
         subredditSubscriptionCall.enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull retrofit2.Response<String> response) {

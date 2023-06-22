@@ -49,6 +49,8 @@ import ml.docilealligator.infinityforreddit.adapters.CommentsListingRecyclerView
 import ml.docilealligator.infinityforreddit.comment.CommentViewModel;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.customviews.LinearLayoutManagerBugFixed;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import ml.docilealligator.infinityforreddit.utils.Utils;
 import retrofit2.Retrofit;
@@ -102,6 +104,7 @@ public class CommentsListingFragment extends Fragment implements FragmentCommuni
     @Inject
     Executor mExecutor;
     private String mAccessToken;
+    private String mUserAgent;
     private RequestManager mGlide;
     private BaseActivity mActivity;
     private LinearLayoutManagerBugFixed mLinearLayoutManager;
@@ -251,6 +254,9 @@ public class CommentsListingFragment extends Fragment implements FragmentCommuni
         }
 
         mAccessToken = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCESS_TOKEN, null);
+        String _username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUserAgent = UseragentUtil.getUserAgent(appname, _username);
 
         new Handler().postDelayed(() -> bindView(resources), 0);
 
@@ -264,7 +270,7 @@ public class CommentsListingFragment extends Fragment implements FragmentCommuni
 
             mAdapter = new CommentsListingRecyclerViewAdapter(mActivity, mOauthRetrofit, customThemeWrapper,
                     getResources().getConfiguration().locale, mSharedPreferences,
-                    getArguments().getString(EXTRA_ACCESS_TOKEN), getArguments().getString(EXTRA_ACCOUNT_NAME),
+                    getArguments().getString(EXTRA_ACCESS_TOKEN), mUserAgent, getArguments().getString(EXTRA_ACCOUNT_NAME),
                     () -> mCommentViewModel.retryLoadingMore());
 
             String username = getArguments().getString(EXTRA_USERNAME);
@@ -295,11 +301,11 @@ public class CommentsListingFragment extends Fragment implements FragmentCommuni
 
             if (mAccessToken == null) {
                 factory = new CommentViewModel.Factory(mRetrofit,
-                        resources.getConfiguration().locale, null, username, sortType,
+                        resources.getConfiguration().locale, null, mUserAgent, username, sortType,
                         getArguments().getBoolean(EXTRA_ARE_SAVED_COMMENTS));
             } else {
                 factory = new CommentViewModel.Factory(mOauthRetrofit,
-                        resources.getConfiguration().locale, mAccessToken, username, sortType,
+                        resources.getConfiguration().locale, mAccessToken, mUserAgent, username, sortType,
                         getArguments().getBoolean(EXTRA_ARE_SAVED_COMMENTS));
             }
 

@@ -48,6 +48,8 @@ import ml.docilealligator.infinityforreddit.events.RepliedToPrivateMessageEvent;
 import ml.docilealligator.infinityforreddit.message.Message;
 import ml.docilealligator.infinityforreddit.message.ReadMessage;
 import ml.docilealligator.infinityforreddit.message.ReplyMessage;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import retrofit2.Retrofit;
 
@@ -97,6 +99,7 @@ public class ViewPrivateMessagesActivity extends BaseActivity implements Activit
     @State
     Message replyTo;
     private String mAccessToken;
+    private String mUserAgent;
     private String mAccountName;
     private String mUserAvatar;
     private ArrayList<ProvideUserAvatarCallback> mProvideUserAvatarCallbacks;
@@ -134,6 +137,10 @@ public class ViewPrivateMessagesActivity extends BaseActivity implements Activit
 
         mAccessToken = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCESS_TOKEN, null);
         mAccountName = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCOUNT_NAME, null);
+
+        String _username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUserAgent = UseragentUtil.getUserAgent(appname, _username);
 
         if (savedInstanceState != null) {
             mUserAvatar = savedInstanceState.getString(USER_AVATAR_STATE);
@@ -190,7 +197,7 @@ public class ViewPrivateMessagesActivity extends BaseActivity implements Activit
                         isSendingMessage = true;
                         mSendImageView.setColorFilter(mSecondaryTextColor, android.graphics.PorterDuff.Mode.SRC_IN);
                         ReplyMessage.replyMessage(mEditText.getText().toString(), replyTo.getFullname(),
-                                getResources().getConfiguration().locale, mOauthRetrofit, mAccessToken,
+                                getResources().getConfiguration().locale, mOauthRetrofit, mAccessToken, mUserAgent,
                                 new ReplyMessage.ReplyMessageListener() {
                                     @Override
                                     public void replyMessageSuccess(Message message) {
@@ -228,7 +235,7 @@ public class ViewPrivateMessagesActivity extends BaseActivity implements Activit
                         }
                         if (fullnames.length() > 0) {
                             fullnames.deleteCharAt(fullnames.length() - 1);
-                            ReadMessage.readMessage(mOauthRetrofit, mAccessToken, fullnames.toString(),
+                            ReadMessage.readMessage(mOauthRetrofit, mAccessToken, mUserAgent, fullnames.toString(),
                                     new ReadMessage.ReadMessageListener() {
                                         @Override
                                         public void readSuccess() {}

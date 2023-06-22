@@ -1,10 +1,15 @@
 package ml.docilealligator.infinityforreddit.utils;
 
+import android.content.SharedPreferences;
 import android.util.Base64;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 
@@ -46,7 +51,6 @@ public class APIUtils {
     public static final String AUTHORIZATION_KEY = "Authorization";
     public static final String AUTHORIZATION_BASE = "bearer ";
     public static final String USER_AGENT_KEY = "User-Agent";
-    public static final String USER_AGENT = "android:muh-app:v1.0 (by /u/deleted)";
 
     public static final String GRANT_TYPE_KEY = "grant_type";
     public static final String GRANT_TYPE_REFRESH_TOKEN = "refresh_token";
@@ -113,6 +117,8 @@ public class APIUtils {
     public static final String REVEDDIT_ORIGIN = "https://www.reveddit.com";
     public static final String REFERER_KEY = "Referer";
     public static final String REVEDDIT_REFERER = "https://www.reveddit.com/";
+    public static final String USER_AGENT_APPNAME_KEY = "useragent_appname";
+    public static final String USER_AGENT_USERNAME_KEY = "useragent_username";
 
     /*public static final String HOST_KEY = "Host";
     public static final String REDGIFS_HOST = "api.redgifs.com";
@@ -127,10 +133,10 @@ public class APIUtils {
         return params;
     }
 
-    public static Map<String, String> getOAuthHeader(String accessToken) {
+    public static Map<String, String> getOAuthHeader(String accessToken, String useragent) {
         Map<String, String> params = new HashMap<>();
         params.put(APIUtils.AUTHORIZATION_KEY, APIUtils.AUTHORIZATION_BASE + accessToken);
-        params.put(APIUtils.USER_AGENT_KEY, APIUtils.USER_AGENT);
+        params.put(APIUtils.USER_AGENT_KEY, useragent);
         return params;
     }
 
@@ -148,7 +154,7 @@ public class APIUtils {
         Map<String, String> params = new HashMap<>();
         params.put(APIUtils.ORIGIN_KEY, APIUtils.REVEDDIT_ORIGIN);
         params.put(APIUtils.REFERER_KEY, APIUtils.REVEDDIT_REFERER);
-        params.put(APIUtils.USER_AGENT_KEY, APIUtils.USER_AGENT);
+        params.put(APIUtils.USER_AGENT_KEY, "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.130 Mobile Safari/537.36");
         return params;
     }
 }

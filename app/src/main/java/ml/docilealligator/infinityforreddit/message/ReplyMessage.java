@@ -15,9 +15,9 @@ import retrofit2.Retrofit;
 
 public class ReplyMessage {
     public static void replyMessage(String messageMarkdown, String thingFullname,
-                                    Locale locale, Retrofit oauthRetrofit, String accessToken,
+                                    Locale locale, Retrofit oauthRetrofit, String accessToken, String useragent,
                                     ReplyMessageListener replyMessageListener) {
-        Map<String, String> headers = APIUtils.getOAuthHeader(accessToken);
+        Map<String, String> headers = APIUtils.getOAuthHeader(accessToken, useragent);
         Map<String, String> params = new HashMap<>();
         params.put(APIUtils.API_TYPE_KEY, "json");
         params.put(APIUtils.RETURN_RTJSON_KEY, "true");

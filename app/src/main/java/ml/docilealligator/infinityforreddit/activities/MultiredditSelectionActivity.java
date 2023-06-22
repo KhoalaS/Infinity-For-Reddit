@@ -41,6 +41,8 @@ import ml.docilealligator.infinityforreddit.events.SwitchAccountEvent;
 import ml.docilealligator.infinityforreddit.fragments.MultiRedditListingFragment;
 import ml.docilealligator.infinityforreddit.multireddit.FetchMyMultiReddits;
 import ml.docilealligator.infinityforreddit.multireddit.MultiReddit;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import retrofit2.Retrofit;
 
@@ -75,6 +77,7 @@ public class MultiredditSelectionActivity extends BaseActivity implements Activi
     @Inject
     Executor mExecutor;
     private String mAccessToken;
+    private String mUserAgent;
     private String mAccountName;
     private boolean mInsertSuccess = false;
     private Fragment mFragment;
@@ -118,6 +121,10 @@ public class MultiredditSelectionActivity extends BaseActivity implements Activi
 
         mAccessToken = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCESS_TOKEN, null);
         mAccountName = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCOUNT_NAME, null);
+
+        String _username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUserAgent = UseragentUtil.getUserAgent(appname, _username);
 
         if (savedInstanceState == null) {
             bindView(true);
@@ -167,7 +174,7 @@ public class MultiredditSelectionActivity extends BaseActivity implements Activi
 
     private void loadMultiReddits() {
         if (!mInsertSuccess) {
-            FetchMyMultiReddits.fetchMyMultiReddits(mOauthRetrofit, mAccessToken, new FetchMyMultiReddits.FetchMyMultiRedditsListener() {
+            FetchMyMultiReddits.fetchMyMultiReddits(mOauthRetrofit, mAccessToken, mUserAgent, new FetchMyMultiReddits.FetchMyMultiRedditsListener() {
                 @Override
                 public void success(ArrayList<MultiReddit> multiReddits) {
                     InsertMultireddit.insertMultireddits(mExecutor, new Handler(), mRedditDataRoomDatabase,

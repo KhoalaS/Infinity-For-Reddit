@@ -43,6 +43,8 @@ import ml.docilealligator.infinityforreddit.events.RepliedToPrivateMessageEvent;
 import ml.docilealligator.infinityforreddit.message.FetchMessage;
 import ml.docilealligator.infinityforreddit.message.Message;
 import ml.docilealligator.infinityforreddit.message.MessageViewModel;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import retrofit2.Retrofit;
 
 public class InboxFragment extends Fragment implements FragmentCommunicator {
@@ -69,8 +71,12 @@ public class InboxFragment extends Fragment implements FragmentCommunicator {
     @Named("default")
     SharedPreferences mSharedPreferences;
     @Inject
+    @Named("current_account")
+    SharedPreferences mCurrentAccountSharedPreferences;
+    @Inject
     CustomThemeWrapper mCustomThemeWrapper;
     private String mAccessToken;
+    private String mUserAgent;
     private String mWhere;
     private MessageRecyclerViewAdapter mAdapter;
     private RequestManager mGlide;
@@ -99,6 +105,12 @@ public class InboxFragment extends Fragment implements FragmentCommunicator {
             return rootView;
         }
         mAccessToken = getArguments().getString(EXTRA_ACCESS_TOKEN);
+
+        String _username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUserAgent = UseragentUtil.getUserAgent(appname, _username);
+
+
         mGlide = Glide.with(this);
 
         if (mActivity.isImmersiveInterface()) {
@@ -107,7 +119,7 @@ public class InboxFragment extends Fragment implements FragmentCommunicator {
 
         mWhere = arguments.getString(EXTRA_MESSAGE_WHERE, FetchMessage.WHERE_INBOX);
         mAdapter = new MessageRecyclerViewAdapter(mActivity, mOauthRetrofit, mCustomThemeWrapper,
-                mAccessToken, mWhere, () -> mMessageViewModel.retryLoadingMore());
+                mAccessToken, mUserAgent, mWhere, () -> mMessageViewModel.retryLoadingMore());
         mLinearLayoutManager = new LinearLayoutManagerBugFixed(mActivity);
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
         mRecyclerView.setAdapter(mAdapter);
@@ -128,7 +140,7 @@ public class InboxFragment extends Fragment implements FragmentCommunicator {
         }
 
         MessageViewModel.Factory factory = new MessageViewModel.Factory(mOauthRetrofit,
-                getResources().getConfiguration().locale, mAccessToken, mWhere);
+                getResources().getConfiguration().locale, mAccessToken, mUserAgent, mWhere);
         mMessageViewModel = new ViewModelProvider(this, factory).get(MessageViewModel.class);
         mMessageViewModel.getMessages().observe(getViewLifecycleOwner(), messages -> mAdapter.submitList(messages));
 

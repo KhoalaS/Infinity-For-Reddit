@@ -25,13 +25,13 @@ public class FavoriteMultiReddit {
 
     public static void favoriteMultiReddit(Executor executor, Handler handler, Retrofit oauthRetrofit,
                                            RedditDataRoomDatabase redditDataRoomDatabase,
-                                           String accessToken, boolean makeFavorite,
+                                           String accessToken, String useragent, boolean makeFavorite,
                                            MultiReddit multiReddit, FavoriteMultiRedditListener favoriteMultiRedditListener) {
         Map<String, String> params = new HashMap<>();
         params.put(APIUtils.MULTIPATH_KEY, multiReddit.getPath());
         params.put(APIUtils.MAKE_FAVORITE_KEY, String.valueOf(makeFavorite));
         params.put(APIUtils.API_TYPE_KEY, APIUtils.API_TYPE_JSON);
-        oauthRetrofit.create(RedditAPI.class).favoriteMultiReddit(APIUtils.getOAuthHeader(accessToken),
+        oauthRetrofit.create(RedditAPI.class).favoriteMultiReddit(APIUtils.getOAuthHeader(accessToken, useragent),
                 params).enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {

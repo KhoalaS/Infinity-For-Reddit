@@ -15,14 +15,14 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 public class FetchSubscribedThing {
-    public static void fetchSubscribedThing(final Retrofit oauthRetrofit, String accessToken, String accountName,
+    public static void fetchSubscribedThing(final Retrofit oauthRetrofit, String accessToken, String useragent, String accountName,
                                             final String lastItem, final ArrayList<SubscribedSubredditData> subscribedSubredditData,
                                             final ArrayList<SubscribedUserData> subscribedUserData,
                                             final ArrayList<SubredditData> subredditData,
                                             final FetchSubscribedThingListener fetchSubscribedThingListener) {
         RedditAPI api = oauthRetrofit.create(RedditAPI.class);
 
-        Call<String> subredditDataCall = api.getSubscribedThing(lastItem, APIUtils.getOAuthHeader(accessToken));
+        Call<String> subredditDataCall = api.getSubscribedThing(lastItem, APIUtils.getOAuthHeader(accessToken, useragent));
         subredditDataCall.enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
@@ -40,7 +40,7 @@ public class FetchSubscribedThing {
                                         fetchSubscribedThingListener.onFetchSubscribedThingSuccess(
                                                 subscribedSubredditData, subscribedUserData, subredditData);
                                     } else {
-                                        fetchSubscribedThing(oauthRetrofit, accessToken, accountName, lastItem,
+                                        fetchSubscribedThing(oauthRetrofit, accessToken, useragent, accountName, lastItem,
                                                 subscribedSubredditData, subscribedUserData, subredditData,
                                                 fetchSubscribedThingListener);
                                     }

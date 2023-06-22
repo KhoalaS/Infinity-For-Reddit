@@ -19,10 +19,10 @@ import retrofit2.Retrofit;
 
 public class SubredditSubscription {
     public static void subscribeToSubreddit(Executor executor, Handler handler, Retrofit oauthRetrofit,
-                                            Retrofit retrofit, String accessToken, String subredditName,
+                                            Retrofit retrofit, String accessToken, String useragent, String subredditName,
                                             String accountName, RedditDataRoomDatabase redditDataRoomDatabase,
                                             SubredditSubscriptionListener subredditSubscriptionListener) {
-        subredditSubscription(executor, handler, oauthRetrofit, retrofit, accessToken, subredditName,
+        subredditSubscription(executor, handler, oauthRetrofit, retrofit, accessToken, useragent, subredditName,
                 accountName, "sub", redditDataRoomDatabase, subredditSubscriptionListener);
     }
 
@@ -30,7 +30,7 @@ public class SubredditSubscription {
                                                      RedditDataRoomDatabase redditDataRoomDatabase,
                                                      String subredditName,
                                                      SubredditSubscriptionListener subredditSubscriptionListener) {
-        FetchSubredditData.fetchSubredditData(null, retrofit, subredditName, "", new FetchSubredditData.FetchSubredditDataListener() {
+        FetchSubredditData.fetchSubredditData(null, retrofit, subredditName, "","Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.130 Mobile Safari/537.36", new FetchSubredditData.FetchSubredditDataListener() {
             @Override
             public void onFetchSubredditDataSuccess(SubredditData subredditData, int nCurrentOnlineSubscribers) {
                 insertSubscription(executor, handler, redditDataRoomDatabase,
@@ -45,10 +45,10 @@ public class SubredditSubscription {
     }
 
     public static void unsubscribeToSubreddit(Executor executor, Handler handler, Retrofit oauthRetrofit,
-                                              String accessToken, String subredditName, String accountName,
+                                              String accessToken, String useragent, String subredditName, String accountName,
                                               RedditDataRoomDatabase redditDataRoomDatabase,
                                               SubredditSubscriptionListener subredditSubscriptionListener) {
-        subredditSubscription(executor, handler, oauthRetrofit, null, accessToken, subredditName,
+        subredditSubscription(executor, handler, oauthRetrofit, null, accessToken, useragent, subredditName,
                 accountName, "unsub", redditDataRoomDatabase, subredditSubscriptionListener);
     }
 
@@ -60,7 +60,7 @@ public class SubredditSubscription {
     }
 
     private static void subredditSubscription(Executor executor, Handler handler, Retrofit oauthRetrofit,
-                                              Retrofit retrofit, String accessToken, String subredditName,
+                                              Retrofit retrofit, String accessToken, String useragent, String subredditName,
                                               String accountName, String action,
                                               RedditDataRoomDatabase redditDataRoomDatabase,
                                               SubredditSubscriptionListener subredditSubscriptionListener) {
@@ -70,13 +70,13 @@ public class SubredditSubscription {
         params.put(APIUtils.ACTION_KEY, action);
         params.put(APIUtils.SR_NAME_KEY, subredditName);
 
-        Call<String> subredditSubscriptionCall = api.subredditSubscription(APIUtils.getOAuthHeader(accessToken), params);
+        Call<String> subredditSubscriptionCall = api.subredditSubscription(APIUtils.getOAuthHeader(accessToken, useragent), params);
         subredditSubscriptionCall.enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull retrofit2.Response<String> response) {
                 if (response.isSuccessful()) {
                     if (action.equals("sub")) {
-                        FetchSubredditData.fetchSubredditData(oauthRetrofit, retrofit, subredditName, accessToken, new FetchSubredditData.FetchSubredditDataListener() {
+                        FetchSubredditData.fetchSubredditData(oauthRetrofit, retrofit, subredditName, accessToken, useragent, new FetchSubredditData.FetchSubredditDataListener() {
                             @Override
                             public void onFetchSubredditDataSuccess(SubredditData subredditData, int nCurrentOnlineSubscribers) {
                                 insertSubscription(executor, handler, redditDataRoomDatabase,

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ml.docilealligator.infinityforreddit.apis.RedditAPI;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
 import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -13,10 +14,11 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 public class DeleteThing {
-    public static void delete(Retrofit oauthRetrofit, String fullname, String accessToken, DeleteThingListener deleteThingListener) {
+    public static void delete(Retrofit oauthRetrofit, String fullname, String accessToken, String useragent, DeleteThingListener deleteThingListener) {
         Map<String, String> params = new HashMap<>();
         params.put(APIUtils.ID_KEY, fullname);
-        oauthRetrofit.create(RedditAPI.class).delete(APIUtils.getOAuthHeader(accessToken), params).enqueue(new Callback<String>() {
+
+        oauthRetrofit.create(RedditAPI.class).delete(APIUtils.getOAuthHeader(accessToken, useragent), params).enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                 if (response.isSuccessful()) {

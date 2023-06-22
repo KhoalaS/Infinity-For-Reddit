@@ -21,8 +21,8 @@ public class SubredditListingViewModel extends ViewModel {
     private LiveData<PagedList<SubredditData>> subreddits;
     private MutableLiveData<SortType> sortTypeLiveData;
 
-    public SubredditListingViewModel(Retrofit retrofit, String query, SortType sortType, String accessToken, boolean nsfw) {
-        subredditListingDataSourceFactory = new SubredditListingDataSourceFactory(retrofit, query, sortType, accessToken, nsfw);
+    public SubredditListingViewModel(Retrofit retrofit, String query, SortType sortType, String accessToken, String useragent, boolean nsfw) {
+        subredditListingDataSourceFactory = new SubredditListingDataSourceFactory(retrofit, query, sortType, accessToken, useragent, nsfw);
 
         initialLoadingState = Transformations.switchMap(subredditListingDataSourceFactory.getSubredditListingDataSourceMutableLiveData(),
                 SubredditListingDataSource::getInitialLoadStateLiveData);
@@ -80,19 +80,21 @@ public class SubredditListingViewModel extends ViewModel {
         private SortType sortType;
         private String accessToken;
         private boolean nsfw;
+        private String useragent;
 
-        public Factory(Retrofit retrofit, String query, SortType sortType, String accessToken, boolean nsfw) {
+        public Factory(Retrofit retrofit, String query, SortType sortType, String accessToken, String useragent, boolean nsfw) {
             this.retrofit = retrofit;
             this.query = query;
             this.sortType = sortType;
             this.accessToken = accessToken;
             this.nsfw = nsfw;
+            this.useragent = useragent;
         }
 
         @NonNull
         @Override
         public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-            return (T) new SubredditListingViewModel(retrofit, query, sortType, accessToken, nsfw);
+            return (T) new SubredditListingViewModel(retrofit, query, sortType, accessToken, useragent, nsfw);
         }
     }
 }

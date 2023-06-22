@@ -25,6 +25,8 @@ import ml.docilealligator.infinityforreddit.Infinity;
 import ml.docilealligator.infinityforreddit.R;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.message.ComposeMessage;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import retrofit2.Retrofit;
 
@@ -58,6 +60,7 @@ public class SendPrivateMessageActivity extends BaseActivity {
     @Inject
     CustomThemeWrapper mCustomThemeWrapper;
     private String mAccessToken;
+    private String mUserAgent;
     private boolean isSubmitting = false;
 
     @Override
@@ -78,6 +81,10 @@ public class SendPrivateMessageActivity extends BaseActivity {
         }
 
         mAccessToken = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCESS_TOKEN, null);
+
+        String _username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUserAgent = UseragentUtil.getUserAgent(appname, _username);
 
         setSupportActionBar(toolbar);
 
@@ -125,7 +132,7 @@ public class SendPrivateMessageActivity extends BaseActivity {
                 Snackbar sendingSnackbar = Snackbar.make(coordinatorLayout, R.string.sending_message, Snackbar.LENGTH_INDEFINITE);
                 sendingSnackbar.show();
 
-                ComposeMessage.composeMessage(mOauthRetrofit, mAccessToken, getResources().getConfiguration().locale,
+                ComposeMessage.composeMessage(mOauthRetrofit, mAccessToken, mUserAgent, getResources().getConfiguration().locale,
                         usernameEditText.getText().toString(), subjectEditText.getText().toString(),
                         messageEditText.getText().toString(), new ComposeMessage.ComposeMessageListener() {
                             @Override

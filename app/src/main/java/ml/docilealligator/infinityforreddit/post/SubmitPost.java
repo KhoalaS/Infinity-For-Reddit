@@ -29,23 +29,23 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 public class SubmitPost {
-    public static void submitTextOrLinkPost(Executor executor, Handler handler, Retrofit oauthRetrofit, String accessToken,
+    public static void submitTextOrLinkPost(Executor executor, Handler handler, Retrofit oauthRetrofit, String accessToken, String useragent,
                                             String subredditName, String title, String content,
                                             Flair flair, boolean isSpoiler, boolean isNSFW,
                                             boolean receivePostReplyNotifications, String kind,
                                             SubmitPostListener submitPostListener) {
-        submitPost(executor, handler, oauthRetrofit, accessToken, subredditName, title, content,
+        submitPost(executor, handler, oauthRetrofit, accessToken, useragent, subredditName, title, content,
                 flair, isSpoiler, isNSFW, receivePostReplyNotifications, kind, null, submitPostListener);
     }
 
     public static void submitImagePost(Executor executor, Handler handler, Retrofit oauthRetrofit, Retrofit uploadMediaRetrofit,
-                                       String accessToken, String subredditName, String title, Bitmap image,
+                                       String accessToken, String useragent, String subredditName, String title, Bitmap image,
                                        Flair flair, boolean isSpoiler, boolean isNSFW,
                                        boolean receivePostReplyNotifications, SubmitPostListener submitPostListener) {
         try {
-            String imageUrlOrError = UploadImageUtils.uploadImage(oauthRetrofit, uploadMediaRetrofit, accessToken, image);
+            String imageUrlOrError = UploadImageUtils.uploadImage(oauthRetrofit, uploadMediaRetrofit, accessToken, useragent, image);
             if (imageUrlOrError != null && !imageUrlOrError.startsWith("Error: ")) {
-                submitPost(executor, handler, oauthRetrofit, accessToken,
+                submitPost(executor, handler, oauthRetrofit, accessToken, useragent,
                         subredditName, title, imageUrlOrError, flair, isSpoiler, isNSFW,
                         receivePostReplyNotifications, APIUtils.KIND_IMAGE, null, submitPostListener);
             } else {
@@ -58,7 +58,7 @@ public class SubmitPost {
     }
 
     public static void submitVideoPost(Executor executor, Handler handler, Retrofit oauthRetrofit, Retrofit uploadMediaRetrofit,
-                                       Retrofit uploadVideoRetrofit, String accessToken,
+                                       Retrofit uploadVideoRetrofit, String accessToken, String useragent,
                                        String subredditName, String title, File buffer, String mimeType,
                                        Bitmap posterBitmap, Flair flair, boolean isSpoiler, boolean isNSFW,
                                        boolean receivePostReplyNotifications, SubmitPostListener submitPostListener) {
@@ -70,7 +70,7 @@ public class SubmitPost {
         uploadImageParams.put(APIUtils.FILEPATH_KEY, "post_video." + fileType);
         uploadImageParams.put(APIUtils.MIMETYPE_KEY, mimeType);
 
-        Call<String> uploadImageCall = api.uploadImage(APIUtils.getOAuthHeader(accessToken), uploadImageParams);
+        Call<String> uploadImageCall = api.uploadImage(APIUtils.getOAuthHeader(accessToken, useragent), uploadImageParams);
         try {
             Response<String> uploadImageResponse = uploadImageCall.execute();
             if (uploadImageResponse.isSuccessful()) {
@@ -93,15 +93,15 @@ public class SubmitPost {
                         submitPostListener.submitFailed(null);
                         return;
                     }
-                    String imageUrlOrError = UploadImageUtils.uploadImage(oauthRetrofit, uploadMediaRetrofit, accessToken, posterBitmap);
+                    String imageUrlOrError = UploadImageUtils.uploadImage(oauthRetrofit, uploadMediaRetrofit, accessToken, useragent, posterBitmap);
                     if (imageUrlOrError != null && !imageUrlOrError.startsWith("Error: ")) {
                         if (fileType.equals("gif")) {
-                            submitPost(executor, handler, oauthRetrofit, accessToken,
+                            submitPost(executor, handler, oauthRetrofit, accessToken, useragent,
                                     subredditName, title, url, flair, isSpoiler, isNSFW,
                                     receivePostReplyNotifications, APIUtils.KIND_VIDEOGIF, imageUrlOrError,
                                     submitPostListener);
                         } else {
-                            submitPost(executor, handler, oauthRetrofit, accessToken,
+                            submitPost(executor, handler, oauthRetrofit, accessToken, useragent,
                                     subredditName, title, url, flair, isSpoiler, isNSFW,
                                     receivePostReplyNotifications, APIUtils.KIND_VIDEO, imageUrlOrError,
                                     submitPostListener);
@@ -121,16 +121,16 @@ public class SubmitPost {
         }
     }
 
-    public static void submitCrosspost(Executor executor, Handler handler, Retrofit oauthRetrofit, String accessToken,
+    public static void submitCrosspost(Executor executor, Handler handler, Retrofit oauthRetrofit, String accessToken, String useragent,
                                        String subredditName, String title, String crosspostFullname,
                                        Flair flair, boolean isSpoiler, boolean isNSFW,
                                        boolean receivePostReplyNotifications, String kind,
                                        SubmitPostListener submitPostListener) {
-        submitPost(executor, handler, oauthRetrofit, accessToken, subredditName, title, crosspostFullname,
+        submitPost(executor, handler, oauthRetrofit, accessToken, useragent, subredditName, title, crosspostFullname,
                 flair, isSpoiler, isNSFW, receivePostReplyNotifications, kind, null, submitPostListener);
     }
 
-    private static void submitPost(Executor executor, Handler handler, Retrofit oauthRetrofit, String accessToken,
+    private static void submitPost(Executor executor, Handler handler, Retrofit oauthRetrofit, String accessToken, String useragent,
                                    String subredditName, String title, String content,
                                    Flair flair, boolean isSpoiler, boolean isNSFW,
                                    boolean receivePostReplyNotifications, String kind,
@@ -172,12 +172,12 @@ public class SubmitPost {
         params.put(APIUtils.NSFW_KEY, Boolean.toString(isNSFW));
         params.put(APIUtils.SEND_REPLIES_KEY, Boolean.toString(receivePostReplyNotifications));
 
-        Call<String> submitPostCall = api.submit(APIUtils.getOAuthHeader(accessToken), params);
+        Call<String> submitPostCall = api.submit(APIUtils.getOAuthHeader(accessToken, useragent), params);
 
         try {
             Response<String> response = submitPostCall.execute();
             if (response.isSuccessful()) {
-                getSubmittedPost(executor, handler, response.body(), kind, oauthRetrofit, accessToken,
+                getSubmittedPost(executor, handler, response.body(), kind, oauthRetrofit, accessToken, useragent,
                         submitPostListener);
             } else {
                 submitPostListener.submitFailed(response.message());
@@ -189,7 +189,7 @@ public class SubmitPost {
     }
 
     private static void getSubmittedPost(Executor executor, Handler handler, String response, String kind,
-                                         Retrofit oauthRetrofit, String accessToken,
+                                         Retrofit oauthRetrofit, String accessToken, String useragent,
                                          SubmitPostListener submitPostListener) throws JSONException, IOException {
         JSONObject responseObject = new JSONObject(response).getJSONObject(JSONUtils.JSON_KEY);
         if (responseObject.getJSONArray(JSONUtils.ERRORS_KEY).length() != 0) {
@@ -215,7 +215,7 @@ public class SubmitPost {
 
             RedditAPI api = oauthRetrofit.create(RedditAPI.class);
 
-            Call<String> getPostCall = api.getPostOauth(postId, APIUtils.getOAuthHeader(accessToken));
+            Call<String> getPostCall = api.getPostOauth(postId, APIUtils.getOAuthHeader(accessToken, useragent));
             Response<String> getPostCallResponse = getPostCall.execute();
             if (getPostCallResponse.isSuccessful()) {
                 ParsePost.parsePost(executor, handler, getPostCallResponse.body(), new ParsePost.ParsePostListener() {

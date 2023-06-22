@@ -21,7 +21,7 @@ import retrofit2.Retrofit;
 public class FavoriteThing {
     public static void favoriteSubreddit(Executor executor, Handler handler, Retrofit oauthRetrofit,
                                          RedditDataRoomDatabase redditDataRoomDatabase,
-                                         String accessToken, SubscribedSubredditData subscribedSubredditData,
+                                         String accessToken, String useragent, SubscribedSubredditData subscribedSubredditData,
                                          FavoriteThingListener favoriteThingListener) {
         if (accessToken == null) {
             InsertSubscribedThings.insertSubscribedThings(executor, handler, redditDataRoomDatabase, subscribedSubredditData,
@@ -30,7 +30,8 @@ public class FavoriteThing {
             Map<String, String> params = new HashMap<>();
             params.put(APIUtils.SR_NAME_KEY, subscribedSubredditData.getName());
             params.put(APIUtils.MAKE_FAVORITE_KEY, "true");
-            oauthRetrofit.create(RedditAPI.class).favoriteThing(APIUtils.getOAuthHeader(accessToken), params).enqueue(new Callback<String>() {
+
+            oauthRetrofit.create(RedditAPI.class).favoriteThing(APIUtils.getOAuthHeader(accessToken, useragent), params).enqueue(new Callback<String>() {
                 @Override
                 public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                     if (response.isSuccessful()) {
@@ -51,7 +52,7 @@ public class FavoriteThing {
 
     public static void unfavoriteSubreddit(Executor executor, Handler handler, Retrofit oauthRetrofit,
                                            RedditDataRoomDatabase redditDataRoomDatabase,
-                                           String accessToken, SubscribedSubredditData subscribedSubredditData,
+                                           String accessToken, String useragent, SubscribedSubredditData subscribedSubredditData,
                                            FavoriteThingListener favoriteThingListener) {
         if (accessToken == null) {
             InsertSubscribedThings.insertSubscribedThings(executor, handler, redditDataRoomDatabase,
@@ -60,7 +61,7 @@ public class FavoriteThing {
             Map<String, String> params = new HashMap<>();
             params.put(APIUtils.SR_NAME_KEY, subscribedSubredditData.getName());
             params.put(APIUtils.MAKE_FAVORITE_KEY, "false");
-            oauthRetrofit.create(RedditAPI.class).favoriteThing(APIUtils.getOAuthHeader(accessToken), params).enqueue(new Callback<String>() {
+            oauthRetrofit.create(RedditAPI.class).favoriteThing(APIUtils.getOAuthHeader(accessToken, useragent), params).enqueue(new Callback<String>() {
                 @Override
                 public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                     if (response.isSuccessful()) {
@@ -81,7 +82,7 @@ public class FavoriteThing {
 
     public static void favoriteUser(Executor executor, Handler handler, Retrofit oauthRetrofit,
                                     RedditDataRoomDatabase redditDataRoomDatabase,
-                                    String accessToken, SubscribedUserData subscribedUserData,
+                                    String accessToken, String useragent, SubscribedUserData subscribedUserData,
                                     FavoriteThingListener favoriteThingListener) {
         if (accessToken == null) {
             InsertSubscribedThings.insertSubscribedThings(executor, handler, redditDataRoomDatabase,
@@ -90,7 +91,7 @@ public class FavoriteThing {
             Map<String, String> params = new HashMap<>();
             params.put(APIUtils.SR_NAME_KEY, "u_" + subscribedUserData.getName());
             params.put(APIUtils.MAKE_FAVORITE_KEY, "true");
-            oauthRetrofit.create(RedditAPI.class).favoriteThing(APIUtils.getOAuthHeader(accessToken), params).enqueue(new Callback<String>() {
+            oauthRetrofit.create(RedditAPI.class).favoriteThing(APIUtils.getOAuthHeader(accessToken, useragent), params).enqueue(new Callback<String>() {
                 @Override
                 public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                     if (response.isSuccessful()) {
@@ -111,7 +112,7 @@ public class FavoriteThing {
 
     public static void unfavoriteUser(Executor executor, Handler handler, Retrofit oauthRetrofit,
                                       RedditDataRoomDatabase redditDataRoomDatabase,
-                                      String accessToken, SubscribedUserData subscribedUserData,
+                                      String accessToken, String useragent, SubscribedUserData subscribedUserData,
                                       FavoriteThingListener favoriteThingListener) {
         if (accessToken == null) {
             InsertSubscribedThings.insertSubscribedThings(executor, handler, redditDataRoomDatabase, subscribedUserData,
@@ -120,7 +121,7 @@ public class FavoriteThing {
             Map<String, String> params = new HashMap<>();
             params.put(APIUtils.SR_NAME_KEY, "u_" + subscribedUserData.getName());
             params.put(APIUtils.MAKE_FAVORITE_KEY, "false");
-            oauthRetrofit.create(RedditAPI.class).favoriteThing(APIUtils.getOAuthHeader(accessToken), params).enqueue(new Callback<String>() {
+            oauthRetrofit.create(RedditAPI.class).favoriteThing(APIUtils.getOAuthHeader(accessToken, useragent), params).enqueue(new Callback<String>() {
                 @Override
                 public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                     if (response.isSuccessful()) {

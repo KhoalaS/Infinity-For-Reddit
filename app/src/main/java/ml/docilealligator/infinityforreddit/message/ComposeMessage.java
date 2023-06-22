@@ -14,9 +14,9 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 public class ComposeMessage {
-    public static void composeMessage(Retrofit oauthRetrofit, String accessToken, Locale locale, String username,
+    public static void composeMessage(Retrofit oauthRetrofit, String accessToken, String useragent, Locale locale, String username,
                                       String subject, String message, ComposeMessageListener composeMessageListener) {
-        Map<String, String> headers = APIUtils.getOAuthHeader(accessToken);
+        Map<String, String> headers = APIUtils.getOAuthHeader(accessToken, useragent);
         Map<String, String> params = new HashMap<>();
         params.put(APIUtils.API_TYPE_KEY, "json");
         params.put(APIUtils.RETURN_RTJSON_KEY, "true");

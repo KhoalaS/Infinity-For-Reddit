@@ -208,6 +208,6 @@ public final class ToroExo {
 
     @SuppressWarnings("SameParameterValue")
     private static String getUserAgent() {
-        return APIUtils.USER_AGENT;
+        return "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.130 Mobile Safari/537.36";
     }
 }

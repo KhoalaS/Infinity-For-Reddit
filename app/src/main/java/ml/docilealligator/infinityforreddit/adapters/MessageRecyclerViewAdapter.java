@@ -70,6 +70,7 @@ public class MessageRecyclerViewAdapter extends PagedListAdapter<Message, Recycl
     private Retrofit mOauthRetrofit;
     private Markwon mMarkwon;
     private String mAccessToken;
+    private String mUserAgent;
     private int mMessageType;
     private NetworkState networkState;
     private RetryLoadingMoreCallback mRetryLoadingMoreCallback;
@@ -85,7 +86,7 @@ public class MessageRecyclerViewAdapter extends PagedListAdapter<Message, Recycl
 
     public MessageRecyclerViewAdapter(BaseActivity activity, Retrofit oauthRetrofit,
                                       CustomThemeWrapper customThemeWrapper,
-                                      String accessToken, String where,
+                                      String accessToken, String userAgent, String where,
                                       RetryLoadingMoreCallback retryLoadingMoreCallback) {
         super(DIFF_CALLBACK);
         mActivity = activity;
@@ -133,6 +134,8 @@ public class MessageRecyclerViewAdapter extends PagedListAdapter<Message, Recycl
                 .usePlugin(LinkifyPlugin.create(Linkify.WEB_URLS))
                 .build();
         mAccessToken = accessToken;
+        mUserAgent = userAgent;
+
         if (where.equals(FetchMessage.WHERE_MESSAGES)) {
             mMessageType = FetchMessage.MESSAGE_TYPE_PRIVATE_MESSAGE;
         } else {
@@ -202,7 +205,7 @@ public class MessageRecyclerViewAdapter extends PagedListAdapter<Message, Recycl
                         holder.itemView.setBackgroundColor(mMessageBackgroundColor);
                         message.setNew(false);
 
-                        ReadMessage.readMessage(mOauthRetrofit, mAccessToken, message.getFullname(),
+                        ReadMessage.readMessage(mOauthRetrofit, mAccessToken, mUserAgent, message.getFullname(),
                                 new ReadMessage.ReadMessageListener() {
                                     @Override
                                     public void readSuccess() {

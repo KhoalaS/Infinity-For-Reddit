@@ -45,6 +45,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
     private Executor executor;
     private Retrofit retrofit;
     private String accessToken;
+    private String userAgent;
     private String accountName;
     private SharedPreferences sharedPreferences;
     private SharedPreferences postFeedScrolledPositionSharedPreferences;
@@ -59,7 +60,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
     private String multiRedditPath;
     private LinkedHashSet<Post> postLinkedHashSet;
 
-    PostPagingSource(Executor executor, Retrofit retrofit, String accessToken, String accountName,
+    PostPagingSource(Executor executor, Retrofit retrofit, String accessToken, String userAgent, String accountName,
                      SharedPreferences sharedPreferences,
                      SharedPreferences postFeedScrolledPositionSharedPreferences, int postType,
                      SortType sortType, PostFilter postFilter, List<String> readPostList) {
@@ -73,10 +74,11 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
         this.sortType = sortType == null ? new SortType(SortType.Type.BEST) : sortType;
         this.postFilter = postFilter;
         this.readPostList = readPostList;
+        this.userAgent = userAgent;
         postLinkedHashSet = new LinkedHashSet<>();
     }
 
-    PostPagingSource(Executor executor, Retrofit retrofit, String accessToken, String accountName,
+    PostPagingSource(Executor executor, Retrofit retrofit, String accessToken, String userAgent, String accountName,
                      SharedPreferences sharedPreferences, SharedPreferences postFeedScrolledPositionSharedPreferences,
                      String path, int postType, SortType sortType, PostFilter postFilter,
                      List<String> readPostList) {
@@ -85,6 +87,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
         this.accessToken = accessToken;
         this.accountName = accountName;
         this.sharedPreferences = sharedPreferences;
+        this.userAgent = userAgent;
         this.postFeedScrolledPositionSharedPreferences = postFeedScrolledPositionSharedPreferences;
         if (postType == TYPE_SUBREDDIT || postType == TYPE_ANONYMOUS_FRONT_PAGE) {
             this.subredditOrUserName = path;
@@ -114,7 +117,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
         postLinkedHashSet = new LinkedHashSet<>();
     }
 
-    PostPagingSource(Executor executor, Retrofit retrofit, String accessToken, String accountName,
+    PostPagingSource(Executor executor, Retrofit retrofit, String accessToken, String userAgent, String accountName,
                      SharedPreferences sharedPreferences, SharedPreferences postFeedScrolledPositionSharedPreferences,
                      String subredditOrUserName, int postType, SortType sortType, PostFilter postFilter,
                      String where, List<String> readPostList) {
@@ -130,10 +133,11 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
         this.postFilter = postFilter;
         userWhere = where;
         this.readPostList = readPostList;
+        this.userAgent = userAgent;
         postLinkedHashSet = new LinkedHashSet<>();
     }
 
-    PostPagingSource(Executor executor, Retrofit retrofit, String accessToken, String accountName,
+    PostPagingSource(Executor executor, Retrofit retrofit, String accessToken, String userAgent, String accountName,
                      SharedPreferences sharedPreferences, SharedPreferences postFeedScrolledPositionSharedPreferences,
                      String subredditOrUserName, String query, String trendingSource, int postType,
                      SortType sortType, PostFilter postFilter, List<String> readPostList) {
@@ -151,6 +155,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
         this.postFilter = postFilter;
         postLinkedHashSet = new LinkedHashSet<>();
         this.readPostList = readPostList;
+        this.userAgent = userAgent;
     }
 
     @Nullable
@@ -215,7 +220,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             afterKey = loadParams.getKey();
         }
         bestPost = api.getBestPostsListenableFuture(sortType.getType(), sortType.getTime(), afterKey,
-                APIUtils.getOAuthHeader(accessToken));
+                APIUtils.getOAuthHeader(accessToken, userAgent));
 
         ListenableFuture<LoadResult<String, Post>> pageFuture = Futures.transform(bestPost, this::transformData, executor);
 
@@ -233,7 +238,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             subredditPost = api.getSubredditBestPostsListenableFuture(subredditOrUserName, sortType.getType(), sortType.getTime(), loadParams.getKey());
         } else {
             subredditPost = api.getSubredditBestPostsOauthListenableFuture(subredditOrUserName, sortType.getType(),
-                    sortType.getTime(), loadParams.getKey(), APIUtils.getOAuthHeader(accessToken));
+                    sortType.getTime(), loadParams.getKey(), APIUtils.getOAuthHeader(accessToken, userAgent));
         }
 
         ListenableFuture<LoadResult<String, Post>> pageFuture = Futures.transform(subredditPost, this::transformData, executor);
@@ -253,7 +258,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
                     sortType.getTime());
         } else {
             userPosts = api.getUserPostsOauthListenableFuture(subredditOrUserName, userWhere, loadParams.getKey(), sortType.getType(),
-                    sortType.getTime(), APIUtils.getOAuthHeader(accessToken));
+                    sortType.getTime(), APIUtils.getOAuthHeader(accessToken, userAgent));
         }
 
         ListenableFuture<LoadResult<String, Post>> pageFuture = Futures.transform(userPosts, this::transformData, executor);
@@ -274,7 +279,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
                         trendingSource);
             } else {
                 searchPosts = api.searchPostsOauthListenableFuture(query, loadParams.getKey(), sortType.getType(),
-                        sortType.getTime(), trendingSource, APIUtils.getOAuthHeader(accessToken));
+                        sortType.getTime(), trendingSource, APIUtils.getOAuthHeader(accessToken, userAgent));
             }
         } else {
             if (accessToken == null) {
@@ -283,7 +288,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             } else {
                 searchPosts = api.searchPostsInSpecificSubredditOauthListenableFuture(subredditOrUserName, query,
                         sortType.getType(), sortType.getTime(), loadParams.getKey(),
-                        APIUtils.getOAuthHeader(accessToken));
+                        APIUtils.getOAuthHeader(accessToken, userAgent));
             }
         }
 
@@ -303,7 +308,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             multiRedditPosts = api.getMultiRedditPostsListenableFuture(multiRedditPath, loadParams.getKey(), sortType.getTime());
         } else {
             multiRedditPosts = api.getMultiRedditPostsOauthListenableFuture(multiRedditPath, loadParams.getKey(),
-                    sortType.getTime(), APIUtils.getOAuthHeader(accessToken));
+                    sortType.getTime(), APIUtils.getOAuthHeader(accessToken, userAgent));
         }
 
         ListenableFuture<LoadResult<String, Post>> pageFuture = Futures.transform(multiRedditPosts, this::transformData, executor);

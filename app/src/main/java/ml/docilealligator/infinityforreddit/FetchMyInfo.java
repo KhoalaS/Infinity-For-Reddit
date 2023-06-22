@@ -18,10 +18,10 @@ import retrofit2.Retrofit;
 public class FetchMyInfo {
 
     public static void fetchAccountInfo(final Retrofit retrofit, RedditDataRoomDatabase redditDataRoomDatabase,
-                                        String accessToken, final FetchMyInfoListener fetchMyInfoListener) {
+                                        String accessToken, String useragent, final FetchMyInfoListener fetchMyInfoListener) {
         RedditAPI api = retrofit.create(RedditAPI.class);
 
-        Call<String> userInfo = api.getMyInfo(APIUtils.getOAuthHeader(accessToken));
+        Call<String> userInfo = api.getMyInfo(APIUtils.getOAuthHeader(accessToken, useragent));
         userInfo.enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull retrofit2.Response<String> response) {

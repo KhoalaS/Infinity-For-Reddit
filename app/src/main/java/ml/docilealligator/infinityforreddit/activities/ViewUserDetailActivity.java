@@ -116,6 +116,7 @@ import ml.docilealligator.infinityforreddit.user.UserDao;
 import ml.docilealligator.infinityforreddit.user.UserData;
 import ml.docilealligator.infinityforreddit.user.UserFollowing;
 import ml.docilealligator.infinityforreddit.user.UserViewModel;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
 import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import ml.docilealligator.infinityforreddit.utils.Utils;
@@ -207,6 +208,7 @@ public class ViewUserDetailActivity extends BaseActivity implements SortTypeSele
     private Call<String> subredditAutocompleteCall;
     private String mAccessToken;
     private String mAccountName;
+    private String mUserAgent;
     private String username;
     private String description;
     private boolean subscriptionReady = false;
@@ -259,6 +261,10 @@ public class ViewUserDetailActivity extends BaseActivity implements SortTypeSele
         mViewPager2 = viewPager2;
 
         username = getIntent().getStringExtra(EXTRA_USER_NAME_KEY);
+
+        String _username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUserAgent = UseragentUtil.getUserAgent(appname, _username);
 
         fragmentManager = getSupportFragmentManager();
 
@@ -460,7 +466,7 @@ public class ViewUserDetailActivity extends BaseActivity implements SortTypeSele
                                                 }
                                             });
                                 } else {
-                                    UserFollowing.followUser(mOauthRetrofit, mRetrofit, mAccessToken,
+                                    UserFollowing.followUser(mOauthRetrofit, mRetrofit, mAccessToken, mUserAgent,
                                             username, mAccountName, mRedditDataRoomDatabase, new UserFollowing.UserFollowingListener() {
                                                 @Override
                                                 public void onUserFollowingSuccess() {
@@ -495,7 +501,7 @@ public class ViewUserDetailActivity extends BaseActivity implements SortTypeSele
                                                 }
                                             });
                                 } else {
-                                    UserFollowing.unfollowUser(mOauthRetrofit, mRetrofit, mAccessToken,
+                                    UserFollowing.unfollowUser(mOauthRetrofit, mRetrofit, mAccessToken, mUserAgent,
                                             username, mAccountName, mRedditDataRoomDatabase, new UserFollowing.UserFollowingListener() {
                                                 @Override
                                                 public void onUserFollowingSuccess() {
@@ -701,7 +707,7 @@ public class ViewUserDetailActivity extends BaseActivity implements SortTypeSele
         fixViewPager2Sensitivity(viewPager2);
 
         if (mMessageFullname != null) {
-            ReadMessage.readMessage(mOauthRetrofit, mAccessToken, mMessageFullname, new ReadMessage.ReadMessageListener() {
+            ReadMessage.readMessage(mOauthRetrofit, mAccessToken, mUserAgent, mMessageFullname, new ReadMessage.ReadMessageListener() {
                 @Override
                 public void readSuccess() {
                     mMessageFullname = null;
@@ -1090,11 +1096,15 @@ public class ViewUserDetailActivity extends BaseActivity implements SortTypeSele
     }
 
     public void deleteComment(String fullName) {
+        String username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        String useragent = UseragentUtil.getUserAgent(appname, username);
+
         new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialogTheme)
                 .setTitle(R.string.delete_this_comment)
                 .setMessage(R.string.are_you_sure)
                 .setPositiveButton(R.string.delete, (dialogInterface, i)
-                        -> DeleteThing.delete(mOauthRetrofit, fullName, mAccessToken, new DeleteThing.DeleteThingListener() {
+                        -> DeleteThing.delete(mOauthRetrofit, fullName, mAccessToken, useragent, new DeleteThing.DeleteThingListener() {
                     @Override
                     public void deleteSuccess() {
                         Toast.makeText(ViewUserDetailActivity.this, R.string.delete_post_success, Toast.LENGTH_SHORT).show();
@@ -1194,7 +1204,7 @@ public class ViewUserDetailActivity extends BaseActivity implements SortTypeSele
                     .setTitle(R.string.block_user)
                     .setMessage(R.string.are_you_sure)
                     .setPositiveButton(R.string.yes, (dialogInterface, i)
-                            -> BlockUser.blockUser(mOauthRetrofit, mAccessToken, username, new BlockUser.BlockUserListener() {
+                            -> BlockUser.blockUser(mOauthRetrofit, mAccessToken, mUserAgent, username, new BlockUser.BlockUserListener() {
                         @Override
                         public void success() {
                             Toast.makeText(ViewUserDetailActivity.this, R.string.block_user_success, Toast.LENGTH_SHORT).show();
@@ -1239,7 +1249,7 @@ public class ViewUserDetailActivity extends BaseActivity implements SortTypeSele
                     MultiReddit multiReddit = data.getParcelableExtra(MultiredditSelectionActivity.EXTRA_RETURN_MULTIREDDIT);
                     if (multiReddit != null) {
                         AddSubredditOrUserToMultiReddit.addSubredditOrUserToMultiReddit(mOauthRetrofit,
-                                mAccessToken, multiReddit.getPath(), "u_" + username,
+                                mAccessToken, mUserAgent, multiReddit.getPath(), "u_" + username,
                                 new AddSubredditOrUserToMultiReddit.AddSubredditOrUserToMultiRedditListener() {
                                     @Override
                                     public void success() {
@@ -1404,7 +1414,7 @@ public class ViewUserDetailActivity extends BaseActivity implements SortTypeSele
                 if (subredditAutocompleteCall != null) {
                     subredditAutocompleteCall.cancel();
                 }
-                subredditAutocompleteCall = mOauthRetrofit.create(RedditAPI.class).subredditAutocomplete(APIUtils.getOAuthHeader(mAccessToken),
+                subredditAutocompleteCall = mOauthRetrofit.create(RedditAPI.class).subredditAutocomplete(APIUtils.getOAuthHeader(mAccessToken, mUserAgent),
                         editable.toString(), nsfw);
                 subredditAutocompleteCall.enqueue(new Callback<String>() {
                     @Override

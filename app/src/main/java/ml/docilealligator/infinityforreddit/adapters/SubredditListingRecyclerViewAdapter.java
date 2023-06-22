@@ -61,6 +61,7 @@ public class SubredditListingRecyclerViewAdapter extends PagedListAdapter<Subred
     private Retrofit retrofit;
     private String accessToken;
     private String accountName;
+    private String userAgent;
     private RedditDataRoomDatabase redditDataRoomDatabase;
     private boolean isMultiSelection;
     private int colorPrimaryLightTheme;
@@ -75,7 +76,7 @@ public class SubredditListingRecyclerViewAdapter extends PagedListAdapter<Subred
 
     public SubredditListingRecyclerViewAdapter(BaseActivity activity, Executor executor, Retrofit oauthRetrofit, Retrofit retrofit,
                                                CustomThemeWrapper customThemeWrapper,
-                                               String accessToken, String accountName,
+                                               String accessToken, String userAgent, String accountName,
                                                RedditDataRoomDatabase redditDataRoomDatabase,
                                                boolean isMultiSelection, Callback callback) {
         super(DIFF_CALLBACK);
@@ -88,6 +89,7 @@ public class SubredditListingRecyclerViewAdapter extends PagedListAdapter<Subred
         this.redditDataRoomDatabase = redditDataRoomDatabase;
         this.isMultiSelection = isMultiSelection;
         this.callback = callback;
+        this.userAgent = userAgent;
         glide = Glide.with(this.activity);
         colorPrimaryLightTheme = customThemeWrapper.getColorPrimaryLightTheme();
         primaryTextColor = customThemeWrapper.getPrimaryTextColor();
@@ -158,7 +160,7 @@ public class SubredditListingRecyclerViewAdapter extends PagedListAdapter<Subred
                                     ((DataViewHolder) holder).subscribeButton.setOnClickListener(view -> {
                                         if (accessToken != null) {
                                             SubredditSubscription.subscribeToSubreddit(executor, new Handler(),
-                                                    oauthRetrofit, retrofit, accessToken, subredditData.getName(),
+                                                    oauthRetrofit, retrofit, accessToken, userAgent, subredditData.getName(),
                                                     accountName, redditDataRoomDatabase,
                                                     new SubredditSubscription.SubredditSubscriptionListener() {
                                                         @Override

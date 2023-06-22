@@ -35,18 +35,20 @@ public class HistoryPostPagingSource extends ListenableFuturePagingSource<String
     private RedditDataRoomDatabase redditDataRoomDatabase;
     private String accessToken;
     private String accountName;
+    private  String userAgent;
     private SharedPreferences sharedPreferences;
     private String username;
     private int postType;
     private PostFilter postFilter;
 
     public HistoryPostPagingSource(Retrofit retrofit, Executor executor, RedditDataRoomDatabase redditDataRoomDatabase,
-                                   String accessToken, String accountName, SharedPreferences sharedPreferences,
+                                   String accessToken, String useragent, String accountName, SharedPreferences sharedPreferences,
                                    String username, int postType, PostFilter postFilter) {
         this.retrofit = retrofit;
         this.executor = executor;
         this.redditDataRoomDatabase = redditDataRoomDatabase;
         this.accessToken = accessToken;
+        this.userAgent = useragent;
         this.accountName = accountName;
         this.sharedPreferences = sharedPreferences;
         this.username = username;
@@ -83,7 +85,7 @@ public class HistoryPostPagingSource extends ListenableFuturePagingSource<String
 
         Call<String> historyPosts;
         if (accessToken != null && !accessToken.isEmpty()) {
-            historyPosts = retrofit.create(RedditAPI.class).getInfoOauth(ids.toString(), APIUtils.getOAuthHeader(accessToken));
+            historyPosts = retrofit.create(RedditAPI.class).getInfoOauth(ids.toString(), APIUtils.getOAuthHeader(accessToken, userAgent));
         } else {
             historyPosts = retrofit.create(RedditAPI.class).getInfo(ids.toString());
         }

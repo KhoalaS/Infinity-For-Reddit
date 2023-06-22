@@ -19,7 +19,7 @@ import retrofit2.Retrofit;
 
 public class FetchComment {
     public static void fetchComments(Executor executor, Handler handler, Retrofit retrofit,
-                                     @Nullable String accessToken, String article,
+                                     @Nullable String accessToken, String useragent, String article,
                                      String commentId, SortType.Type sortType, String contextNumber, boolean expandChildren,
                                      Locale locale, FetchCommentListener fetchCommentListener) {
         RedditAPI api = retrofit.create(RedditAPI.class);
@@ -32,10 +32,10 @@ public class FetchComment {
             }
         } else {
             if (commentId == null) {
-                comments = api.getPostAndCommentsByIdOauth(article, sortType, APIUtils.getOAuthHeader(accessToken));
+                comments = api.getPostAndCommentsByIdOauth(article, sortType, APIUtils.getOAuthHeader(accessToken, useragent));
             } else {
                 comments = api.getPostAndCommentsSingleThreadByIdOauth(article, commentId, sortType, contextNumber,
-                        APIUtils.getOAuthHeader(accessToken));
+                        APIUtils.getOAuthHeader(accessToken, useragent));
             }
         }
 
@@ -71,7 +71,7 @@ public class FetchComment {
     }
 
     public static void fetchMoreComment(Executor executor, Handler handler, Retrofit retrofit,
-                                        @Nullable String accessToken,
+                                        @Nullable String accessToken, String useragent,
                                         ArrayList<String> allChildren,
                                         boolean expandChildren, String postFullName,
                                         SortType.Type sortType,
@@ -92,7 +92,7 @@ public class FetchComment {
             moreComments = api.moreChildren(postFullName, childrenIds, sortType);
         } else {
             moreComments = api.moreChildrenOauth(postFullName, childrenIds,
-                    sortType, APIUtils.getOAuthHeader(accessToken));
+                    sortType, APIUtils.getOAuthHeader(accessToken, useragent));
         }
 
         moreComments.enqueue(new Callback<String>() {

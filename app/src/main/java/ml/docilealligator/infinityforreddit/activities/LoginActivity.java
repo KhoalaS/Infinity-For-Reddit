@@ -32,6 +32,7 @@ import androidx.core.app.ActivityCompat;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textfield.TextInputEditText;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -54,6 +55,7 @@ import ml.docilealligator.infinityforreddit.apis.RedditAPI;
 import ml.docilealligator.infinityforreddit.asynctasks.ParseAndInsertNewAccount;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.customviews.slidr.Slidr;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
 import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import ml.docilealligator.infinityforreddit.utils.Utils;
@@ -73,8 +75,6 @@ public class LoginActivity extends BaseActivity {
     AppBarLayout appBarLayout;
     @BindView(R.id.toolbar_login_activity)
     Toolbar toolbar;
-    @BindView(R.id.two_fa_infO_text_view_login_activity)
-    TextView twoFAInfoTextView;
     @BindView(R.id.webview_login_activity)
     WebView webView;
     @BindView(R.id.fab_login_activity)
@@ -82,7 +82,11 @@ public class LoginActivity extends BaseActivity {
     @BindView(R.id.client_id_info)
     TextView clientIdInfoTextView;
     @BindView(R.id.client_id_input)
-    EditText clientIdInputEditText;
+    TextInputEditText clientIdInputEditText;
+    @BindView(R.id.user_agent_appname_edit)
+    TextInputEditText userAgentAppnameEditText;
+    @BindView(R.id.user_agent_username_edit)
+    TextInputEditText userAgentUsernameEditText;
     @BindView(R.id.client_id_apply)
     Button clientApplyButton;
     @Inject
@@ -153,36 +157,59 @@ public class LoginActivity extends BaseActivity {
                     .show();
         });
 
-        if (enableDom) {
-            twoFAInfoTextView.setVisibility(View.GONE);
-        }
-
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(enableDom);
 
         String client_id = mCurrentAccountSharedPreferences.getString(APIUtils.CLIENT_ID_KEY, "");
-        if(!client_id.isBlank()){
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        String username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+
+        if(!client_id.isBlank() || !appname.isBlank() || !username.isBlank()){
             clientApplyButton.setText("Update");
             clientIdInfoTextView.setText(R.string.login_activity_input_client_id_update);
             clientIdInputEditText.setText(client_id);
+            userAgentAppnameEditText.setText(appname);
+            userAgentUsernameEditText.setText(username);
+        }
+
+        if(!client_id.isBlank() && !appname.isBlank() && !username.isBlank()) {
             loadLoginWebview(client_id);
         }
+
+
 
         clientApplyButton.setOnClickListener(view -> {
             view.setClickable(false);
             InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(view.getApplicationWindowToken(),0);
 
-            String client_id1 = clientIdInputEditText.getText().toString();
+            String l_client_id = clientIdInputEditText.getText().toString();
+            String l_username = userAgentUsernameEditText.getText().toString();
+            String l_appname = userAgentAppnameEditText.getText().toString();
 
-            if(client_id1.isBlank()){
+
+            if(l_client_id.isBlank()){
                 Toast.makeText(LoginActivity.this, "Please input a Client-ID first", Toast.LENGTH_LONG).show();
                 view.setClickable(true);
                 return;
             }
-            mCurrentAccountSharedPreferences.edit().putString(APIUtils.CLIENT_ID_KEY, client_id1).apply();
+            if(l_appname.isBlank()){
+                Toast.makeText(LoginActivity.this, "Please input an App name first", Toast.LENGTH_LONG).show();
+                view.setClickable(true);
+                return;
+            }
+            if(l_username.isBlank()){
+                Toast.makeText(LoginActivity.this, "Please input a Username first", Toast.LENGTH_LONG).show();
+                view.setClickable(true);
+                return;
+            }
+            mCurrentAccountSharedPreferences.edit()
+                    .putString(APIUtils.CLIENT_ID_KEY, l_client_id)
+                    .putString(APIUtils.USER_AGENT_APPNAME_KEY, l_appname)
+                    .putString(APIUtils.USER_AGENT_USERNAME_KEY, l_username)
+                    .apply();
             view.setClickable(true);
-            loadLoginWebview(client_id1);
+            loadLoginWebview(l_client_id);
         });
 
 
@@ -262,8 +289,13 @@ public class LoginActivity extends BaseActivity {
                                         String accessToken = responseJSON.getString(APIUtils.ACCESS_TOKEN_KEY);
                                         String refreshToken = responseJSON.getString(APIUtils.REFRESH_TOKEN_KEY);
 
+                                        String username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+                                        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+                                        String useragent = UseragentUtil.getUserAgent(appname, username);
+
+
                                         FetchMyInfo.fetchAccountInfo(mOauthRetrofit, mRedditDataRoomDatabase,
-                                                accessToken, new FetchMyInfo.FetchMyInfoListener() {
+                                                accessToken, useragent, new FetchMyInfo.FetchMyInfoListener() {
                                                     @Override
                                                     public void onFetchMyInfoSuccess(String name, String profileImageUrl, String bannerImageUrl, int karma) {
                                                         mCurrentAccountSharedPreferences.edit().putString(SharedPreferencesUtils.ACCESS_TOKEN, accessToken)
@@ -355,13 +387,9 @@ public class LoginActivity extends BaseActivity {
     protected void applyCustomTheme() {
         coordinatorLayout.setBackgroundColor(mCustomThemeWrapper.getBackgroundColor());
         applyAppBarLayoutAndCollapsingToolbarLayoutAndToolbarTheme(appBarLayout, null, toolbar);
-        twoFAInfoTextView.setTextColor(mCustomThemeWrapper.getPrimaryTextColor());
         Drawable infoDrawable = Utils.getTintedDrawable(this, R.drawable.ic_info_preference_24dp, mCustomThemeWrapper.getPrimaryIconColor());
-        twoFAInfoTextView.setCompoundDrawablesWithIntrinsicBounds(infoDrawable, null, null, null);
         applyFABTheme(fab);
-        if (typeface != null) {
-            twoFAInfoTextView.setTypeface(typeface);
-        }
+
         clientIdInfoTextView.setTextColor(mCustomThemeWrapper.getPrimaryTextColor());
         clientIdInputEditText.setTextColor(mCustomThemeWrapper.getPrimaryTextColor());
         clientApplyButton.setBackgroundTintList(ColorStateList.valueOf(customThemeWrapper.getColorAccent()));

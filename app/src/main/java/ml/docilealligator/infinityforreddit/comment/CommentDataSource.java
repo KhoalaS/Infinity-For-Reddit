@@ -31,6 +31,7 @@ public class CommentDataSource extends PageKeyedDataSource<String, Comment> {
     private Locale locale;
     @Nullable
     private String accessToken;
+    private String userAgent;
     private String username;
     private SortType sortType;
     private boolean areSavedComments;
@@ -42,7 +43,7 @@ public class CommentDataSource extends PageKeyedDataSource<String, Comment> {
     private LoadParams<String> params;
     private LoadCallback<String, Comment> callback;
 
-    CommentDataSource(Retrofit retrofit, Locale locale, @Nullable String accessToken, String username, SortType sortType,
+    CommentDataSource(Retrofit retrofit, Locale locale, @Nullable String accessToken, String userAgent, String username, SortType sortType,
                       boolean areSavedComments) {
         this.retrofit = retrofit;
         this.locale = locale;
@@ -50,6 +51,7 @@ public class CommentDataSource extends PageKeyedDataSource<String, Comment> {
         this.username = username;
         this.sortType = sortType;
         this.areSavedComments = areSavedComments;
+        this.userAgent = userAgent;
         paginationNetworkStateLiveData = new MutableLiveData<>();
         initialLoadStateLiveData = new MutableLiveData<>();
         hasPostLiveData = new MutableLiveData<>();
@@ -80,13 +82,13 @@ public class CommentDataSource extends PageKeyedDataSource<String, Comment> {
         if (areSavedComments) {
             commentsCall = api.getUserSavedCommentsOauth(username, PostPagingSource.USER_WHERE_SAVED,
                     null, sortType.getType(), sortType.getTime(),
-                    APIUtils.getOAuthHeader(accessToken));
+                    APIUtils.getOAuthHeader(accessToken, userAgent));
         } else {
             if (accessToken == null) {
                 commentsCall = api.getUserComments(username, null, sortType.getType(),
                         sortType.getTime());
             } else {
-                commentsCall = api.getUserCommentsOauth(APIUtils.getOAuthHeader(accessToken), username,
+                commentsCall = api.getUserCommentsOauth(APIUtils.getOAuthHeader(accessToken, userAgent), username,
                         null, sortType.getType(), sortType.getTime());
             }
         }
@@ -144,13 +146,13 @@ public class CommentDataSource extends PageKeyedDataSource<String, Comment> {
         Call<String> commentsCall;
         if (areSavedComments) {
             commentsCall = api.getUserSavedCommentsOauth(username, PostPagingSource.USER_WHERE_SAVED, params.key,
-                    sortType.getType(), sortType.getTime(), APIUtils.getOAuthHeader(accessToken));
+                    sortType.getType(), sortType.getTime(), APIUtils.getOAuthHeader(accessToken, userAgent));
         } else {
             if (accessToken == null) {
                 commentsCall = api.getUserComments(username, params.key, sortType.getType(),
                         sortType.getTime());
             } else {
-                commentsCall = api.getUserCommentsOauth(APIUtils.getOAuthHeader(accessToken),
+                commentsCall = api.getUserCommentsOauth(APIUtils.getOAuthHeader(accessToken, userAgent),
                         username, params.key, sortType.getType(), sortType.getTime());
             }
         }

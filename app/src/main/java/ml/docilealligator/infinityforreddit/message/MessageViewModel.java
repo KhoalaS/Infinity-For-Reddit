@@ -22,8 +22,8 @@ public class MessageViewModel extends ViewModel {
     private LiveData<PagedList<Message>> messages;
     private MutableLiveData<String> whereLiveData;
 
-    public MessageViewModel(Retrofit retrofit, Locale locale, String accessToken, String where) {
-        messageDataSourceFactory = new MessageDataSourceFactory(retrofit, locale, accessToken, where);
+    public MessageViewModel(Retrofit retrofit, Locale locale, String accessToken, String useragent, String where) {
+        messageDataSourceFactory = new MessageDataSourceFactory(retrofit, locale, accessToken, useragent, where);
 
         initialLoadingState = Transformations.switchMap(messageDataSourceFactory.getMessageDataSourceLiveData(),
                 MessageDataSource::getInitialLoadStateLiveData);
@@ -80,18 +80,20 @@ public class MessageViewModel extends ViewModel {
         private Locale locale;
         private String accessToken;
         private String where;
+        private String userAgent;
 
-        public Factory(Retrofit retrofit, Locale locale, String accessToken, String where) {
+        public Factory(Retrofit retrofit, Locale locale, String accessToken, String userAgent, String where) {
             this.retrofit = retrofit;
             this.locale = locale;
             this.accessToken = accessToken;
             this.where = where;
+            this.userAgent = userAgent;
         }
 
         @NonNull
         @Override
         public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-            return (T) new MessageViewModel(retrofit, locale, accessToken, where);
+            return (T) new MessageViewModel(retrofit, locale, accessToken, userAgent, where);
         }
     }
 }

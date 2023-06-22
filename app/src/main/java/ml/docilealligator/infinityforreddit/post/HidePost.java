@@ -13,11 +13,11 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 public class HidePost {
-    public static void hidePost(Retrofit oauthRetrofit, String accessToken, String fullname,
+    public static void hidePost(Retrofit oauthRetrofit, String accessToken, String useragent, String fullname,
                                 HidePostListener hidePostListener) {
         Map<String, String> params = new HashMap<>();
         params.put(APIUtils.ID_KEY, fullname);
-        oauthRetrofit.create(RedditAPI.class).hide(APIUtils.getOAuthHeader(accessToken), params).enqueue(new Callback<String>() {
+        oauthRetrofit.create(RedditAPI.class).hide(APIUtils.getOAuthHeader(accessToken, useragent), params).enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                 if (response.isSuccessful()) {
@@ -34,11 +34,11 @@ public class HidePost {
         });
     }
 
-    public static void unhidePost(Retrofit oauthRetrofit, String accessToken, String fullname,
+    public static void unhidePost(Retrofit oauthRetrofit, String accessToken, String useragent, String fullname,
                                   HidePostListener hidePostListener) {
         Map<String, String> params = new HashMap<>();
         params.put(APIUtils.ID_KEY, fullname);
-        oauthRetrofit.create(RedditAPI.class).unhide(APIUtils.getOAuthHeader(accessToken), params).enqueue(new Callback<String>() {
+        oauthRetrofit.create(RedditAPI.class).unhide(APIUtils.getOAuthHeader(accessToken, useragent), params).enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                 if (response.isSuccessful()) {

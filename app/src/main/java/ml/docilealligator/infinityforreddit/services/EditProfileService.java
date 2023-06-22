@@ -3,6 +3,7 @@ package ml.docilealligator.infinityforreddit.services;
 import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -26,6 +27,8 @@ import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.events.SubmitChangeAvatarEvent;
 import ml.docilealligator.infinityforreddit.events.SubmitChangeBannerEvent;
 import ml.docilealligator.infinityforreddit.events.SubmitSaveProfileEvent;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.EditProfileUtils;
 import ml.docilealligator.infinityforreddit.utils.NotificationUtils;
 import org.greenrobot.eventbus.EventBus;
@@ -55,12 +58,16 @@ public class EditProfileService extends Service {
     private static final int MIN_BANNER_WIDTH = 640;
     private static final int AVATAR_SIZE = 256;
     @Inject
+    @Named("current_account")
+    SharedPreferences mCurrentAccountSharedPreferences;
+    @Inject
     @Named("oauth")
     Retrofit mOauthRetrofit;
     @Inject
     CustomThemeWrapper mCustomThemeWrapper;
     private Handler handler;
     private ServiceHandler serviceHandler;
+    private String mUserAgent;
 
     @Override
     public void onCreate() {
@@ -71,6 +78,10 @@ public class EditProfileService extends Service {
                 Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
         serviceHandler = new ServiceHandler(thread.getLooper());
+        String _username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUserAgent = UseragentUtil.getUserAgent(appname, _username);
+
     }
 
     @Override
@@ -129,7 +140,7 @@ public class EditProfileService extends Service {
             CropTransformation bannerCrop = new CropTransformation(width, height, CropTransformation.CropType.CENTER);
             Bitmap resource = Glide.with(this).asBitmap().skipMemoryCache(true)
                     .load(mediaUri).transform(bannerCrop).submit().get();
-            EditProfileUtils.uploadBanner(mOauthRetrofit, accessToken, accountName, resource, new EditProfileUtils.EditProfileUtilsListener() {
+            EditProfileUtils.uploadBanner(mOauthRetrofit, accessToken, mUserAgent, accountName, resource, new EditProfileUtils.EditProfileUtilsListener() {
                 @Override
                 public void success() {
                     handler.post(() -> EventBus.getDefault().post(new SubmitChangeBannerEvent(true, "")));
@@ -153,7 +164,7 @@ public class EditProfileService extends Service {
             final CropTransformation avatarCrop = new CropTransformation(AVATAR_SIZE, AVATAR_SIZE, CropTransformation.CropType.CENTER);
             final Bitmap resource = Glide.with(this).asBitmap().skipMemoryCache(true)
                     .load(mediaUri).transform(avatarCrop).submit().get();
-            EditProfileUtils.uploadAvatar(mOauthRetrofit, accessToken, accountName, resource, new EditProfileUtils.EditProfileUtilsListener() {
+            EditProfileUtils.uploadAvatar(mOauthRetrofit, accessToken, mUserAgent, accountName, resource, new EditProfileUtils.EditProfileUtilsListener() {
                 @Override
                 public void success() {
                     handler.post(() -> EventBus.getDefault().post(new SubmitChangeAvatarEvent(true, "")));
@@ -173,12 +184,14 @@ public class EditProfileService extends Service {
     }
 
     private void submitSaveEditProfile(String accessToken,
+                                       String userAgent,
                                        String accountName,
                                        String displayName,
                                        String publicDesc
     ) {
         EditProfileUtils.updateProfile(mOauthRetrofit,
                 accessToken,
+                userAgent,
                 accountName,
                 displayName,
                 publicDesc,
@@ -246,6 +259,7 @@ public class EditProfileService extends Service {
                 case EXTRA_POST_TYPE_SAVE_EDIT_PROFILE:
                     submitSaveEditProfile(
                             accessToken,
+                            mUserAgent,
                             accountName,
                             bundle.getString(EXTRA_DISPLAY_NAME),
                             bundle.getString(EXTRA_ABOUT_YOU)

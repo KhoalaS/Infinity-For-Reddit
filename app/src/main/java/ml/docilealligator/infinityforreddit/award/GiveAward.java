@@ -27,14 +27,14 @@ public class GiveAward {
         void failed(int code, String message);
     }
 
-    public static void giveAwardV2(Executor executor, Handler handler, Retrofit oauthRetrofit, String accessToken,
+    public static void giveAwardV2(Executor executor, Handler handler, Retrofit oauthRetrofit, String accessToken, String useragent,
                                    String thingFullName, String awardId, boolean isAnonymous,
                                    GiveAwardListener giveAwardListener) {
         Map<String, String> params = new HashMap<>();
         params.put(APIUtils.GILD_TYPE, awardId);
         params.put(APIUtils.IS_ANONYMOUS, Boolean.toString(isAnonymous));
         params.put(APIUtils.THING_ID_KEY, thingFullName);
-        oauthRetrofit.create(RedditAPI.class).awardThing(APIUtils.getOAuthHeader(accessToken), params).enqueue(new Callback<String>() {
+        oauthRetrofit.create(RedditAPI.class).awardThing(APIUtils.getOAuthHeader(accessToken, useragent), params).enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                 if (response.isSuccessful()) {

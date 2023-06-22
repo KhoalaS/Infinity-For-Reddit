@@ -46,6 +46,7 @@ public class MultiRedditListingRecyclerViewAdapter extends RecyclerView.Adapter<
     private RequestManager mGlide;
 
     private String mAccessToken;
+    private String mUserAgent;
     private List<MultiReddit> mMultiReddits;
     private List<MultiReddit> mFavoriteMultiReddits;
     private int mPrimaryTextColor;
@@ -60,13 +61,14 @@ public class MultiRedditListingRecyclerViewAdapter extends RecyclerView.Adapter<
     public MultiRedditListingRecyclerViewAdapter(BaseActivity activity, Executor executor, Retrofit oauthRetrofit,
                                                  RedditDataRoomDatabase redditDataRoomDatabase,
                                                  CustomThemeWrapper customThemeWrapper,
-                                                 String accessToken, OnItemClickListener onItemClickListener) {
+                                                 String accessToken, String userAgent, OnItemClickListener onItemClickListener) {
         mActivity = activity;
         mExecutor = executor;
         mGlide = Glide.with(activity);
         mOauthRetrofit = oauthRetrofit;
         mRedditDataRoomDatabase = redditDataRoomDatabase;
         mAccessToken = accessToken;
+        mUserAgent = userAgent;
         mPrimaryTextColor = customThemeWrapper.getPrimaryTextColor();
         mSecondaryTextColor = customThemeWrapper.getSecondaryTextColor();
         mOnItemClickListener = onItemClickListener;
@@ -137,7 +139,7 @@ public class MultiRedditListingRecyclerViewAdapter extends RecyclerView.Adapter<
                                 });
                     } else {
                         FavoriteMultiReddit.favoriteMultiReddit(mExecutor, new Handler(), mOauthRetrofit, mRedditDataRoomDatabase,
-                                mAccessToken, false, multiReddit,
+                                mAccessToken, mUserAgent, false, multiReddit,
                                 new FavoriteMultiReddit.FavoriteMultiRedditListener() {
                                     @Override
                                     public void success() {
@@ -170,7 +172,7 @@ public class MultiRedditListingRecyclerViewAdapter extends RecyclerView.Adapter<
                                 });
                     } else {
                         FavoriteMultiReddit.favoriteMultiReddit(mExecutor, new Handler(), mOauthRetrofit, mRedditDataRoomDatabase,
-                                mAccessToken, true, multiReddit,
+                                mAccessToken, mUserAgent, true, multiReddit,
                                 new FavoriteMultiReddit.FavoriteMultiRedditListener() {
                                     @Override
                                     public void success() {
@@ -237,7 +239,7 @@ public class MultiRedditListingRecyclerViewAdapter extends RecyclerView.Adapter<
                                 });
                     } else {
                         FavoriteMultiReddit.favoriteMultiReddit(mExecutor, new Handler(), mOauthRetrofit, mRedditDataRoomDatabase,
-                                mAccessToken, false, multiReddit,
+                                mAccessToken, mUserAgent, false, multiReddit,
                                 new FavoriteMultiReddit.FavoriteMultiRedditListener() {
                                     @Override
                                     public void success() {
@@ -270,7 +272,7 @@ public class MultiRedditListingRecyclerViewAdapter extends RecyclerView.Adapter<
                                 });
                     } else {
                         FavoriteMultiReddit.favoriteMultiReddit(mExecutor, new Handler(), mOauthRetrofit, mRedditDataRoomDatabase,
-                                mAccessToken, true, multiReddit,
+                                mAccessToken, mUserAgent, true, multiReddit,
                                 new FavoriteMultiReddit.FavoriteMultiRedditListener() {
                                     @Override
                                     public void success() {

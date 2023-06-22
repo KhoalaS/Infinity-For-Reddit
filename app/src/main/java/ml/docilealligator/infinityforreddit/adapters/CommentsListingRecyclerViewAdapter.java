@@ -82,6 +82,7 @@ public class CommentsListingRecyclerViewAdapter extends PagedListAdapter<Comment
     private RecyclerView.RecycledViewPool recycledViewPool;
     private String mAccessToken;
     private String mAccountName;
+    private String mUserAgent;
     private int mColorPrimaryLightTheme;
     private int mSecondaryTextColor;
     private int mCommentBackgroundColor;
@@ -105,7 +106,7 @@ public class CommentsListingRecyclerViewAdapter extends PagedListAdapter<Comment
 
     public CommentsListingRecyclerViewAdapter(BaseActivity activity, Retrofit oauthRetrofit,
                                               CustomThemeWrapper customThemeWrapper, Locale locale,
-                                              SharedPreferences sharedPreferences, String accessToken,
+                                              SharedPreferences sharedPreferences, String accessToken, String userAgent,
                                               String accountName, RetryLoadingMoreCallback retryLoadingMoreCallback) {
         super(DIFF_CALLBACK);
         mActivity = activity;
@@ -115,6 +116,7 @@ public class CommentsListingRecyclerViewAdapter extends PagedListAdapter<Comment
         mLocale = locale;
         mAccessToken = accessToken;
         mAccountName = accountName;
+        mUserAgent = userAgent;
         mShowElapsedTime = sharedPreferences.getBoolean(SharedPreferencesUtils.SHOW_ELAPSED_TIME_KEY, false);
         mShowCommentDivider = sharedPreferences.getBoolean(SharedPreferencesUtils.SHOW_COMMENT_DIVIDER, false);
         mShowAbsoluteNumberOfVotes = sharedPreferences.getBoolean(SharedPreferencesUtils.SHOW_ABSOLUTE_NUMBER_OF_VOTES, true);
@@ -562,7 +564,7 @@ public class CommentsListingRecyclerViewAdapter extends PagedListAdapter<Comment
                                 comment.getScore() + comment.getVoteType()));
                     }
 
-                    VoteThing.voteThing(mActivity, mOauthRetrofit, mAccessToken, new VoteThing.VoteThingListener() {
+                    VoteThing.voteThing(mActivity, mOauthRetrofit, mAccessToken, mUserAgent, new VoteThing.VoteThingListener() {
                         @Override
                         public void onVoteThingSuccess(int position1) {
                             int currentPosition = getBindingAdapterPosition();
@@ -632,7 +634,7 @@ public class CommentsListingRecyclerViewAdapter extends PagedListAdapter<Comment
                                 comment.getScore() + comment.getVoteType()));
                     }
 
-                    VoteThing.voteThing(mActivity, mOauthRetrofit, mAccessToken, new VoteThing.VoteThingListener() {
+                    VoteThing.voteThing(mActivity, mOauthRetrofit, mAccessToken, mUserAgent, new VoteThing.VoteThingListener() {
                         @Override
                         public void onVoteThingSuccess(int position1) {
                             int currentPosition = getBindingAdapterPosition();
@@ -675,7 +677,7 @@ public class CommentsListingRecyclerViewAdapter extends PagedListAdapter<Comment
                 if (comment != null) {
                     if (comment.isSaved()) {
                         comment.setSaved(false);
-                        SaveThing.unsaveThing(mOauthRetrofit, mAccessToken, comment.getFullName(), new SaveThing.SaveThingListener() {
+                        SaveThing.unsaveThing(mOauthRetrofit, mAccessToken, mUserAgent, comment.getFullName(), new SaveThing.SaveThingListener() {
                             @Override
                             public void success() {
                                 comment.setSaved(false);
@@ -696,7 +698,7 @@ public class CommentsListingRecyclerViewAdapter extends PagedListAdapter<Comment
                         });
                     } else {
                         comment.setSaved(true);
-                        SaveThing.saveThing(mOauthRetrofit, mAccessToken, comment.getFullName(), new SaveThing.SaveThingListener() {
+                        SaveThing.saveThing(mOauthRetrofit, mAccessToken, mUserAgent, comment.getFullName(), new SaveThing.SaveThingListener() {
                             @Override
                             public void success() {
                                 comment.setSaved(true);

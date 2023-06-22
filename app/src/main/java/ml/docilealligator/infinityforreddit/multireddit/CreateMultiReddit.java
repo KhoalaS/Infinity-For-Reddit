@@ -26,12 +26,12 @@ public class CreateMultiReddit {
     }
 
     public static void createMultiReddit(Retrofit oauthRetrofit, RedditDataRoomDatabase redditDataRoomDatabase,
-                                         String accessToken, String multipath, String model,
+                                         String accessToken, String useragent, String multipath, String model,
                                          CreateMultiRedditListener createMultiRedditListener) {
         Map<String, String> params = new HashMap<>();
         params.put(APIUtils.MULTIPATH_KEY, multipath);
         params.put(APIUtils.MODEL_KEY, model);
-        oauthRetrofit.create(RedditAPI.class).createMultiReddit(APIUtils.getOAuthHeader(accessToken),
+        oauthRetrofit.create(RedditAPI.class).createMultiReddit(APIUtils.getOAuthHeader(accessToken, useragent),
                 params).enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {

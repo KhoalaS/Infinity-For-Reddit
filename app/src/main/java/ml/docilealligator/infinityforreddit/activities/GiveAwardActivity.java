@@ -38,6 +38,8 @@ import ml.docilealligator.infinityforreddit.award.GiveAward;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.customviews.LinearLayoutManagerBugFixed;
 import ml.docilealligator.infinityforreddit.customviews.slidr.Slidr;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import retrofit2.Retrofit;
 
@@ -75,6 +77,7 @@ public class GiveAwardActivity extends BaseActivity {
     private String thingFullname;
     private int itemPosition;
     private String mAccessToken;
+    private String mUserAgent;
     private AwardRecyclerViewAdapter adapter;
 
     @Override
@@ -108,6 +111,10 @@ public class GiveAwardActivity extends BaseActivity {
 
         mAccessToken = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCESS_TOKEN, null);
 
+        String _username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUserAgent = UseragentUtil.getUserAgent(appname, _username);
+
         bindView();
     }
 
@@ -122,7 +129,7 @@ public class GiveAwardActivity extends BaseActivity {
                     .setPositiveButton(R.string.yes, (dialogInterface, i) -> {
                         boolean isAnonymous = materialSwitch.isChecked();
 
-                        GiveAward.giveAwardV2(mExecutor, new Handler(), mOauthRetrofit, mAccessToken,
+                        GiveAward.giveAwardV2(mExecutor, new Handler(), mOauthRetrofit, mAccessToken, mUserAgent,
                                 thingFullname, award.getId(), isAnonymous, new GiveAward.GiveAwardListener() {
                                     @Override
                                     public void success(String awardsHTML, int awardCount) {

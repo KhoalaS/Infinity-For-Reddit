@@ -12,23 +12,25 @@ class MessageDataSourceFactory extends DataSource.Factory {
     private Retrofit oauthRetrofit;
     private Locale locale;
     private String accessToken;
+    private String userAgent;
     private String where;
 
     private MessageDataSource messageDataSource;
     private MutableLiveData<MessageDataSource> messageDataSourceLiveData;
 
-    MessageDataSourceFactory(Retrofit oauthRetrofit, Locale locale, String accessToken, String where) {
+    MessageDataSourceFactory(Retrofit oauthRetrofit, Locale locale, String accessToken, String userAgent, String where) {
         this.oauthRetrofit = oauthRetrofit;
         this.locale = locale;
         this.accessToken = accessToken;
         this.where = where;
+        this.userAgent = userAgent;
         messageDataSourceLiveData = new MutableLiveData<>();
     }
 
     @NonNull
     @Override
     public DataSource create() {
-        messageDataSource = new MessageDataSource(oauthRetrofit, locale, accessToken, where);
+        messageDataSource = new MessageDataSource(oauthRetrofit, locale, accessToken, userAgent, where);
         messageDataSourceLiveData.postValue(messageDataSource);
         return messageDataSource;
     }

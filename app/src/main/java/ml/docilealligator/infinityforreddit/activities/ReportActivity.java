@@ -34,6 +34,8 @@ import ml.docilealligator.infinityforreddit.Rule;
 import ml.docilealligator.infinityforreddit.adapters.ReportReasonRecyclerViewAdapter;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.customviews.slidr.Slidr;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import retrofit2.Retrofit;
 
@@ -71,6 +73,7 @@ public class ReportActivity extends BaseActivity {
     @Inject
     Executor mExecutor;
     private String mAccessToken;
+    private String mUseragent;
     private String mFullname;
     private String mSubredditName;
     private ArrayList<ReportReason> generalReasons;
@@ -105,6 +108,10 @@ public class ReportActivity extends BaseActivity {
         mSubredditName = getIntent().getStringExtra(EXTRA_SUBREDDIT_NAME);
 
         mAccessToken = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCESS_TOKEN, null);
+        String _username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUseragent = UseragentUtil.getUserAgent(appname, _username);
+
 
         if (savedInstanceState != null) {
             generalReasons = savedInstanceState.getParcelableArrayList(GENERAL_REASONS_STATE);
@@ -119,7 +126,7 @@ public class ReportActivity extends BaseActivity {
         recyclerView.setAdapter(mAdapter);
 
         if (rulesReasons == null) {
-            FetchRules.fetchRules(mExecutor, new Handler(), mAccessToken == null ? mRetrofit : mOauthRetrofit, mAccessToken, mSubredditName, new FetchRules.FetchRulesListener() {
+            FetchRules.fetchRules(mExecutor, new Handler(), mAccessToken == null ? mRetrofit : mOauthRetrofit, mAccessToken, mUseragent, mSubredditName, new FetchRules.FetchRulesListener() {
                 @Override
                 public void success(ArrayList<Rule> rules) {
                     mAdapter.setRules(ReportReason.convertRulesToReasons(rules));
@@ -152,7 +159,7 @@ public class ReportActivity extends BaseActivity {
             ReportReason reportReason = mAdapter.getSelectedReason();
             if (reportReason != null) {
                 Toast.makeText(ReportActivity.this, R.string.reporting, Toast.LENGTH_SHORT).show();
-                ReportThing.reportThing(mOauthRetrofit, mAccessToken, mFullname, mSubredditName,
+                ReportThing.reportThing(mOauthRetrofit, mAccessToken, mUseragent, mFullname, mSubredditName,
                         reportReason.getReasonType(), reportReason.getReportReason(), new ReportThing.ReportThingListener() {
                             @Override
                             public void success() {

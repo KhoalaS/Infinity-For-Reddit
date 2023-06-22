@@ -1,6 +1,7 @@
 package ml.docilealligator.infinityforreddit.utils;
 
 import android.graphics.Bitmap;
+import android.service.autofill.AutofillService;
 
 import androidx.annotation.NonNull;
 
@@ -27,11 +28,12 @@ public final class EditProfileUtils {
 
     public static void updateProfile(Retrofit oauthRetrofit,
                                      String accessToken,
+                                     String useragent,
                                      String accountName,
                                      String displayName,
                                      String publicDesc,
                                      EditProfileUtilsListener listener) {
-        final Map<String, String> oauthHeader = APIUtils.getOAuthHeader(accessToken);
+        final Map<String, String> oauthHeader = APIUtils.getOAuthHeader(accessToken, useragent);
         final RedditAPI api = oauthRetrofit.create(RedditAPI.class);
         final String name = "u_" + accountName;
         api.getSubredditSetting(oauthHeader, name).enqueue(new Callback<>() {
@@ -158,12 +160,13 @@ public final class EditProfileUtils {
 
     public static void uploadAvatar(Retrofit oauthRetrofit,
                                     String accessToken,
+                                    String useragent,
                                     String accountName,
                                     Bitmap image,
                                     EditProfileUtilsListener listener) {
         oauthRetrofit.create(RedditAPI.class)
                 .uploadSrImg(
-                        APIUtils.getOAuthHeader(accessToken),
+                        APIUtils.getOAuthHeader(accessToken, useragent),
                         "u_" + accountName,
                         requestBodyUploadSr("icon"),
                         fileToUpload(image, accountName + "-icon"))
@@ -185,12 +188,13 @@ public final class EditProfileUtils {
 
     public static void uploadBanner(Retrofit oauthRetrofit,
                                     String accessToken,
+                                    String useragent,
                                     String accountName,
                                     Bitmap image,
                                     EditProfileUtilsListener listener) {
         oauthRetrofit.create(RedditAPI.class)
                 .uploadSrImg(
-                        APIUtils.getOAuthHeader(accessToken),
+                        APIUtils.getOAuthHeader(accessToken, useragent),
                         "u_" + accountName,
                         requestBodyUploadSr("banner"),
                         fileToUpload(image, accountName + "-banner"))
@@ -212,10 +216,11 @@ public final class EditProfileUtils {
 
     public static void deleteAvatar(Retrofit oauthRetrofit,
                                     String accessToken,
+                                    String useragent,
                                     String accountName,
                                     EditProfileUtilsListener listener) {
         oauthRetrofit.create(RedditAPI.class)
-                .deleteSrIcon(APIUtils.getOAuthHeader(accessToken), "u_" + accountName)
+                .deleteSrIcon(APIUtils.getOAuthHeader(accessToken, useragent), "u_" + accountName)
                 .enqueue(new Callback<>() {
                     @Override
                     public void onResponse(@NonNull Call<String> call,
@@ -234,10 +239,11 @@ public final class EditProfileUtils {
 
     public static void deleteBanner(Retrofit oauthRetrofit,
                                     String accessToken,
+                                    String userAgent,
                                     String accountName,
                                     EditProfileUtilsListener listener) {
         oauthRetrofit.create(RedditAPI.class)
-                .deleteSrBanner(APIUtils.getOAuthHeader(accessToken), "u_" + accountName)
+                .deleteSrBanner(APIUtils.getOAuthHeader(accessToken, userAgent), "u_" + accountName)
                 .enqueue(new Callback<>() {
                     @Override
                     public void onResponse(@NonNull Call<String> call,

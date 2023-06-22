@@ -2,6 +2,7 @@ package ml.docilealligator.infinityforreddit.bottomsheetfragments;
 
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,6 +34,8 @@ import ml.docilealligator.infinityforreddit.adapters.FlairBottomSheetRecyclerVie
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.customviews.LandscapeExpandedBottomSheetDialogFragment;
 import ml.docilealligator.infinityforreddit.events.FlairSelectedEvent;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.Utils;
 import retrofit2.Retrofit;
 
@@ -58,11 +61,15 @@ public class FlairBottomSheetFragment extends LandscapeExpandedBottomSheetDialog
     @Named("no_oauth")
     Retrofit mRetrofit;
     @Inject
+    @Named("current_account")
+    SharedPreferences mCurrentAccountSharedPreferences;
+    @Inject
     CustomThemeWrapper mCustomThemeWrapper;
     private String mAccessToken;
     private String mSubredditName;
     private BaseActivity mActivity;
     private FlairBottomSheetRecyclerViewAdapter mAdapter;
+    private String mUseragent;
 
     public FlairBottomSheetFragment() {
         // Required empty public constructor
@@ -94,6 +101,10 @@ public class FlairBottomSheetFragment extends LandscapeExpandedBottomSheetDialog
 
         recyclerView.setAdapter(mAdapter);
 
+        String username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUseragent = UseragentUtil.getUserAgent(appname, username);
+
         mAccessToken = getArguments().getString(EXTRA_ACCESS_TOKEN);
         mSubredditName = getArguments().getString(EXTRA_SUBREDDIT_NAME);
 
@@ -103,7 +114,7 @@ public class FlairBottomSheetFragment extends LandscapeExpandedBottomSheetDialog
     }
 
     private void fetchFlairs() {
-        FetchFlairs.fetchFlairsInSubreddit(mOauthRetrofit, mAccessToken,
+        FetchFlairs.fetchFlairsInSubreddit(mOauthRetrofit, mAccessToken, mUseragent,
                 mSubredditName, new FetchFlairs.FetchFlairsInSubredditListener() {
                     @Override
                     public void fetchSuccessful(ArrayList<Flair> flairs) {

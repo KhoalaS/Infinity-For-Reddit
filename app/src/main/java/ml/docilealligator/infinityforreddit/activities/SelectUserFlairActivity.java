@@ -36,6 +36,8 @@ import ml.docilealligator.infinityforreddit.adapters.UserFlairRecyclerViewAdapte
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.customviews.LinearLayoutManagerBugFixed;
 import ml.docilealligator.infinityforreddit.customviews.slidr.Slidr;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import ml.docilealligator.infinityforreddit.utils.Utils;
 import retrofit2.Retrofit;
@@ -68,6 +70,7 @@ public class SelectUserFlairActivity extends BaseActivity implements ActivityToo
     private boolean mNullAccessToken = false;
     private String mAccessToken;
     private String mAccountName;
+    private String mUserAgent;
     private ArrayList<UserFlair> mUserFlairs;
     private String mSubredditName;
     private UserFlairRecyclerViewAdapter mAdapter;
@@ -102,6 +105,9 @@ public class SelectUserFlairActivity extends BaseActivity implements ActivityToo
 
         mAccessToken = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCESS_TOKEN, null);
         mAccountName = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCOUNT_NAME, null);
+        String _username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUserAgent = UseragentUtil.getUserAgent(appname, _username);
 
         if (savedInstanceState != null) {
             mUserFlairs = savedInstanceState.getParcelableArrayList(USER_FLAIRS_STATE);
@@ -111,7 +117,7 @@ public class SelectUserFlairActivity extends BaseActivity implements ActivityToo
 
     private void bindView() {
         if (mUserFlairs == null) {
-            FetchUserFlairs.fetchUserFlairsInSubreddit(mOauthRetrofit, mAccessToken, mSubredditName,
+            FetchUserFlairs.fetchUserFlairsInSubreddit(mOauthRetrofit, mAccessToken, mUserAgent, mSubredditName,
                     new FetchUserFlairs.FetchUserFlairsInSubredditListener() {
                         @Override
                         public void fetchSuccessful(ArrayList<UserFlair> userFlairs) {
@@ -176,7 +182,7 @@ public class SelectUserFlairActivity extends BaseActivity implements ActivityToo
     }
 
     private void selectUserFlair(@Nullable UserFlair userFlair) {
-        SelectUserFlair.selectUserFlair(mOauthRetrofit, mAccessToken, userFlair, mSubredditName, mAccountName,
+        SelectUserFlair.selectUserFlair(mOauthRetrofit, mAccessToken, mUserAgent, userFlair, mSubredditName, mAccountName,
                 new SelectUserFlair.SelectUserFlairListener() {
                     @Override
                     public void success() {

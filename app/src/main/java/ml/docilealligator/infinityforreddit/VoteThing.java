@@ -20,7 +20,7 @@ import retrofit2.Retrofit;
 
 public class VoteThing {
 
-    public static void voteThing(Context context, final Retrofit retrofit, String accessToken,
+    public static void voteThing(Context context, final Retrofit retrofit, String accessToken, String useragent,
                                  final VoteThingListener voteThingListener, final String fullName,
                                  final String point, final int position) {
         RedditAPI api = retrofit.create(RedditAPI.class);
@@ -30,7 +30,7 @@ public class VoteThing {
         params.put(APIUtils.ID_KEY, fullName);
         params.put(APIUtils.RANK_KEY, APIUtils.RANK);
 
-        Call<String> voteThingCall = api.voteThing(APIUtils.getOAuthHeader(accessToken), params);
+        Call<String> voteThingCall = api.voteThing(APIUtils.getOAuthHeader(accessToken, useragent), params);
         voteThingCall.enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull retrofit2.Response<String> response) {
@@ -50,7 +50,7 @@ public class VoteThing {
         });
     }
 
-    public static void voteThing(Context context, final Retrofit retrofit, String accessToken,
+    public static void voteThing(Context context, final Retrofit retrofit, String accessToken, String useragent,
                                  final VoteThingWithoutPositionListener voteThingWithoutPositionListener,
                                  final String fullName, final String point) {
         RedditAPI api = retrofit.create(RedditAPI.class);
@@ -60,7 +60,7 @@ public class VoteThing {
         params.put(APIUtils.ID_KEY, fullName);
         params.put(APIUtils.RANK_KEY, APIUtils.RANK);
 
-        Call<String> voteThingCall = api.voteThing(APIUtils.getOAuthHeader(accessToken), params);
+        Call<String> voteThingCall = api.voteThing(APIUtils.getOAuthHeader(accessToken, useragent), params);
         voteThingCall.enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull retrofit2.Response<String> response) {

@@ -14,6 +14,7 @@ import java.util.Map;
 
 import ml.docilealligator.infinityforreddit.account.Account;
 import ml.docilealligator.infinityforreddit.apis.RedditAPI;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
 import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import okhttp3.Authenticator;
@@ -51,15 +52,19 @@ class AccessTokenAuthenticator implements Authenticator {
                     return null;
                 }
                 String accessTokenFromDatabase = account.getAccessToken();
+                String username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+                String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+                String useragent = UseragentUtil.getUserAgent(appname, username);
+
                 if (accessToken.equals(accessTokenFromDatabase)) {
                     String newAccessToken = refreshAccessToken(account);
                     if (!newAccessToken.equals("")) {
-                        return response.request().newBuilder().headers(Headers.of(APIUtils.getOAuthHeader(newAccessToken))).build();
+                        return response.request().newBuilder().headers(Headers.of(APIUtils.getOAuthHeader(newAccessToken, useragent))).build();
                     } else {
                         return null;
                     }
                 } else {
-                    return response.request().newBuilder().headers(Headers.of(APIUtils.getOAuthHeader(accessTokenFromDatabase))).build();
+                    return response.request().newBuilder().headers(Headers.of(APIUtils.getOAuthHeader(accessTokenFromDatabase, useragent))).build();
                 }
             }
         }

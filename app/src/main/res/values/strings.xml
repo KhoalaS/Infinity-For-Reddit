@@ -1056,7 +1056,9 @@
     <string name="login_activity_input_client_id">Please paste your own Client-ID here. Also please set your Redirect-URI to http://localhost:9999. After clicking on "Apply" you will be able to login as usual.</string>
     <string name="login_activity_input_client_id_update">Looks like you already set a Client-ID in the past. If you want to use a different ID, paste it below and press the "Update" button.</string>
     <string name="login_activity_apply">Apply</string>
-
+    <string name="login_activity_user_agent_username">Username</string>
+    <string name="login_activity_user_agent_appname">App name</string>
+    <string name="login_activity_client_id">Client ID</string>
 
 
     <string name="block_user">Block User</string>

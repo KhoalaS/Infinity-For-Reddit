@@ -12,6 +12,7 @@ import java.util.concurrent.Executor;
 
 import ml.docilealligator.infinityforreddit.apis.GfycatAPI;
 import ml.docilealligator.infinityforreddit.apis.RedgifsAPI;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
 import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.JSONUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
@@ -49,9 +50,13 @@ public class FetchGfycatOrRedgifsVideoLinks {
                                               String gfycatId,
                                               FetchGfycatOrRedgifsVideoLinksListener fetchGfycatOrRedgifsVideoLinksListener) {
         executor.execute(() -> {
+            String username = currentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+            String appname = currentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+            String useragent = UseragentUtil.getUserAgent(appname, username);
+
             try {
                 Response<String> response = redgifsRetrofit.create(RedgifsAPI.class).getRedgifsData(APIUtils.getRedgifsOAuthHeader(currentAccountSharedPreferences.getString(SharedPreferencesUtils.REDGIFS_ACCESS_TOKEN, "")),
-                         gfycatId, APIUtils.USER_AGENT).execute();
+                         gfycatId, useragent).execute();
                 if (response.isSuccessful()) {
                     parseRedgifsVideoLinks(handler, response.body(), fetchGfycatOrRedgifsVideoLinksListener);
                 } else {

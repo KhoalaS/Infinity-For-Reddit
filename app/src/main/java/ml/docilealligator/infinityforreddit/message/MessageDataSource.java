@@ -15,6 +15,7 @@ class MessageDataSource extends PageKeyedDataSource<String, Message> {
     private Retrofit oauthRetrofit;
     private Locale locale;
     private String accessToken;
+    private String userAgent;
     private String where;
     private int messageType;
 
@@ -25,10 +26,11 @@ class MessageDataSource extends PageKeyedDataSource<String, Message> {
     private LoadParams<String> params;
     private LoadCallback<String, Message> callback;
 
-    MessageDataSource(Retrofit oauthRetrofit, Locale locale, String accessToken, String where) {
+    MessageDataSource(Retrofit oauthRetrofit, Locale locale, String accessToken, String userAgent, String where) {
         this.oauthRetrofit = oauthRetrofit;
         this.locale = locale;
         this.accessToken = accessToken;
+        this.userAgent = userAgent;
         this.where = where;
         if (where.equals(FetchMessage.WHERE_MESSAGES)) {
             messageType = FetchMessage.MESSAGE_TYPE_PRIVATE_MESSAGE;
@@ -60,7 +62,7 @@ class MessageDataSource extends PageKeyedDataSource<String, Message> {
     public void loadInitial(@NonNull LoadInitialParams<String> params, @NonNull LoadInitialCallback<String, Message> callback) {
         initialLoadStateLiveData.postValue(NetworkState.LOADING);
 
-        FetchMessage.fetchInbox(oauthRetrofit, locale, accessToken, where, null, messageType,
+        FetchMessage.fetchInbox(oauthRetrofit, locale, accessToken, userAgent, where, null, messageType,
                 new FetchMessage.FetchMessagesListener() {
             @Override
             public void fetchSuccess(ArrayList<Message> messages, @Nullable String after) {
@@ -97,7 +99,7 @@ class MessageDataSource extends PageKeyedDataSource<String, Message> {
 
         paginationNetworkStateLiveData.postValue(NetworkState.LOADING);
 
-        FetchMessage.fetchInbox(oauthRetrofit, locale, accessToken, where, params.key, messageType,
+        FetchMessage.fetchInbox(oauthRetrofit, locale, accessToken, userAgent, where, params.key, messageType,
                 new FetchMessage.FetchMessagesListener() {
             @Override
             public void fetchSuccess(ArrayList<Message> messages, @Nullable String after) {

@@ -57,6 +57,7 @@ import ml.docilealligator.infinityforreddit.events.SubmitTextOrLinkPostEvent;
 import ml.docilealligator.infinityforreddit.events.SubmitVideoOrGifPostEvent;
 import ml.docilealligator.infinityforreddit.post.Post;
 import ml.docilealligator.infinityforreddit.post.SubmitPost;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
 import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.JSONUtils;
 import ml.docilealligator.infinityforreddit.utils.NotificationUtils;
@@ -109,6 +110,7 @@ public class SubmitPostService extends Service {
     Executor mExecutor;
     private Handler handler;
     private ServiceHandler serviceHandler;
+    private String mUserAgent;
 
     public SubmitPostService() {
     }
@@ -184,6 +186,11 @@ public class SubmitPostService extends Service {
 
         // Get the HandlerThread's Looper and use it for our Handler
         serviceHandler = new ServiceHandler(thread.getLooper());
+
+        String username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUserAgent = UseragentUtil.getUserAgent(appname, username);
+
     }
 
     @Override
@@ -235,7 +242,7 @@ public class SubmitPostService extends Service {
     private void submitTextOrLinkPost(Retrofit newAuthenticatorOauthRetrofit, Account selectedAccount, String subredditName, String title, String content,
                                       Flair flair, boolean isSpoiler, boolean isNSFW, boolean receivePostReplyNotifications,
                                       String kind) {
-        SubmitPost.submitTextOrLinkPost(mExecutor, handler, newAuthenticatorOauthRetrofit, selectedAccount.getAccessToken(),
+        SubmitPost.submitTextOrLinkPost(mExecutor, handler, newAuthenticatorOauthRetrofit, selectedAccount.getAccessToken(), mUserAgent,
                 subredditName, title, content, flair, isSpoiler,
                 isNSFW, receivePostReplyNotifications, kind, new SubmitPost.SubmitPostListener() {
                     @Override
@@ -258,7 +265,7 @@ public class SubmitPostService extends Service {
                                  Account selectedAccount, String subredditName,
                                  String title, String content, Flair flair, boolean isSpoiler, boolean isNSFW,
                                  boolean receivePostReplyNotifications) {
-        SubmitPost.submitCrosspost(executor, handler, newAuthenticatorOauthRetrofit, selectedAccount.getAccessToken(), subredditName, title,
+        SubmitPost.submitCrosspost(executor, handler, newAuthenticatorOauthRetrofit, selectedAccount.getAccessToken(), mUserAgent, subredditName, title,
                 content, flair, isSpoiler, isNSFW, receivePostReplyNotifications, APIUtils.KIND_CROSSPOST,
                 new SubmitPost.SubmitPostListener() {
                     @Override
@@ -282,7 +289,7 @@ public class SubmitPostService extends Service {
         try {
             Bitmap resource = Glide.with(this).asBitmap().load(mediaUri).submit().get();
             SubmitPost.submitImagePost(mExecutor, handler, newAuthenticatorOauthRetrofit, mUploadMediaRetrofit,
-                    selectedAccount.getAccessToken(), subredditName, title, resource, flair, isSpoiler, isNSFW, receivePostReplyNotifications,
+                    selectedAccount.getAccessToken(), mUserAgent, subredditName, title, resource, flair, isSpoiler, isNSFW, receivePostReplyNotifications,
                     new SubmitPost.SubmitPostListener() {
                         @Override
                         public void submitSuccessful(Post post) {
@@ -326,7 +333,7 @@ public class SubmitPostService extends Service {
 
             if (type != null) {
                 SubmitPost.submitVideoPost(mExecutor, handler, newAuthenticatorOauthRetrofit, mUploadMediaRetrofit,
-                        mUploadVideoRetrofit, selectedAccount.getAccessToken(), subredditName, title, new File(cacheFilePath),
+                        mUploadVideoRetrofit, selectedAccount.getAccessToken(), mUserAgent, subredditName, title, new File(cacheFilePath),
                         type, resource, flair, isSpoiler, isNSFW, receivePostReplyNotifications,
                         new SubmitPost.SubmitPostListener() {
                             @Override
@@ -366,7 +373,7 @@ public class SubmitPostService extends Service {
 
     private void submitGalleryPost(Retrofit newAuthenticatorOauthRetrofit, Account selectedAccount, String payload) {
         try {
-            Response<String> response = newAuthenticatorOauthRetrofit.create(RedditAPI.class).submitGalleryPost(APIUtils.getOAuthHeader(selectedAccount.getAccessToken()), payload).execute();
+            Response<String> response = newAuthenticatorOauthRetrofit.create(RedditAPI.class).submitGalleryPost(APIUtils.getOAuthHeader(selectedAccount.getAccessToken(), mUserAgent), payload).execute();
             if (response.isSuccessful()) {
                 JSONObject responseObject = new JSONObject(response.body()).getJSONObject(JSONUtils.JSON_KEY);
                 if (responseObject.getJSONArray(JSONUtils.ERRORS_KEY).length() != 0) {
@@ -402,7 +409,7 @@ public class SubmitPostService extends Service {
 
     private void submitPollPost(Retrofit newAuthenticatorOauthRetrofit, Account selectedAccount, String payload) {
         try {
-            Response<String> response = newAuthenticatorOauthRetrofit.create(RedditAPI.class).submitPollPost(APIUtils.getOAuthHeader(selectedAccount.getAccessToken()), payload).execute();
+            Response<String> response = newAuthenticatorOauthRetrofit.create(RedditAPI.class).submitPollPost(APIUtils.getOAuthHeader(selectedAccount.getAccessToken(), mUserAgent), payload).execute();
             if (response.isSuccessful()) {
                 JSONObject responseObject = new JSONObject(response.body()).getJSONObject(JSONUtils.JSON_KEY);
                 if (responseObject.getJSONArray(JSONUtils.ERRORS_KEY).length() != 0) {

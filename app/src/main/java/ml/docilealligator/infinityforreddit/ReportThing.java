@@ -19,10 +19,10 @@ public class ReportThing {
         void failed();
     }
 
-    public static void reportThing(Retrofit oauthRetrofit, String accessToken, String thingFullname,
+    public static void reportThing(Retrofit oauthRetrofit, String accessToken, String useragent, String thingFullname,
                                    String subredditName, String reasonType, String reason,
                                    ReportThingListener reportThingListener) {
-        Map<String, String> header = APIUtils.getOAuthHeader(accessToken);
+        Map<String, String> header = APIUtils.getOAuthHeader(accessToken, useragent);
         Map<String, String> params = new HashMap<>();
         params.put(APIUtils.THING_ID_KEY, thingFullname);
         params.put(APIUtils.SR_NAME_KEY, subredditName);

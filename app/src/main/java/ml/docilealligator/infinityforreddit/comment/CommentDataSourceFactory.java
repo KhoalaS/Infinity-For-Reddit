@@ -14,6 +14,7 @@ class CommentDataSourceFactory extends DataSource.Factory {
     private Retrofit retrofit;
     private Locale locale;
     private String accessToken;
+    private String userAgent;
     private String username;
     private SortType sortType;
     private boolean areSavedComments;
@@ -21,7 +22,7 @@ class CommentDataSourceFactory extends DataSource.Factory {
     private CommentDataSource commentDataSource;
     private MutableLiveData<CommentDataSource> commentDataSourceLiveData;
 
-    CommentDataSourceFactory(Retrofit retrofit, Locale locale, @Nullable String accessToken,
+    CommentDataSourceFactory(Retrofit retrofit, Locale locale, @Nullable String accessToken, String userAgent,
                              String username, SortType sortType,
                              boolean areSavedComments) {
         this.retrofit = retrofit;
@@ -30,13 +31,14 @@ class CommentDataSourceFactory extends DataSource.Factory {
         this.username = username;
         this.sortType = sortType;
         this.areSavedComments = areSavedComments;
+        this.userAgent = userAgent;
         commentDataSourceLiveData = new MutableLiveData<>();
     }
 
     @NonNull
     @Override
     public DataSource create() {
-        commentDataSource = new CommentDataSource(retrofit, locale, accessToken, username, sortType,
+        commentDataSource = new CommentDataSource(retrofit, locale, accessToken, userAgent, username, sortType,
                 areSavedComments);
         commentDataSourceLiveData.postValue(commentDataSource);
         return commentDataSource;

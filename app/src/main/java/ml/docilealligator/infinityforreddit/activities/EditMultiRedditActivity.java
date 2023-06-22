@@ -41,6 +41,8 @@ import ml.docilealligator.infinityforreddit.multireddit.EditMultiReddit;
 import ml.docilealligator.infinityforreddit.multireddit.FetchMultiRedditInfo;
 import ml.docilealligator.infinityforreddit.multireddit.MultiReddit;
 import ml.docilealligator.infinityforreddit.multireddit.MultiRedditJSONModel;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import ml.docilealligator.infinityforreddit.utils.Utils;
 import retrofit2.Retrofit;
@@ -95,6 +97,7 @@ public class EditMultiRedditActivity extends BaseActivity {
     Executor mExecutor;
     private String mAccessToken;
     private String mAccountName;
+    private String mUserAgent;
     private MultiReddit multiReddit;
     private String multipath;
 
@@ -124,6 +127,10 @@ public class EditMultiRedditActivity extends BaseActivity {
 
         mAccessToken = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCESS_TOKEN, null);
         mAccountName = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCOUNT_NAME, "-");
+
+        String _username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUserAgent = UseragentUtil.getUserAgent(appname, _username);
 
         if (mAccessToken == null) {
             visibilityLinearLayout.setVisibility(View.GONE);
@@ -163,7 +170,7 @@ public class EditMultiRedditActivity extends BaseActivity {
                             }
                         });
             } else {
-                FetchMultiRedditInfo.fetchMultiRedditInfo(mRetrofit, mAccessToken, multipath, new FetchMultiRedditInfo.FetchMultiRedditInfoListener() {
+                FetchMultiRedditInfo.fetchMultiRedditInfo(mRetrofit, mAccessToken, mUserAgent, multipath, new FetchMultiRedditInfo.FetchMultiRedditInfoListener() {
                     @Override
                     public void success(MultiReddit multiReddit) {
                         EditMultiRedditActivity.this.multiReddit = multiReddit;
@@ -236,7 +243,7 @@ public class EditMultiRedditActivity extends BaseActivity {
             } else {
                 String jsonModel = new MultiRedditJSONModel(nameEditText.getText().toString(), descriptionEditText.getText().toString(),
                         visibilitySwitch.isChecked(), multiReddit.getSubreddits()).createJSONModel();
-                EditMultiReddit.editMultiReddit(mRetrofit, mAccessToken, multiReddit.getPath(),
+                EditMultiReddit.editMultiReddit(mRetrofit, mAccessToken, mUserAgent, multiReddit.getPath(),
                         jsonModel, new EditMultiReddit.EditMultiRedditListener() {
                             @Override
                             public void success() {

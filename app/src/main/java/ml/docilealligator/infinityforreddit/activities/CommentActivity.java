@@ -67,6 +67,8 @@ import ml.docilealligator.infinityforreddit.customviews.LinearLayoutManagerBugFi
 import ml.docilealligator.infinityforreddit.databinding.ActivityCommentBinding;
 import ml.docilealligator.infinityforreddit.events.SwitchAccountEvent;
 import ml.docilealligator.infinityforreddit.markdown.MarkdownUtils;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import ml.docilealligator.infinityforreddit.utils.Utils;
 import okhttp3.ConnectionPool;
@@ -115,6 +117,7 @@ public class CommentActivity extends BaseActivity implements UploadImageEnabledA
     private RequestManager mGlide;
     private Account selectedAccount;
     private String mAccessToken;
+    private String mUserAgent;
     private String parentFullname;
     private int parentDepth;
     private int parentPosition;
@@ -158,6 +161,11 @@ public class CommentActivity extends BaseActivity implements UploadImageEnabledA
             finish();
             return;
         }
+
+        String _username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUserAgent = UseragentUtil.getUserAgent(appname, _username);
+
 
         String parentTitle = intent.getStringExtra(EXTRA_COMMENT_PARENT_TITLE_KEY);
         if (!TextUtils.isEmpty(parentTitle)) {
@@ -397,7 +405,7 @@ public class CommentActivity extends BaseActivity implements UploadImageEnabledA
                     .build())
                     .build();
             SendComment.sendComment(mExecutor, new Handler(), binding.commentCommentEditText.getText().toString(),
-                    parentFullname, parentDepth, newAuthenticatorOauthRetrofit, selectedAccount,
+                    parentFullname, parentDepth, newAuthenticatorOauthRetrofit, selectedAccount, mUserAgent,
                     new SendComment.SendCommentListener() {
                         @Override
                         public void sendCommentSuccess(Comment comment) {
@@ -456,10 +464,10 @@ public class CommentActivity extends BaseActivity implements UploadImageEnabledA
                     return;
                 }
                 Utils.uploadImageToReddit(this, mExecutor, mOauthRetrofit, mUploadMediaRetrofit,
-                        mAccessToken, binding.commentCommentEditText, binding.commentCoordinatorLayout, data.getData(), uploadedImages);
+                        mAccessToken, mUserAgent, binding.commentCommentEditText, binding.commentCoordinatorLayout, data.getData(), uploadedImages);
             } else if (requestCode == CAPTURE_IMAGE_REQUEST_CODE) {
                 Utils.uploadImageToReddit(this, mExecutor, mOauthRetrofit, mUploadMediaRetrofit,
-                        mAccessToken, binding.commentCommentEditText, binding.commentCoordinatorLayout, capturedImageUri, uploadedImages);
+                        mAccessToken, mUserAgent, binding.commentCommentEditText, binding.commentCoordinatorLayout, capturedImageUri, uploadedImages);
             } else if (requestCode == MARKDOWN_PREVIEW_REQUEST_CODE) {
                 sendComment(mMenu == null ? null : mMenu.findItem(R.id.action_send_comment_activity));
             }

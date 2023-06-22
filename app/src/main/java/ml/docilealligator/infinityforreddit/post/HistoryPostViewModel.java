@@ -14,6 +14,8 @@ import androidx.paging.PagingConfig;
 import androidx.paging.PagingData;
 import androidx.paging.PagingLiveData;
 
+import com.google.android.exoplayer2.C;
+
 import java.util.concurrent.Executor;
 
 import ml.docilealligator.infinityforreddit.RedditDataRoomDatabase;
@@ -26,6 +28,7 @@ public class HistoryPostViewModel extends ViewModel {
     private RedditDataRoomDatabase redditDataRoomDatabase;
     private String accessToken;
     private String accountName;
+    private String userAgent;
     private SharedPreferences sharedPreferences;
     private int postType;
     private PostFilter postFilter;
@@ -35,7 +38,7 @@ public class HistoryPostViewModel extends ViewModel {
     private MutableLiveData<PostFilter> postFilterLiveData;
 
     public HistoryPostViewModel(Executor executor, Retrofit retrofit, RedditDataRoomDatabase redditDataRoomDatabase,
-                                String accessToken, String accountName, SharedPreferences sharedPreferences,
+                                String accessToken, String userAgent, String accountName, SharedPreferences sharedPreferences,
                                 int postType, PostFilter postFilter) {
         this.executor = executor;
         this.retrofit = retrofit;
@@ -45,6 +48,7 @@ public class HistoryPostViewModel extends ViewModel {
         this.sharedPreferences = sharedPreferences;
         this.postType = postType;
         this.postFilter = postFilter;
+        this.userAgent = userAgent;
 
         postFilterLiveData = new MutableLiveData<>();
         postFilterLiveData.postValue(postFilter);
@@ -62,11 +66,11 @@ public class HistoryPostViewModel extends ViewModel {
         HistoryPostPagingSource paging3PagingSource;
         switch (postType) {
             case HistoryPostPagingSource.TYPE_READ_POSTS:
-                paging3PagingSource = new HistoryPostPagingSource(retrofit, executor, redditDataRoomDatabase, accessToken, accountName,
+                paging3PagingSource = new HistoryPostPagingSource(retrofit, executor, redditDataRoomDatabase, accessToken, userAgent, accountName,
                         sharedPreferences, accountName, postType, postFilter);
                 break;
             default:
-                paging3PagingSource = new HistoryPostPagingSource(retrofit, executor, redditDataRoomDatabase, accessToken, accountName,
+                paging3PagingSource = new HistoryPostPagingSource(retrofit, executor, redditDataRoomDatabase, accessToken, userAgent, accountName,
                         sharedPreferences, accountName, postType, postFilter);
                 break;
         }
@@ -86,9 +90,10 @@ public class HistoryPostViewModel extends ViewModel {
         private SharedPreferences sharedPreferences;
         private int postType;
         private PostFilter postFilter;
+        private String userAgent;
 
         public Factory(Executor executor, Retrofit retrofit, RedditDataRoomDatabase redditDataRoomDatabase,
-                       String accessToken, String accountName, SharedPreferences sharedPreferences, int postType,
+                       String accessToken, String userAgent, String accountName, SharedPreferences sharedPreferences, int postType,
                        PostFilter postFilter) {
             this.executor = executor;
             this.retrofit = retrofit;
@@ -98,16 +103,17 @@ public class HistoryPostViewModel extends ViewModel {
             this.sharedPreferences = sharedPreferences;
             this.postType = postType;
             this.postFilter = postFilter;
+            this.userAgent = userAgent;
         }
 
         @NonNull
         @Override
         public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
             if (postType == HistoryPostPagingSource.TYPE_READ_POSTS) {
-                return (T) new HistoryPostViewModel(executor, retrofit, redditDataRoomDatabase, accessToken, accountName, sharedPreferences,
+                return (T) new HistoryPostViewModel(executor, retrofit, redditDataRoomDatabase, accessToken, userAgent, accountName, sharedPreferences,
                         postType, postFilter);
             } else {
-                return (T) new HistoryPostViewModel(executor, retrofit, redditDataRoomDatabase, accessToken, accountName, sharedPreferences,
+                return (T) new HistoryPostViewModel(executor, retrofit, redditDataRoomDatabase, accessToken, userAgent, accountName, sharedPreferences,
                         postType, postFilter);
             }
         }

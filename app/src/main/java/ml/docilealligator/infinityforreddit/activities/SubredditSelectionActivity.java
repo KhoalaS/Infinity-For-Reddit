@@ -47,6 +47,8 @@ import ml.docilealligator.infinityforreddit.fragments.SubscribedSubredditsListin
 import ml.docilealligator.infinityforreddit.subreddit.SubredditData;
 import ml.docilealligator.infinityforreddit.subscribedsubreddit.SubscribedSubredditData;
 import ml.docilealligator.infinityforreddit.subscribeduser.SubscribedUserData;
+import ml.docilealligator.infinityforreddit.user.UseragentUtil;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
@@ -92,6 +94,7 @@ public class SubredditSelectionActivity extends BaseActivity implements Activity
     Executor mExecutor;
     private String mAccessToken;
     private String mAccountName;
+    private String mUserAgent;
     private String mAccountProfileImageUrl;
     private boolean mInsertSuccess = false;
     private Fragment mFragment;
@@ -130,6 +133,12 @@ public class SubredditSelectionActivity extends BaseActivity implements Activity
                 adjustToolbar(toolbar);
             }
         }
+
+        String _username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
+        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+        mUserAgent = UseragentUtil.getUserAgent(appname, _username);
+
+
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -211,7 +220,7 @@ public class SubredditSelectionActivity extends BaseActivity implements Activity
 
     private void loadSubscriptions() {
         if (!mInsertSuccess) {
-            FetchSubscribedThing.fetchSubscribedThing(mOauthRetrofit, mAccessToken, mAccountName, null,
+            FetchSubscribedThing.fetchSubscribedThing(mOauthRetrofit, mAccessToken, mUserAgent, mAccountName, null,
                     new ArrayList<>(), new ArrayList<>(),
                     new ArrayList<>(),
                     new FetchSubscribedThing.FetchSubscribedThingListener() {

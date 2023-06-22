@@ -17,9 +17,9 @@ public class FetchMyMultiReddits {
         void failed();
     }
 
-    public static void fetchMyMultiReddits(Retrofit oauthRetrofit, String accessToken, FetchMyMultiRedditsListener fetchMyMultiRedditsListener) {
+    public static void fetchMyMultiReddits(Retrofit oauthRetrofit, String accessToken, String useragent, FetchMyMultiRedditsListener fetchMyMultiRedditsListener) {
         oauthRetrofit.create(RedditAPI.class)
-                .getMyMultiReddits(APIUtils.getOAuthHeader(accessToken)).enqueue(new Callback<String>() {
+                .getMyMultiReddits(APIUtils.getOAuthHeader(accessToken, useragent)).enqueue(new Callback<String>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                 if (response.isSuccessful()) {
