@@ -11,12 +11,11 @@ This Fork enables a user to login via the official Reddit Accounts endpoint (no 
 
 Asking users to input their credentials directly in the app is a big __security risk__. 
 
-I implore everyone who uses this fork and similar projects to look at the commits yourself and reassure that the credentials are not being stolen.
+I implore everyone who uses this fork and similar projects to look at the commits yourself and ensure that the credentials are not being stolen.
 
 ## Want to input your own Client-ID?
 
-Check out the [Sub-Branch](https://github.com/KhoalaS/Infinity-For-Reddit/tree/sub). You will be prompted to enter a Client-ID during login. It is using
-a dummy User-Agent for the tim being. You might want to change that to something more descriptive. 
+Check out the [Sub-Branch](https://github.com/KhoalaS/Infinity-For-Reddit/tree/sub). You will be prompted to enter a Client-ID during login. The User-Agent will be determined by the two additional inputs, App name and Username.
 
 https://github.com/KhoalaS/Infinity-For-Reddit/assets/83372697/5c752092-3f11-4e1d-a309-f8f7178a266c
 
