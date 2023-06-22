@@ -13,6 +13,11 @@ Asking users to input their credentials directly in the app is a big __security 
 
 I implore everyone who uses this fork and similar projects to look at the commits yourself and reassure that the credentials are not being stolen.
 
+## Want to input your own Client-ID?
+
+Check out the [Sub-Branch](https://github.com/KhoalaS/Infinity-For-Reddit/tree/sub). You will be prompted to enter a Client-ID during login. It is using
+a dummy User-Agent for the tim being. You might want to change that to something more descriptive. 
+
 ## TODO (First Party Features)
 
 - [ ] Chat
