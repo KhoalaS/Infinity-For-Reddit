@@ -5,11 +5,11 @@
 
 ## Use your own Client-ID
 
-This fork enables a user to input their own Client-ID during login.
+This fork enables a user to input their own __Client-ID__ during login. You also have to input an __App name__ and __Username__, these will be used to generate the User-Agent that the will use, android:_appname_:v1.0 (by /u/_username_).
 
 ### TODO
 - [x] allow user to input custom Client-ID
-- [ ] allow user to input custom User-Agent
+- [x] allow user to input custom User-Agent
 
 <hr>
 
