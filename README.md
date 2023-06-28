@@ -22,6 +22,7 @@ https://github.com/KhoalaS/Infinity-For-Reddit/assets/83372697/5c752092-3f11-4e1
 ## TODO (First Party Features)
 
 - [ ] Chat
+  - I was originally looking into using the Sendbird SDK for chats, but recently Reddit changed their chat backend to a first party solution (matrix.redditspaces.com).
 - [ ] Inline Subreddit Emotes, (needs some richtext parser, SpannableString stuff)
 
 ---
