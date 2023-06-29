@@ -6,6 +6,8 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
 import java.util.List;
 
 @Dao
@@ -42,6 +44,9 @@ public interface AccountDao {
 
     @Query("SELECT * FROM accounts WHERE is_current_user = 1 AND username != '-' LIMIT 1")
     Account getCurrentAccount();
+
+    @Query("SELECT username FROM accounts WHERE is_current_user = 1 AND username != '-' LIMIT 1")
+    ListenableFuture<String> getCurrentAccountUsername();
 
     @Query("SELECT * FROM accounts WHERE is_current_user = 1 AND username != '-' LIMIT 1")
     LiveData<Account> getCurrentAccountLiveData();

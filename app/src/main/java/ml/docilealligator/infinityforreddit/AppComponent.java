@@ -310,6 +310,8 @@ public interface AppComponent {
 
     void inject(ChatOverviewActivity chatOverviewActivity);
 
+    void inject(ChatOverviewActivity.DemoObjectFragment demoObjectFragment);
+
     @Component.Factory
     interface Factory {
         AppComponent create(@BindsInstance Application application);

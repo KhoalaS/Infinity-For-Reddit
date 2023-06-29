@@ -21,8 +21,9 @@ https://github.com/KhoalaS/Infinity-For-Reddit/assets/83372697/5c752092-3f11-4e1
 
 ## TODO (First Party Features)
 
+I was originally looking into using the Sendbird SDK for chats, but recently Reddit changed their chat backend. They are now using [Matrix](https://github.com/matrix-org/matrix-android-sdk2).
+
 - [ ] Chat
-  - I was originally looking into using the Sendbird SDK for chats, but recently Reddit changed their chat backend to a first party solution (matrix.redditspaces.com).
 - [ ] Inline Subreddit Emotes, (needs some richtext parser, SpannableString stuff)
 
 ---

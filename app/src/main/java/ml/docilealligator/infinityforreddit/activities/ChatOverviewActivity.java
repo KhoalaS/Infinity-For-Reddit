@@ -1,8 +1,12 @@
 package ml.docilealligator.infinityforreddit.activities;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -10,8 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.AdapterView;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,6 +28,16 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.appbar.AppBarLayout;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Map;
+import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -33,20 +46,28 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import ml.docilealligator.infinityforreddit.Infinity;
 import ml.docilealligator.infinityforreddit.R;
+import ml.docilealligator.infinityforreddit.RedditDataRoomDatabase;
 import ml.docilealligator.infinityforreddit.adapters.OpenChatAdapter;
-import ml.docilealligator.infinityforreddit.bottomsheetfragments.PostLayoutBottomSheetFragment;
+import ml.docilealligator.infinityforreddit.apis.GqlAPI;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.customviews.slidr.Slidr;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 
-public class ChatOverviewActivity extends BaseActivity{
+public class ChatOverviewActivity extends BaseActivity {
 
     @Inject
     @Named("default")
     SharedPreferences mSharedPreferences;
     @Inject
     CustomThemeWrapper mCustomThemeWrapper;
+
 
     @BindView(R.id.appbar_layout_chat_overview_activity)
     AppBarLayout appBarLayout;
@@ -57,8 +78,6 @@ public class ChatOverviewActivity extends BaseActivity{
 
     private FragmentManager fragmentManager;
     DemoCollectionAdapter demoCollectionAdapter;
-
-
 
 
     @Override
@@ -105,6 +124,8 @@ public class ChatOverviewActivity extends BaseActivity{
         demoCollectionAdapter = new DemoCollectionAdapter(this);
         viewPager.setAdapter(demoCollectionAdapter);
         viewPager.setBackgroundColor(mCustomThemeWrapper.getBackgroundColor());
+
+
     }
 
     @Override
@@ -123,6 +144,7 @@ public class ChatOverviewActivity extends BaseActivity{
         //applyMenuItemTheme(menu);
         return true;
     }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int itemId = item.getItemId();
@@ -158,20 +180,48 @@ public class ChatOverviewActivity extends BaseActivity{
             // fragment still needs impl
             Fragment fragment = new DemoObjectFragment();
             Bundle args = new Bundle();
-            args.putInt(DemoObjectFragment.ARG_OBJECT, position + 1);
+            args.putInt(DemoObjectFragment.ARG_OBJECT, position);
             fragment.setArguments(args);
             return fragment;
         }
 
         @Override
         public int getItemCount() {
-            return 1;
+            return 2;
         }
     }
 
+
     public static class DemoObjectFragment extends Fragment {
+
+        @Inject
+        @Named("gql")
+        Retrofit mGqlRetrofit;
+        @Inject
+        @Named("current_account")
+        SharedPreferences mCurrentAccountSharedPreferences;
+        @Inject
+        RedditDataRoomDatabase mRedditDataRoomDatabase;
+
+        private BaseActivity activity;
+
         public static final String ARG_OBJECT = "object";
         private RecyclerView.LayoutManager layoutManager;
+
+        public class MainThreadExecutor implements Executor {
+            private final Handler handler = new Handler(Looper.getMainLooper());
+
+            @Override
+            public void execute(Runnable r) {
+                handler.post(r);
+            }
+        }
+
+        @Override
+        public void onAttach(@NonNull Context context) {
+            super.onAttach(context);
+            this.activity = (BaseActivity) context;
+        }
 
         @Nullable
         @Override
@@ -182,12 +232,85 @@ public class ChatOverviewActivity extends BaseActivity{
 
         @Override
         public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+            ((Infinity) activity.getApplication()).getAppComponent().inject(this);
             Bundle args = getArguments();
-            String[] data = {"hello", "world"};
+            int position = args.getInt(ARG_OBJECT);
             layoutManager = new LinearLayoutManager(this.getActivity());
-            ((RecyclerView) view.findViewById(R.id.fragment_chat_open_recyclerview)).setAdapter(new OpenChatAdapter(data));
-            ((RecyclerView) view.findViewById(R.id.fragment_chat_open_recyclerview)).setLayoutManager(layoutManager);
+            GqlAPI gqlAPI = mGqlRetrofit.create(GqlAPI.class);
 
+            String accessToken = mCurrentAccountSharedPreferences.getString(APIUtils.ACCESS_TOKEN_KEY, "");
+
+            Map headers = APIUtils.getOAuthHeader(accessToken);
+
+            JSONObject data = createChatrequestBody("JOINED_ONLY");
+
+            RequestBody body = RequestBody.create(data.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
+
+            Call<String> getJoined = gqlAPI.getJoined(headers, body);
+            getJoined.enqueue(new Callback<String>() {
+                @Override
+                public void onResponse(Call<String> call, Response<String> response) {
+                    if (response.isSuccessful()) {
+                        try {
+                            Log.d("GQL", response.body());
+                            JSONObject responseJSON = new JSONObject(response.body());
+                            JSONArray edges = responseJSON.getJSONObject("data").getJSONObject("searchChatUserChannels").getJSONArray("edges");
+
+                            ListenableFuture<String> future = mRedditDataRoomDatabase.accountDao().getCurrentAccountUsername();
+                            Futures.addCallback(future, new FutureCallback<String>() {
+                                @Override
+                                public void onSuccess(String result) {
+                                    Log.d("GQL", result);
+                                    ((RecyclerView) view.findViewById(R.id.fragment_chat_open_recyclerview)).setAdapter(new OpenChatAdapter(edges, result));
+                                    ((RecyclerView) view.findViewById(R.id.fragment_chat_open_recyclerview)).setLayoutManager(layoutManager);
+
+                                }
+
+                                @Override
+                                public void onFailure(Throwable t) {
+
+                                }
+                            }, new MainThreadExecutor());
+
+                        } catch (JSONException e) {
+
+                        }
+                    } else {
+                        Log.d("GQL", response.toString());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<String> call, Throwable t) {
+                    Toast.makeText(getContext(), "Loading Error", Toast.LENGTH_SHORT).show();
+                    t.printStackTrace();
+                    //finish();
+                }
+            });
+
+
+        }
+
+        public JSONObject createChatrequestBody(String type) {
+            JSONObject data = new JSONObject();
+            try {
+                data.put("id", "944dff740766");
+                JSONObject variables = new JSONObject();
+                variables.put("memberStateFilter", type);
+                variables.put("after", null);
+                variables.put("limit", 20);
+                variables.put("order", "LATEST_LAST_MESSAGE");
+
+                JSONArray channelTypes = new JSONArray();
+                channelTypes.put("DIRECT");
+                channelTypes.put("GROUP");
+                variables.put("channelTypes", channelTypes);
+                variables.put("isShowingReplicationInfo", true);
+                data.put("variables", variables);
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+            return data;
         }
     }
 }

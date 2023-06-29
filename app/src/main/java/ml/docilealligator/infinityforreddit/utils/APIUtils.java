@@ -25,6 +25,7 @@ public class APIUtils {
     public static final String STRAPI_BASE_URI = "https://strapi.reddit.com";
     public static final String STREAMABLE_API_BASE_URI = "https://api.streamable.com";
     public static final String LOGIN_BASE_URL = "https://accounts.reddit.com";
+    public static final String GQL_BASE_URL = "https://gql.reddit.com";
 
     public static final String CLIENT_VENDOR_ID = "1b7c1823-bea0-40c8-8a6f-1dc8c0c336ee";
 
@@ -43,7 +44,7 @@ public class APIUtils {
     public static final String AUTHORIZATION_KEY = "Authorization";
     public static final String AUTHORIZATION_BASE = "bearer ";
     public static final String USER_AGENT_KEY = "User-Agent";
-    public static final String USER_AGENT = "Reddit/Version 2023.21.0/Build 956283/Android 11";
+    public static final String USER_AGENT = "Reddit/Version 2023.23.0/Build 983896/Android 11";
 
     public static final String GRANT_TYPE_KEY = "grant_type";
     public static final String GRANT_TYPE_CLIENT_CREDENTIALS = "client_credentials";
@@ -134,6 +135,7 @@ public class APIUtils {
         params.put(APIUtils.AUTHORIZATION_KEY, APIUtils.AUTHORIZATION_BASE + accessToken);
         params.put(APIUtils.USER_AGENT_KEY, APIUtils.USER_AGENT);
         params.put("client-vendor-id", APIUtils.CLIENT_VENDOR_ID);
+        params.put("x-reddit-device-id", APIUtils.CLIENT_VENDOR_ID);
         params.put("x-reddit-compression", "1");
         params.put("x-reddit-qos", "down-rate-mbps=25.586");
         params.put("x-reddit-retry", "algo=no-retries");
