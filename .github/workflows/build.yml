@@ -2,7 +2,7 @@ name: Build and Upload Android APK
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build:
