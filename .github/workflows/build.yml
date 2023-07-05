@@ -52,8 +52,8 @@ jobs:
         run: |
           echo "$KEYSTORE_FILE" | base64 --decode > keystore.jks
           ./gradlew assembleRelease
-          zipalign -v 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-release-unsigned-aligned.apk
-          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore keystore.jks -storepass "$KEYSTORE_PASSWORD" -keypass "$KEY_PASSWORD" app/build/outputs/apk/release/app-release-unsigned-aligned.apk "$KEYSTORE_ALIAS"
+          zipalign -v 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-release-aligned.apk
+          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore keystore.jks -storepass "$KEYSTORE_PASSWORD" -keypass "$KEY_PASSWORD" app/build/outputs/apk/release/app-release-aligned.apk "$KEYSTORE_ALIAS"
 
       - name: Upload APK
         uses: actions/upload-release-asset@v1
@@ -61,6 +61,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: app/build/outputs/apk/release/app-release-signed-aligned.apk
+          asset_path: app/build/outputs/apk/release/app-release-aligned.apk
           asset_name: app-release.apk
           asset_content_type: application/vnd.android.package-archive
