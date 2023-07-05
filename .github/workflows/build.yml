@@ -1,32 +1,65 @@
-name: Build
-
+name: Build and Upload Android APK
 on:
   push:
-  pull_request:
-  workflow_dispatch:
+    branches:
+      - main
 
 jobs:
-  Build:
+  build:
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set-up JDK 11
-      uses: actions/setup-java@v3
-      with:
-        java-version: '11'
-        distribution: 'temurin'
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
 
-    - name: Setup and build with Gradle
-      uses: gradle/gradle-build-action@v2
-      with:
-        arguments: build -x lint
+      - name: Build with Gradle
+        run: ./gradlew assembleDebug
 
-    - name: Upload apk
-      uses: actions/upload-artifact@v3
-      with:
-        name: Infinity-${{github.sha}}
-        path: app/build/outputs/apk/
-        if-no-files-found: error
+      - name: Set up Keystore
+        env:
+          KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
+          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_FILE" | base64 --decode > keystore.jks
+          ./gradlew signingReport --console=plain
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v5.4.2  # Replace with your desired tag name
+          release_name: Release v5.4.2  # Replace with your desired release name
+          body: |
+            Description of the release
+
+      - name: Sign and Zipalign APK
+        env:
+          KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
+          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_FILE" | base64 --decode > keystore.jks
+          ./gradlew assembleRelease
+          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore keystore.jks -storepass "$KEYSTORE_PASSWORD" -keypass "$KEY_PASSWORD" app/build/outputs/apk/release/app-release-unsigned.apk "$KEYSTORE_ALIAS"
+          zipalign -v 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-release-signed-aligned.apk
+
+      - name: Upload APK
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: app/build/outputs/apk/release/app-release-signed-aligned.apk
+          asset_name: app-release.apk
+          asset_content_type: application/vnd.android.package-archive
