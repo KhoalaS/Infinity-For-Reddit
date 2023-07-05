@@ -52,8 +52,8 @@ jobs:
         run: |
           echo "$KEYSTORE_FILE" | base64 --decode > keystore.jks
           ./gradlew assembleRelease
-          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore keystore.jks -storepass "$KEYSTORE_PASSWORD" -keypass "$KEY_PASSWORD" app/build/outputs/apk/release/app-release-unsigned.apk "$KEYSTORE_ALIAS"
-          zipalign -v 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-release-signed-aligned.apk
+          zipalign -v 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-release-unsigned-aligned.apk
+          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore keystore.jks -storepass "$KEYSTORE_PASSWORD" -keypass "$KEY_PASSWORD" app/build/outputs/apk/release/app-release-unsigned-aligned.apk "$KEYSTORE_ALIAS"
 
       - name: Upload APK
         uses: actions/upload-release-asset@v1
