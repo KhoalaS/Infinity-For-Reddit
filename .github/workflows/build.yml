@@ -54,15 +54,12 @@ jobs:
           ./gradlew assembleRelease
           jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore keystore.jks -storepass "$KEYSTORE_PASSWORD" -keypass "$KEY_PASSWORD" app/build/outputs/apk/release/app-release-unsigned.apk "$KEYSTORE_ALIAS"
 
-      - name: Zipalign APK
-        run: zipalign -v 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-release-signed-aligned.apk
-
       - name: Upload APK
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: app/build/outputs/apk/release/app-release-signed-aligned.apk
+          asset_path: app/build/outputs/apk/release/app-release-unsigned.apk
           asset_name: app-release.apk
           asset_content_type: application/vnd.android.package-archive
