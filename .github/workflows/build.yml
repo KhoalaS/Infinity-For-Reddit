@@ -43,9 +43,6 @@ jobs:
           body: |
             Infinity for Reddit automated Build. This is the version that lets you input your own Client-ID and User-Agent.
 
-      - name: Zipalign APK
-        run: zipalign -v 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-release-aligned.apk
-
       - name: Sign APK
         env:
           KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
@@ -55,6 +52,7 @@ jobs:
         run: |
           echo "$KEYSTORE_FILE" | base64 --decode > keystore.jks
           ./gradlew assembleRelease
+          zipalign -v 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-release-aligned.apk
           apksigner sign --ks keystore.jks --ks-key-alias $KEYSTORE_ALIAS --ks-pass pass:$KEYSTORE_PASSWORD --key-pass pass:$KEY_PASSWORD app-release-aligned.apk
 
       - name: Upload APK
