@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Install zipalign
+        run: sudo apt install zipalign
+
       - name: Checkout code
         uses: actions/checkout@v2
 
@@ -18,9 +21,6 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
-
-      - name: Build with Gradle
-        run: ./gradlew assembleDebug
 
       - name: Set up Keystore
         env:
@@ -41,7 +41,7 @@ jobs:
           tag_name: v5.4.2  # Replace with your desired tag name
           release_name: Release v5.4.2  # Replace with your desired release name
           body: |
-            Description of the release
+            Infinity for Reddit automated Build
 
       - name: Sign and Zipalign APK
         env:
