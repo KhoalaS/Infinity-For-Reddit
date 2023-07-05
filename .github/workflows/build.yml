@@ -13,10 +13,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up JDK
-        uses: actions/setup-java@v2
+      - name: Set-up JDK 11
+        uses: actions/setup-java@v3
         with:
           java-version: '11'
+          distribution: 'temurin'
 
       - name: Build with Gradle
         run: ./gradlew assembleDebug
@@ -35,7 +36,7 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TOKEN: ${{ secrets.TOKEN }}
         with:
           tag_name: v5.4.2  # Replace with your desired tag name
           release_name: Release v5.4.2  # Replace with your desired release name
@@ -57,7 +58,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TOKEN: ${{ secrets.TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: app/build/outputs/apk/release/app-release-signed-aligned.apk
