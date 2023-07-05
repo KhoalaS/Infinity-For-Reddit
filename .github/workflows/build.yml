@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install apksigner
-        run: sudo apt install apksigner
+      - name: Install android tools
+        run: sudo apt install apksigner zipalign
 
       - name: Checkout code
         uses: actions/checkout@v2
