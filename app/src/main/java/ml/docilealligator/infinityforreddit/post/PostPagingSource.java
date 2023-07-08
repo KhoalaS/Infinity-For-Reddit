@@ -10,6 +10,9 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,10 +21,12 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 import ml.docilealligator.infinityforreddit.SortType;
+import ml.docilealligator.infinityforreddit.apis.GqlAPI;
 import ml.docilealligator.infinityforreddit.apis.RedditAPI;
 import ml.docilealligator.infinityforreddit.postfilter.PostFilter;
 import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
+import okhttp3.RequestBody;
 import retrofit2.HttpException;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -164,11 +169,12 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
     @Override
     public ListenableFuture<LoadResult<String, Post>> loadFuture(@NonNull LoadParams<String> loadParams) {
         RedditAPI api = retrofit.create(RedditAPI.class);
+        GqlAPI gqlAPI = retrofit.create(GqlAPI.class);
         switch (postType) {
             case TYPE_FRONT_PAGE:
                 return loadHomePosts(loadParams, api);
             case TYPE_SUBREDDIT:
-                return loadSubredditPosts(loadParams, api);
+                return loadSubredditPosts(loadParams, gqlAPI, api);
             case TYPE_USER:
                 return loadUserPosts(loadParams, api);
             case TYPE_SEARCH:
@@ -233,13 +239,38 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
                 IOException.class, LoadResult.Error::new, executor);
     }
 
-    private ListenableFuture<LoadResult<String, Post>> loadSubredditPosts(@NonNull LoadParams<String> loadParams, RedditAPI api) {
+    private JSONObject createSubredditPostsVars(String subredditName, SortType.Type sortType, SortType.Time sortTime, String lastItem){
+        JSONObject data = new JSONObject();
+        try{
+            data.put("id", "d895cab68cf7");
+
+            JSONObject variables = new JSONObject();
+            variables.put("subredditName", subredditName);
+            variables.put("sort", sortType.value);
+            variables.put("forceAds", new JSONObject());
+            variables.put("feedFilters", new JSONObject());
+            variables.put("optedIn", true);
+            variables.put("includeSubredditInPosts", false);
+            variables.put("includeAwards", true);
+            variables.put("feedContext", new JSONObject().put("experimentOverrides", new JSONArray()));
+            variables.put("includePostStats", true);
+
+            data.put("variables", variables);
+        }catch (JSONException e){
+
+        }
+        return data;
+    }
+
+    private ListenableFuture<LoadResult<String, Post>> loadSubredditPosts(@NonNull LoadParams<String> loadParams, GqlAPI api, RedditAPI redditAPI) {
         ListenableFuture<Response<String>> subredditPost;
         if (accessToken == null) {
-            subredditPost = api.getSubredditBestPostsListenableFuture(subredditOrUserName, sortType.getType(), sortType.getTime(), loadParams.getKey());
+            subredditPost = redditAPI.getSubredditBestPostsListenableFuture(subredditOrUserName, sortType.getType(), sortType.getTime(), loadParams.getKey());
         } else {
-            subredditPost = api.getSubredditBestPostsOauthListenableFuture(subredditOrUserName, sortType.getType(),
-                    sortType.getTime(), loadParams.getKey(), APIUtils.getOAuthHeader(accessToken));
+            JSONObject data = createSubredditPostsVars(subredditOrUserName, sortType.getType(), sortType.getTime(), loadParams.getKey());
+            RequestBody body = RequestBody.create(data.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
+            subredditPost = api.getSubredditBestPostsOauthListenableFuture(APIUtils.getOAuthHeader(accessToken), body);
+            //redditAPI.getSubredditBestPostsOauthListenableFuture(subredditOrUserName, sortType.getType(), sortType.getTime(), loadParams.getKey(), APIUtils.getOAuthHeader(accessToken));
         }
 
         ListenableFuture<LoadResult<String, Post>> pageFuture = Futures.transform(subredditPost, this::transformData, executor);

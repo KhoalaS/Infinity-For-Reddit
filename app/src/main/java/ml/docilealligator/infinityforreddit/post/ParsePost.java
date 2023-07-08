@@ -5,11 +5,21 @@ import android.os.Handler;
 import android.text.Html;
 import android.text.TextUtils;
 
+import com.google.common.io.BaseEncoding;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -30,7 +40,7 @@ public class ParsePost {
         LinkedHashSet<Post> newPosts = new LinkedHashSet<>();
         try {
             JSONObject jsonResponse = new JSONObject(response);
-            JSONArray allData = jsonResponse.getJSONObject(JSONUtils.DATA_KEY).getJSONArray(JSONUtils.CHILDREN_KEY);
+            JSONArray allData = jsonResponse.getJSONObject(JSONUtils.DATA_KEY).getJSONObject("postFeed").getJSONObject("elements").getJSONArray("edges");
 
             //Posts listing
             int size;
@@ -46,8 +56,9 @@ public class ParsePost {
             }
             for (int i = 0; i < size; i++) {
                 try {
-                    if (allData.getJSONObject(i).getString(JSONUtils.KIND_KEY).equals("t3")) {
-                        JSONObject data = allData.getJSONObject(i).getJSONObject(JSONUtils.DATA_KEY);
+                    JSONObject data = allData.getJSONObject(i).getJSONObject("node");
+                    if (data.getString("__typename").equals("SubredditPost")) {
+                        // TODO change parsing
                         Post post = parseBasicData(data);
                         if (readPostHashSet != null && readPostHashSet.contains(post.getId())) {
                             post.markAsRead();
@@ -70,8 +81,14 @@ public class ParsePost {
 
     public static String getLastItem(String response) {
         try {
-            JSONObject object = new JSONObject(response).getJSONObject(JSONUtils.DATA_KEY);
-            return object.isNull(JSONUtils.AFTER_KEY) ? null : object.getString(JSONUtils.AFTER_KEY);
+            JSONObject object = new JSONObject(response).getJSONObject("data").getJSONObject("postFeed").getJSONObject("elements").getJSONObject("pageInfo");
+            if(object.isNull("endCursor")){
+                return  null;
+            } else{
+                byte[] decoded = BaseEncoding.base64().decode(object.getString("endCursor"));
+                return new String(decoded, StandardCharsets.UTF_8);
+            }
+
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
@@ -125,15 +142,29 @@ public class ParsePost {
         });
     }
 
+    public static long getUnixTime(String timestamp) {
+        String pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ";
+        String timestampAsString = "2023-07-05T12:47:50.355000+0000";
+        SimpleDateFormat formatter = new SimpleDateFormat(pattern);
+        try {
+            return formatter.parse(timestampAsString).getTime();
+        } catch (ParseException e) {
+            return new Date().getTime();
+        }
+    }
+
     public static Post parseBasicData(JSONObject data) throws JSONException {
-        String id = data.getString(JSONUtils.ID_KEY);
-        String fullName = data.getString(JSONUtils.NAME_KEY);
-        String subredditName = data.getString(JSONUtils.SUBREDDIT_KEY);
-        String subredditNamePrefixed = data.getString(JSONUtils.SUBREDDIT_NAME_PREFIX_KEY);
-        String author = data.getString(JSONUtils.AUTHOR_KEY);
+        String fullName = data.getString(JSONUtils.ID_KEY);
+        String id = fullName.replace("t3_", "");
+        String subredditName = data.getString("domain").split(".")[1];
+        String subredditNamePrefixed = "r/" + subredditName;
+        String author = data.getJSONObject("authorInfo").getString("name");
         StringBuilder authorFlairHTMLBuilder = new StringBuilder();
-        if (data.has(JSONUtils.AUTHOR_FLAIR_RICHTEXT_KEY)) {
-            JSONArray flairArray = data.getJSONArray(JSONUtils.AUTHOR_FLAIR_RICHTEXT_KEY);
+        if (!data.isNull("authorFlair")) {
+            JSONObject flair = data.getJSONObject("authorFlair");
+            //JSONArray flairArray = data.getJSONArray(JSONUtils.AUTHOR_FLAIR_RICHTEXT_KEY);
+            JSONArray flairArray = new JSONArray(flair.getString("richtext"));
+
             for (int i = 0; i < flairArray.length(); i++) {
                 JSONObject flairObject = flairArray.getJSONObject(i);
                 String e = flairObject.getString(JSONUtils.E_KEY);
@@ -144,28 +175,32 @@ public class ParsePost {
                 }
             }
         }
-        String authorFlair = data.isNull(JSONUtils.AUTHOR_FLAIR_TEXT_KEY) ? "" : data.getString(JSONUtils.AUTHOR_FLAIR_TEXT_KEY);
-        String distinguished = data.getString(JSONUtils.DISTINGUISHED_KEY);
-        String suggestedSort = data.has(JSONUtils.SUGGESTED_SORT_KEY) ? data.getString(JSONUtils.SUGGESTED_SORT_KEY) : null;
-        long postTime = data.getLong(JSONUtils.CREATED_UTC_KEY) * 1000;
+        String authorFlair = data.isNull("authorFlair") ? "" : data.getJSONObject("authorFlair").getString("text");
+        String distinguished = data.getString("distinguishedAds");
+        String suggestedSort = data.has("suggestedCommentSort") ? data.getString("suggestedCommentSort") : null;
+        long postTime = getUnixTime(data.getString("createdAt"));
         String title = data.getString(JSONUtils.TITLE_KEY);
-        int score = data.getInt(JSONUtils.SCORE_KEY);
+        int score = (int) data.getDouble(JSONUtils.SCORE_KEY);
         int voteType;
-        int nComments = data.getInt(JSONUtils.NUM_COMMENTS_KEY);
-        int upvoteRatio = (int) (data.getDouble(JSONUtils.UPVOTE_RATIO_KEY) * 100);
-        boolean hidden = data.getBoolean(JSONUtils.HIDDEN_KEY);
-        boolean spoiler = data.getBoolean(JSONUtils.SPOILER_KEY);
-        boolean nsfw = data.getBoolean(JSONUtils.NSFW_KEY);
-        boolean stickied = data.getBoolean(JSONUtils.STICKIED_KEY);
-        boolean archived = data.getBoolean(JSONUtils.ARCHIVED_KEY);
-        boolean locked = data.getBoolean(JSONUtils.LOCKED_KEY);
-        boolean saved = data.getBoolean(JSONUtils.SAVED_KEY);
+        int nComments = data.getInt("commentCount");
+        int upvoteRatio = (int) (data.getDouble("upvoteRatio") * 100);
+        boolean hidden = data.getBoolean("isHidden");
+        boolean spoiler = data.getBoolean("isSpoiler");
+        boolean nsfw = data.getBoolean("isNsfw");
+        boolean stickied = data.getBoolean("isStickied");
+        boolean archived = data.getBoolean("isArchived");
+        boolean locked = data.getBoolean("isLocked");
+        boolean saved = data.getBoolean("isSaved");
+
+        // TODO I did not find these in gql
         boolean deleted = !data.isNull(JSONUtils.REMOVED_BY_CATEGORY_KEY) && data.getString(JSONUtils.REMOVED_BY_CATEGORY_KEY).equals("deleted");
         boolean removed = !data.isNull(JSONUtils.REMOVED_BY_CATEGORY_KEY) && data.getString(JSONUtils.REMOVED_BY_CATEGORY_KEY).equals("moderator");
+
         StringBuilder postFlairHTMLBuilder = new StringBuilder();
         String flair = "";
-        if (data.has(JSONUtils.LINK_FLAIR_RICHTEXT_KEY)) {
-            JSONArray flairArray = data.getJSONArray(JSONUtils.LINK_FLAIR_RICHTEXT_KEY);
+        if (!data.isNull("flair")) {
+            JSONObject flairs = data.getJSONObject("flair");
+            JSONArray flairArray = new JSONArray(flairs.getString("richtext"));
             for (int i = 0; i < flairArray.length(); i++) {
                 JSONObject flairObject = flairArray.getJSONObject(i);
                 String e = flairObject.getString(JSONUtils.E_KEY);
@@ -178,25 +213,21 @@ public class ParsePost {
             flair = postFlairHTMLBuilder.toString();
         }
 
-        if (flair.equals("") && data.has(JSONUtils.LINK_FLAIR_TEXT_KEY) && !data.isNull(JSONUtils.LINK_FLAIR_TEXT_KEY)) {
-            flair = data.getString(JSONUtils.LINK_FLAIR_TEXT_KEY);
+        if (flair.equals("") && data.has("flair") && !data.isNull("flair")) {
+            flair = data.getJSONObject("flair").getString("text");
         }
         
         StringBuilder awardingsBuilder = new StringBuilder();
-        JSONArray awardingsArray = data.getJSONArray(JSONUtils.ALL_AWARDINGS_KEY);
+        JSONArray awardingsArray = data.getJSONArray("awardings");
         int nAwards = 0;
         for (int i = 0; i < awardingsArray.length(); i++) {
-            JSONObject award = awardingsArray.getJSONObject(i);
-            int count = award.getInt(JSONUtils.COUNT_KEY);
+            JSONObject awardData = awardingsArray.getJSONObject(i);
+            JSONObject award = awardData.getJSONObject("award");
+            int count = awardData.getInt("total");
             nAwards += count;
-            JSONArray icons = award.getJSONArray(JSONUtils.RESIZED_ICONS_KEY);
-            if (icons.length() > 4) {
-                String iconUrl = icons.getJSONObject(3).getString(JSONUtils.URL_KEY);
-                awardingsBuilder.append("<img src=\"").append(Html.escapeHtml(iconUrl)).append("\"> ").append("x").append(count).append(" ");
-            } else if (icons.length() > 0) {
-                String iconUrl = icons.getJSONObject(icons.length() - 1).getString(JSONUtils.URL_KEY);
-                awardingsBuilder.append("<img src=\"").append(Html.escapeHtml(iconUrl)).append("\"> ").append("x").append(count).append(" ");
-            }
+
+            String iconUrl = award.getJSONObject("icon_32").getString(JSONUtils.URL_KEY);
+            awardingsBuilder.append("<img src=\"").append(Html.escapeHtml(iconUrl)).append("\"> ").append("x").append(count).append(" ");
         }
 
         if (data.isNull(JSONUtils.LIKES_KEY)) {
@@ -209,27 +240,30 @@ public class ParsePost {
         String permalink = Html.fromHtml(data.getString(JSONUtils.PERMALINK_KEY)).toString();
 
         ArrayList<Post.Preview> previews = new ArrayList<>();
-        if (data.has(JSONUtils.PREVIEW_KEY)) {
-            JSONObject images = data.getJSONObject(JSONUtils.PREVIEW_KEY).getJSONArray(JSONUtils.IMAGES_KEY).getJSONObject(0);
+        if (!data.isNull("media")) {
+            JSONObject images = data.getJSONObject("media").getJSONObject("still");
             String previewUrl = images.getJSONObject(JSONUtils.SOURCE_KEY).getString(JSONUtils.URL_KEY);
-            int previewWidth = images.getJSONObject(JSONUtils.SOURCE_KEY).getInt(JSONUtils.WIDTH_KEY);
-            int previewHeight = images.getJSONObject(JSONUtils.SOURCE_KEY).getInt(JSONUtils.HEIGHT_KEY);
+            int previewWidth = images.getJSONObject(JSONUtils.SOURCE_KEY).getJSONObject("dimensions").getInt(JSONUtils.WIDTH_KEY);
+            int previewHeight = images.getJSONObject(JSONUtils.SOURCE_KEY).getJSONObject("dimensions").getInt(JSONUtils.HEIGHT_KEY);
             previews.add(new Post.Preview(previewUrl, previewWidth, previewHeight, "", ""));
 
-            JSONArray thumbnailPreviews = images.getJSONArray(JSONUtils.RESOLUTIONS_KEY);
-            for (int i = 0; i < thumbnailPreviews.length(); i++) {
-                JSONObject thumbnailPreview = thumbnailPreviews.getJSONObject(i);
+            String[] resolutions = {"small", "medium", "large", "xlarge", "xxlarge", "xxxlarge"};
+            for (String res : resolutions) {
+                if(images.isNull(res)){
+                    continue;
+                }
+                JSONObject thumbnailPreview = images.getJSONObject(res);
                 String thumbnailPreviewUrl = thumbnailPreview.getString(JSONUtils.URL_KEY);
-                int thumbnailPreviewWidth = thumbnailPreview.getInt(JSONUtils.WIDTH_KEY);
-                int thumbnailPreviewHeight = thumbnailPreview.getInt(JSONUtils.HEIGHT_KEY);
+                int thumbnailPreviewWidth = thumbnailPreview.getJSONObject("dimensions").getInt(JSONUtils.WIDTH_KEY);
+                int thumbnailPreviewHeight = thumbnailPreview.getJSONObject("dimensions").getInt(JSONUtils.HEIGHT_KEY);
 
                 previews.add(new Post.Preview(thumbnailPreviewUrl, thumbnailPreviewWidth, thumbnailPreviewHeight, "", ""));
             }
         }
-        if (data.has(JSONUtils.CROSSPOST_PARENT_LIST)) {
+        if (data.has("crosspostRoot")) {
             //Cross post
             //data.getJSONArray(JSONUtils.CROSSPOST_PARENT_LIST).getJSONObject(0) out of bounds????????????
-            data = data.getJSONArray(JSONUtils.CROSSPOST_PARENT_LIST).getJSONObject(0);
+            data = data.getJSONObject("crosspostRoot").getJSONObject("post");
             Post crosspostParent = parseBasicData(data);
             Post post = parseData(data, permalink, id, fullName, subredditName, subredditNamePrefixed,
                     author, authorFlair, authorFlairHTMLBuilder.toString(),
@@ -249,6 +283,7 @@ public class ParsePost {
         }
     }
 
+    // TODO
     private static Post parseData(JSONObject data, String permalink, String id, String fullName,
                                   String subredditName, String subredditNamePrefixed, String author,
                                   String authorFlair, String authorFlairHTML,
@@ -260,444 +295,122 @@ public class ParsePost {
                                   String distinguished, String suggestedSort) throws JSONException {
         Post post;
 
-        boolean isVideo = data.getBoolean(JSONUtils.IS_VIDEO_KEY);
+        boolean isVideo = data.getString("postHint").equals("HOSTED_VIDEO");
         String url = Html.fromHtml(data.getString(JSONUtils.URL_KEY)).toString();
         Uri uri = Uri.parse(url);
         String path = uri.getPath();
 
-        if (!data.has(JSONUtils.PREVIEW_KEY) && previews.isEmpty()) {
-            if (url.contains(permalink)) {
-                //Text post
-                int postType = Post.TEXT_TYPE;
-                post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
-                        authorFlair, authorFlairHTML, postTimeMillis, title, permalink, score, postType,
-                        voteType, nComments, upvoteRatio, flair, awards, nAwards, hidden, spoiler, nsfw,
-                        stickied, archived, locked, saved, isCrosspost, distinguished, suggestedSort);
-            } else {
-                if (path.endsWith(".jpg") || path.endsWith(".png") || path.endsWith(".jpeg")) {
-                    //Image post
-                    int postType = Post.IMAGE_TYPE;
-
-                    post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
-                            authorFlair, authorFlairHTML, postTimeMillis, title, url, permalink, score,
-                            postType, voteType, nComments, upvoteRatio, flair, awards, nAwards, hidden,
-                            spoiler, nsfw, stickied, archived, locked, saved, isCrosspost, distinguished, suggestedSort);
-
-                    if (previews.isEmpty()) {
-                        previews.add(new Post.Preview(url, 0, 0, "", ""));
-                    }
-                    post.setPreviews(previews);
-                } else {
-                    if (isVideo) {
-                        //No preview video post
-                        JSONObject redditVideoObject = data.getJSONObject(JSONUtils.MEDIA_KEY).getJSONObject(JSONUtils.REDDIT_VIDEO_KEY);
-                        int postType = Post.VIDEO_TYPE;
-                        String videoUrl = Html.fromHtml(redditVideoObject.getString(JSONUtils.HLS_URL_KEY)).toString();
-                        String videoDownloadUrl = redditVideoObject.getString(JSONUtils.FALLBACK_URL_KEY);
-
-                        post = new Post(id, fullName, subredditName, subredditNamePrefixed, author, authorFlair,
-                                authorFlairHTML, postTimeMillis, title, permalink, score, postType, voteType,
-                                nComments, upvoteRatio, flair, awards, nAwards, hidden, spoiler, nsfw, stickied,
-                                archived, locked, saved, isCrosspost, distinguished, suggestedSort);
-
-                        post.setVideoUrl(videoUrl);
-                        post.setVideoDownloadUrl(videoDownloadUrl);
-                    } else {
-                        //No preview link post
-                        int postType = Post.NO_PREVIEW_LINK_TYPE;
-                        post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
-                                authorFlair, authorFlairHTML, postTimeMillis, title, url, permalink, score,
-                                postType, voteType, nComments, upvoteRatio, flair, awards, nAwards, hidden,
-                                spoiler, nsfw, stickied, archived, locked, saved, isCrosspost, distinguished, suggestedSort);
-                        if (data.isNull(JSONUtils.SELFTEXT_KEY)) {
-                            post.setSelfText("");
-                        } else {
-                            post.setSelfText(Utils.modifyMarkdown(Utils.trimTrailingWhitespace(data.getString(JSONUtils.SELFTEXT_KEY))));
-                        }
-
-                        String authority = uri.getAuthority();
-
-                        if (authority != null) {
-                            if (authority.contains("gfycat.com")) {
-                                String gfycatId = url.substring(url.lastIndexOf("/") + 1).toLowerCase();
-                                post.setPostType(Post.VIDEO_TYPE);
-                                post.setIsGfycat(true);
-                                post.setVideoUrl(url);
-                                post.setGfycatId(gfycatId);
-                            } else if (authority.contains("redgifs.com")) {
-                                String gfycatId = url.substring(url.lastIndexOf("/") + 1).toLowerCase();
-                                post.setPostType(Post.VIDEO_TYPE);
-                                post.setIsRedgifs(true);
-                                post.setVideoUrl(url);
-                                post.setGfycatId(gfycatId);
-                            } else if (authority.equals("streamable.com")) {
-                                String shortCode = url.substring(url.lastIndexOf("/") + 1);
-                                post.setPostType(Post.VIDEO_TYPE);
-                                post.setIsStreamable(true);
-                                post.setVideoUrl(url);
-                                post.setStreamableShortCode(shortCode);
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            if (previews.isEmpty()) {
-                if (data.has(JSONUtils.PREVIEW_KEY)) {
-                    JSONObject images = data.getJSONObject(JSONUtils.PREVIEW_KEY).getJSONArray(JSONUtils.IMAGES_KEY).getJSONObject(0);
-                    String previewUrl = images.getJSONObject(JSONUtils.SOURCE_KEY).getString(JSONUtils.URL_KEY);
-                    int previewWidth = images.getJSONObject(JSONUtils.SOURCE_KEY).getInt(JSONUtils.WIDTH_KEY);
-                    int previewHeight = images.getJSONObject(JSONUtils.SOURCE_KEY).getInt(JSONUtils.HEIGHT_KEY);
-                    previews.add(new Post.Preview(previewUrl, previewWidth, previewHeight, "", ""));
-
-                    JSONArray thumbnailPreviews = images.getJSONArray(JSONUtils.RESOLUTIONS_KEY);
-                    for (int i = 0; i < thumbnailPreviews.length(); i++) {
-                        JSONObject thumbnailPreview = images.getJSONArray(JSONUtils.RESOLUTIONS_KEY).getJSONObject(i);
-                        String thumbnailPreviewUrl = thumbnailPreview.getString(JSONUtils.URL_KEY);
-                        int thumbnailPreviewWidth = thumbnailPreview.getInt(JSONUtils.WIDTH_KEY);
-                        int thumbnailPreviewHeight = thumbnailPreview.getInt(JSONUtils.HEIGHT_KEY);
-
-                        previews.add(new Post.Preview(thumbnailPreviewUrl, thumbnailPreviewWidth, thumbnailPreviewHeight, "", ""));
-                    }
-                }
-            }
-
-            if (isVideo) {
-                //Video post
-                JSONObject redditVideoObject = data.getJSONObject(JSONUtils.MEDIA_KEY).getJSONObject(JSONUtils.REDDIT_VIDEO_KEY);
-                int postType = Post.VIDEO_TYPE;
-                String videoUrl = Html.fromHtml(redditVideoObject.getString(JSONUtils.HLS_URL_KEY)).toString();
-                String videoDownloadUrl = redditVideoObject.getString(JSONUtils.FALLBACK_URL_KEY);
-
-                post = new Post(id, fullName, subredditName, subredditNamePrefixed, author, authorFlair,
-                        authorFlairHTML, postTimeMillis, title, permalink, score, postType, voteType,
-                        nComments, upvoteRatio, flair, awards, nAwards, hidden, spoiler, nsfw, stickied,
-                        archived, locked, saved, isCrosspost, distinguished, suggestedSort);
-
+        if(data.getBoolean("isSelfText")){
+            //Text post
+            int postType = Post.TEXT_TYPE;
+            post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
+                    authorFlair, authorFlairHTML, postTimeMillis, title, permalink, score, postType,
+                    voteType, nComments, upvoteRatio, flair, awards, nAwards, hidden, spoiler, nsfw,
+                    stickied, archived, locked, saved, isCrosspost, distinguished, suggestedSort);
+            if(!previews.isEmpty()){
                 post.setPreviews(previews);
-                post.setVideoUrl(videoUrl);
-                post.setVideoDownloadUrl(videoDownloadUrl);
-            } else if (data.has(JSONUtils.PREVIEW_KEY)) {
-                if (data.getJSONObject(JSONUtils.PREVIEW_KEY).has(JSONUtils.REDDIT_VIDEO_PREVIEW_KEY)) {
-                    int postType = Post.VIDEO_TYPE;
-                    String authority = uri.getAuthority();
-                    // The hls stream inside REDDIT_VIDEO_PREVIEW_KEY can sometimes lack an audio track
-                    if (authority.contains("imgur.com") && (path.endsWith(".gifv") || path.endsWith(".mp4"))) {
-                        if (path.endsWith(".gifv")) {
-                            url = url.substring(0, url.length() - 5) + ".mp4";
-                        }
+            }
+        } else if(data.getString("postHint").equals("IMAGE")){
+            //Image post
 
-                        post = new Post(id, fullName, subredditName, subredditNamePrefixed, author, authorFlair,
-                                authorFlairHTML, postTimeMillis, title, permalink, score, postType, voteType,
-                                nComments, upvoteRatio, flair, awards, nAwards, hidden, spoiler, nsfw, stickied,
-                                archived, locked, saved, isCrosspost, distinguished, suggestedSort);
-                        post.setPreviews(previews);
-                        post.setVideoUrl(url);
-                        post.setVideoDownloadUrl(url);
-                        post.setIsImgur(true);
-                    } else {
-                        //Gif video post (HLS)
+            int postType = Post.IMAGE_TYPE;
 
-                        String videoUrl = Html.fromHtml(data.getJSONObject(JSONUtils.PREVIEW_KEY)
-                                .getJSONObject(JSONUtils.REDDIT_VIDEO_PREVIEW_KEY).getString(JSONUtils.HLS_URL_KEY)).toString();
-                        String videoDownloadUrl = data.getJSONObject(JSONUtils.PREVIEW_KEY)
-                                .getJSONObject(JSONUtils.REDDIT_VIDEO_PREVIEW_KEY).getString(JSONUtils.FALLBACK_URL_KEY);
+            post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
+                    authorFlair, authorFlairHTML, postTimeMillis, title, url, permalink, score,
+                    postType, voteType, nComments, upvoteRatio, flair, awards, nAwards, hidden,
+                    spoiler, nsfw, stickied, archived, locked, saved, isCrosspost, distinguished, suggestedSort);
 
-                        post = new Post(id, fullName, subredditName, subredditNamePrefixed, author, authorFlair,
-                                authorFlairHTML, postTimeMillis, title, permalink, score, postType, voteType,
-                                nComments, upvoteRatio, flair, awards, nAwards, hidden, spoiler, nsfw, stickied,
-                                archived, locked, saved, isCrosspost, distinguished, suggestedSort);
-                        post.setPreviews(previews);
-                        post.setVideoUrl(videoUrl);
-                        post.setVideoDownloadUrl(videoDownloadUrl);
-                    }
-                } else {
-                    if (path.endsWith(".jpg") || path.endsWith(".png") || path.endsWith(".jpeg")) {
-                        //Image post
-                        int postType = Post.IMAGE_TYPE;
+            if (previews.isEmpty()) {
+                previews.add(new Post.Preview(url, 0, 0, "", ""));
+            }
+            post.setPreviews(previews);
+        } else if (data.getString("postHint").equals("HOSTED_VIDEO") || data.get("postHint").equals("RICH_VIDEO")){
+            JSONObject redditVideoObject = data.getJSONObject(JSONUtils.MEDIA_KEY).getJSONObject("streaming");
+            JSONObject download = data.getJSONObject(JSONUtils.MEDIA_KEY).getJSONObject("download");
+            int postType = Post.VIDEO_TYPE;
+            String videoUrl = Html.fromHtml(redditVideoObject.getString("hlsUrl")).toString();
+            String videoDownloadUrl = download.getString("url");
 
-                        post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
-                                authorFlair, authorFlairHTML, postTimeMillis, title, url, permalink, score,
-                                postType, voteType, nComments, upvoteRatio, flair, awards, nAwards,
-                                hidden, spoiler, nsfw, stickied, archived, locked, saved, isCrosspost,
-                                distinguished, suggestedSort);
+            post = new Post(id, fullName, subredditName, subredditNamePrefixed, author, authorFlair,
+                    authorFlairHTML, postTimeMillis, title, permalink, score, postType, voteType,
+                    nComments, upvoteRatio, flair, awards, nAwards, hidden, spoiler, nsfw, stickied,
+                    archived, locked, saved, isCrosspost, distinguished, suggestedSort);
 
-                        if (previews.isEmpty()) {
-                            previews.add(new Post.Preview(url, 0, 0, "", ""));
-                        }
-                        post.setPreviews(previews);
-                    } else if (path.endsWith(".gif")) {
-                        //Gif post
-                        int postType = Post.GIF_TYPE;
-                        post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
-                                authorFlair, authorFlairHTML, postTimeMillis, title, url, permalink, score,
-                                postType, voteType, nComments, upvoteRatio, flair, awards, nAwards,
-                                hidden, spoiler, nsfw, stickied, archived, locked, saved, isCrosspost,
-                                distinguished, suggestedSort);
-
-                        post.setPreviews(previews);
-                        post.setVideoUrl(url);
-                    } else if (uri.getAuthority().contains("imgur.com") && (path.endsWith(".gifv") || path.endsWith(".mp4"))) {
-                        // Imgur gifv/mp4
-                        int postType = Post.VIDEO_TYPE;
-
-                        if (url.endsWith("gifv")) {
-                            url = url.substring(0, url.length() - 5) + ".mp4";
-                        }
-
-                        post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
-                                authorFlair, authorFlairHTML, postTimeMillis, title, url, permalink, score,
-                                postType, voteType, nComments, upvoteRatio, flair, awards, nAwards,
-                                hidden, spoiler, nsfw, stickied, archived, locked, saved, isCrosspost,
-                                distinguished, suggestedSort);
-                        post.setPreviews(previews);
-                        post.setVideoUrl(url);
-                        post.setVideoDownloadUrl(url);
-                        post.setIsImgur(true);
-                    } else if (path.endsWith(".mp4")) {
-                        //Video post
-                        int postType = Post.VIDEO_TYPE;
-
-                        post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
-                                authorFlair, authorFlairHTML, postTimeMillis, title, url, permalink, score,
-                                postType, voteType, nComments, upvoteRatio, flair, awards, nAwards,
-                                hidden, spoiler, nsfw, stickied, archived, locked, saved, isCrosspost,
-                                distinguished, suggestedSort);
-                        post.setPreviews(previews);
-                        post.setVideoUrl(url);
-                        post.setVideoDownloadUrl(url);
-                    } else {
-                        if (url.contains(permalink)) {
-                            //Text post but with a preview
-                            int postType = Post.TEXT_TYPE;
-
-                            post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
-                                    authorFlair, authorFlairHTML, postTimeMillis, title, permalink, score,
-                                    postType, voteType, nComments, upvoteRatio, flair, awards, nAwards,
-                                    hidden, spoiler, nsfw, stickied, archived, locked, saved, isCrosspost,
-                                    distinguished, suggestedSort);
-
-                            //Need attention
-                            post.setPreviews(previews);
-                        } else {
-                            //Link post
-                            int postType = Post.LINK_TYPE;
-
-                            post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
-                                    authorFlair, authorFlairHTML, postTimeMillis, title, url, permalink, score,
-                                    postType, voteType, nComments, upvoteRatio, flair, awards, nAwards,
-                                    hidden, spoiler, nsfw, stickied, archived, locked, saved, isCrosspost,
-                                    distinguished, suggestedSort);
-                            if (data.isNull(JSONUtils.SELFTEXT_KEY)) {
-                                post.setSelfText("");
-                            } else {
-                                post.setSelfText(Utils.modifyMarkdown(Utils.trimTrailingWhitespace(data.getString(JSONUtils.SELFTEXT_KEY))));
-                            }
-
-                            post.setPreviews(previews);
-
-                            String authority = uri.getAuthority();
-
-                            if (authority != null) {
-                                if (authority.contains("gfycat.com")) {
-                                    String gfycatId = url.substring(url.lastIndexOf("/") + 1).toLowerCase();
-                                    post.setPostType(Post.VIDEO_TYPE);
-                                    post.setIsGfycat(true);
-                                    post.setVideoUrl(url);
-                                    post.setGfycatId(gfycatId);
-                                } else if (authority.contains("redgifs.com")) {
-                                    String gfycatId = url.substring(url.lastIndexOf("/") + 1).toLowerCase();
-                                    post.setPostType(Post.VIDEO_TYPE);
-                                    post.setIsRedgifs(true);
-                                    post.setVideoUrl(url);
-                                    post.setGfycatId(gfycatId);
-                                } else if (authority.equals("streamable.com")) {
-                                    String shortCode = url.substring(url.lastIndexOf("/") + 1);
-                                    post.setPostType(Post.VIDEO_TYPE);
-                                    post.setIsStreamable(true);
-                                    post.setVideoUrl(url);
-                                    post.setStreamableShortCode(shortCode);
-                                }
-                            }
-                        }
-                    }
-                }
+            post.setPreviews(previews);
+            post.setVideoUrl(videoUrl);
+            post.setVideoDownloadUrl(videoDownloadUrl);
+        } else if (data.getString("postHint").equals("LINK")){
+            //No preview link post
+            int postType = Post.LINK_TYPE;
+            post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
+                    authorFlair, authorFlairHTML, postTimeMillis, title, url, permalink, score,
+                    postType, voteType, nComments, upvoteRatio, flair, awards, nAwards, hidden,
+                    spoiler, nsfw, stickied, archived, locked, saved, isCrosspost, distinguished, suggestedSort);
+            if (data.getBoolean("isSelfPost")) {
+                post.setSelfText(Utils.modifyMarkdown(Utils.trimTrailingWhitespace(data.getJSONObject("content").getString("markdown"))));
             } else {
-                if (path.endsWith(".jpg") || path.endsWith(".png") || path.endsWith(".jpeg")) {
-                    //Image post
-                    int postType = Post.IMAGE_TYPE;
-
-                    post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
-                            authorFlair, authorFlairHTML, postTimeMillis, title, url, permalink, score,
-                            postType, voteType, nComments, upvoteRatio, flair, awards, nAwards, hidden,
-                            spoiler, nsfw, stickied, archived, locked, saved, isCrosspost, distinguished, suggestedSort);
-
-                    if (previews.isEmpty()) {
-                        previews.add(new Post.Preview(url, 0, 0, "", ""));
-                    }
-                    post.setPreviews(previews);
-                } else if (path.endsWith(".mp4")) {
-                    //Video post
-                    int postType = Post.VIDEO_TYPE;
-
-                    post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
-                            authorFlair, authorFlairHTML, postTimeMillis, title, url, permalink, score,
-                            postType, voteType, nComments, upvoteRatio, flair, awards, nAwards, hidden,
-                            spoiler, nsfw, stickied, archived, locked, saved, isCrosspost, distinguished, suggestedSort);
-                    post.setPreviews(previews);
-                    post.setVideoUrl(url);
-                    post.setVideoDownloadUrl(url);
+                post.setSelfText("");
+            }
+            if(!previews.isEmpty()){
+                post.setPreviews(previews);
+            }
+        }else if (!data.isNull("gallery")) {
+            JSONArray galleryIdsArray = data.getJSONObject(JSONUtils.GALLERY_DATA_KEY).getJSONArray(JSONUtils.ITEMS_KEY);
+            JSONObject galleryObject = data.getJSONObject(JSONUtils.MEDIA_METADATA_KEY);
+            ArrayList<Post.Gallery> gallery = new ArrayList<>();
+            for (int i = 0; i < galleryIdsArray.length(); i++) {
+                String galleryId = galleryIdsArray.getJSONObject(i).getString(JSONUtils.MEDIA_ID_KEY);
+                JSONObject singleGalleryObject = galleryObject.getJSONObject(galleryId);
+                String mimeType = singleGalleryObject.getString(JSONUtils.M_KEY);
+                String galleryItemUrl;
+                if (mimeType.contains("jpg") || mimeType.contains("png")) {
+                    galleryItemUrl = singleGalleryObject.getJSONObject(JSONUtils.S_KEY).getString(JSONUtils.U_KEY);
                 } else {
-                    //CP No Preview Link post
-                    int postType = Post.NO_PREVIEW_LINK_TYPE;
-
-                    post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
-                            authorFlair, authorFlairHTML, postTimeMillis, title, url, permalink, score,
-                            postType, voteType, nComments, upvoteRatio, flair, awards, nAwards, hidden,
-                            spoiler, nsfw, stickied, archived, locked, saved, isCrosspost, distinguished, suggestedSort);
-                    //Need attention
-                    if (data.isNull(JSONUtils.SELFTEXT_KEY)) {
-                        post.setSelfText("");
+                    JSONObject sourceObject = singleGalleryObject.getJSONObject(JSONUtils.S_KEY);
+                    if (mimeType.contains("gif")) {
+                        galleryItemUrl = sourceObject.getString(JSONUtils.GIF_KEY);
                     } else {
-                        post.setSelfText(Utils.modifyMarkdown(Utils.trimTrailingWhitespace(data.getString(JSONUtils.SELFTEXT_KEY))));
-                    }
-
-                    String authority = uri.getAuthority();
-
-                    if (authority != null) {
-                        if (authority.contains("gfycat.com")) {
-                            String gfycatId = url.substring(url.lastIndexOf("/") + 1).toLowerCase();
-                            post.setPostType(Post.VIDEO_TYPE);
-                            post.setIsGfycat(true);
-                            post.setVideoUrl(url);
-                            post.setGfycatId(gfycatId);
-                        } else if (authority.contains("redgifs.com")) {
-                            String gfycatId = url.substring(url.lastIndexOf("/") + 1).toLowerCase();
-                            post.setPostType(Post.VIDEO_TYPE);
-                            post.setIsRedgifs(true);
-                            post.setVideoUrl(url);
-                            post.setGfycatId(gfycatId);
-                        } else if (authority.equals("streamable.com")) {
-                            String shortCode = url.substring(url.lastIndexOf("/") + 1);
-                            post.setPostType(Post.VIDEO_TYPE);
-                            post.setIsStreamable(true);
-                            post.setVideoUrl(url);
-                            post.setStreamableShortCode(shortCode);
-                        }
+                        galleryItemUrl = sourceObject.getString(JSONUtils.MP4_KEY);
                     }
                 }
+
+                JSONObject galleryItem = galleryIdsArray.getJSONObject(i);
+                String galleryItemCaption = "";
+                String galleryItemCaptionUrl = "";
+                if (galleryItem.has(JSONUtils.CAPTION_KEY)) {
+                    galleryItemCaption = galleryItem.getString(JSONUtils.CAPTION_KEY).trim();
+                }
+
+                if (galleryItem.has(JSONUtils.CAPTION_URL_KEY)) {
+                    galleryItemCaptionUrl = galleryItem.getString(JSONUtils.CAPTION_URL_KEY).trim();
+                }
+
+                if (previews.isEmpty() && (mimeType.contains("jpg") || mimeType.contains("png"))) {
+                    previews.add(new Post.Preview(galleryItemUrl, singleGalleryObject.getJSONObject(JSONUtils.S_KEY).getInt(JSONUtils.X_KEY),
+                            singleGalleryObject.getJSONObject(JSONUtils.S_KEY).getInt(JSONUtils.Y_KEY), galleryItemCaption, galleryItemCaptionUrl));
+                }
+
+                Post.Gallery postGalleryItem = new Post.Gallery(mimeType, galleryItemUrl, "", subredditName + "-" + galleryId + "." + mimeType.substring(mimeType.lastIndexOf("/") + 1), galleryItemCaption, galleryItemCaptionUrl);
+
+                // For issue #558
+                // Construct a fallback image url
+                if (!TextUtils.isEmpty(galleryItemUrl) && !TextUtils.isEmpty(mimeType) && (mimeType.contains("jpg") || mimeType.contains("png"))) {
+                    postGalleryItem.setFallbackUrl("https://i.redd.it/" + galleryId + "." +  mimeType.substring(mimeType.lastIndexOf("/") + 1));
+                    postGalleryItem.setHasFallback(true);
+                }
+
+                gallery.add(postGalleryItem);
             }
+
+            if (!gallery.isEmpty()) {
+                post.setPostType(Post.GALLERY_TYPE);
+                post.setGallery(gallery);
+                post.setPreviews(previews);
+            }
+
         }
 
-        if (post.getPostType() == Post.VIDEO_TYPE) {
-            try {
-                String authority = uri.getAuthority();
-                if (authority != null) {
-                    if (authority.contains("gfycat.com")) {
-                        post.setIsGfycat(true);
-                        post.setVideoUrl(url);
-                        String gfycatId = url.substring(url.lastIndexOf("/") + 1);
-                        if (gfycatId.contains("-")) {
-                            gfycatId = gfycatId.substring(0, gfycatId.indexOf('-'));
-                        }
-                        post.setGfycatId(gfycatId.toLowerCase());
-                    } else if (authority.contains("redgifs.com")) {
-                        String gfycatId = url.substring(url.lastIndexOf("/") + 1);
-                        if (gfycatId.contains("-")) {
-                            gfycatId = gfycatId.substring(0, gfycatId.indexOf('-'));
-                        }
-                        post.setIsRedgifs(true);
-                        post.setVideoUrl(url);
-                        post.setGfycatId(gfycatId.toLowerCase());
-                    } else if (authority.equals("streamable.com")) {
-                        String shortCode = url.substring(url.lastIndexOf("/") + 1);
-                        post.setPostType(Post.VIDEO_TYPE);
-                        post.setIsStreamable(true);
-                        post.setVideoUrl(url);
-                        post.setStreamableShortCode(shortCode);
-                    }
-                }
-            } catch (IllegalArgumentException ignore) { }
-        } else if (post.getPostType() == Post.LINK_TYPE || post.getPostType() == Post.NO_PREVIEW_LINK_TYPE) {
-            if (!data.isNull(JSONUtils.GALLERY_DATA_KEY)) {
-                JSONArray galleryIdsArray = data.getJSONObject(JSONUtils.GALLERY_DATA_KEY).getJSONArray(JSONUtils.ITEMS_KEY);
-                JSONObject galleryObject = data.getJSONObject(JSONUtils.MEDIA_METADATA_KEY);
-                ArrayList<Post.Gallery> gallery = new ArrayList<>();
-                for (int i = 0; i < galleryIdsArray.length(); i++) {
-                    String galleryId = galleryIdsArray.getJSONObject(i).getString(JSONUtils.MEDIA_ID_KEY);
-                    JSONObject singleGalleryObject = galleryObject.getJSONObject(galleryId);
-                    String mimeType = singleGalleryObject.getString(JSONUtils.M_KEY);
-                    String galleryItemUrl;
-                    if (mimeType.contains("jpg") || mimeType.contains("png")) {
-                        galleryItemUrl = singleGalleryObject.getJSONObject(JSONUtils.S_KEY).getString(JSONUtils.U_KEY);
-                    } else {
-                        JSONObject sourceObject = singleGalleryObject.getJSONObject(JSONUtils.S_KEY);
-                        if (mimeType.contains("gif")) {
-                            galleryItemUrl = sourceObject.getString(JSONUtils.GIF_KEY);
-                        } else {
-                            galleryItemUrl = sourceObject.getString(JSONUtils.MP4_KEY);
-                        }
-                    }
-
-                    JSONObject galleryItem = galleryIdsArray.getJSONObject(i);
-                    String galleryItemCaption = "";
-                    String galleryItemCaptionUrl = "";
-                    if (galleryItem.has(JSONUtils.CAPTION_KEY)) {
-                        galleryItemCaption = galleryItem.getString(JSONUtils.CAPTION_KEY).trim();
-                    }
-
-                    if (galleryItem.has(JSONUtils.CAPTION_URL_KEY)) {
-                        galleryItemCaptionUrl = galleryItem.getString(JSONUtils.CAPTION_URL_KEY).trim();
-                    }
-
-                    if (previews.isEmpty() && (mimeType.contains("jpg") || mimeType.contains("png"))) {
-                        previews.add(new Post.Preview(galleryItemUrl, singleGalleryObject.getJSONObject(JSONUtils.S_KEY).getInt(JSONUtils.X_KEY),
-                                singleGalleryObject.getJSONObject(JSONUtils.S_KEY).getInt(JSONUtils.Y_KEY), galleryItemCaption, galleryItemCaptionUrl));
-                    }
-                    
-                    Post.Gallery postGalleryItem = new Post.Gallery(mimeType, galleryItemUrl, "", subredditName + "-" + galleryId + "." + mimeType.substring(mimeType.lastIndexOf("/") + 1), galleryItemCaption, galleryItemCaptionUrl);
-
-                    // For issue #558
-                    // Construct a fallback image url
-                    if (!TextUtils.isEmpty(galleryItemUrl) && !TextUtils.isEmpty(mimeType) && (mimeType.contains("jpg") || mimeType.contains("png"))) {
-                        postGalleryItem.setFallbackUrl("https://i.redd.it/" + galleryId + "." +  mimeType.substring(mimeType.lastIndexOf("/") + 1));
-                        postGalleryItem.setHasFallback(true);
-                    }
-
-                    gallery.add(postGalleryItem);
-                }
-
-                if (!gallery.isEmpty()) {
-                    post.setPostType(Post.GALLERY_TYPE);
-                    post.setGallery(gallery);
-                    post.setPreviews(previews);
-                }
-            } else if (post.getPostType() == Post.LINK_TYPE) {
-                String authority = uri.getAuthority();
-
-                if (authority != null) {
-                    if (authority.contains("gfycat.com")) {
-                        String gfycatId = url.substring(url.lastIndexOf("/") + 1).toLowerCase();
-                        post.setPostType(Post.VIDEO_TYPE);
-                        post.setIsGfycat(true);
-                        post.setVideoUrl(url);
-                        post.setGfycatId(gfycatId);
-                    } else if (authority.contains("redgifs.com")) {
-                        String gfycatId = url.substring(url.lastIndexOf("/") + 1).toLowerCase();
-                        post.setPostType(Post.VIDEO_TYPE);
-                        post.setIsRedgifs(true);
-                        post.setVideoUrl(url);
-                        post.setGfycatId(gfycatId);
-                    } else if (authority.equals("streamable.com")) {
-                        String shortCode = url.substring(url.lastIndexOf("/") + 1);
-                        post.setPostType(Post.VIDEO_TYPE);
-                        post.setIsStreamable(true);
-                        post.setVideoUrl(url);
-                        post.setStreamableShortCode(shortCode);
-                    }
-                }
-            }
-        }
+        ////////////////////////////////////////////////
 
         if (post.getPostType() != Post.LINK_TYPE && post.getPostType() != Post.NO_PREVIEW_LINK_TYPE) {
             if (data.isNull(JSONUtils.SELFTEXT_KEY)) {

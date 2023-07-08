@@ -405,6 +405,7 @@ public class PostViewModel extends ViewModel {
         }
     }
 
+    // TODO: this results in two call of RedditAPI.getSubredditBestPostsOauthListenableFuture
     private static class SortTypeAndPostFilterLiveData extends MediatorLiveData<Pair<PostFilter, SortType>> {
         public SortTypeAndPostFilterLiveData(LiveData<SortType> sortTypeLiveData, LiveData<PostFilter> postFilterLiveData) {
             addSource(sortTypeLiveData, sortType -> setValue(Pair.create(postFilterLiveData.getValue(), sortType)));

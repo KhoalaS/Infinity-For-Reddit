@@ -514,7 +514,8 @@ public class PostFragment extends Fragment implements FragmentCommunicator {
                     TransitionManager.beginDelayedTransition(mPostRecyclerView, new AutoTransition());
                 }
             });
-        } else if (postType == PostPagingSource.TYPE_SUBREDDIT) {
+        }
+        else if (postType == PostPagingSource.TYPE_SUBREDDIT) {
             subredditName = getArguments().getString(EXTRA_NAME);
             if (savedInstanceState == null) {
                 postFragmentId += subredditName.hashCode();
