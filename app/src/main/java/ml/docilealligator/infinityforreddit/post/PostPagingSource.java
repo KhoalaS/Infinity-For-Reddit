@@ -220,6 +220,27 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
         }
     }
 
+    public LoadResult<String, Post> transformDataGQL(Response<String> response) {
+        if (response.isSuccessful()) {
+            String responseString = response.body();
+            LinkedHashSet<Post> newPosts = ParsePost.parsePostsSyncGQL(responseString, -1, postFilter, readPostList);
+            String lastItem = ParsePost.getLastItemGQL(responseString);
+            if (newPosts == null) {
+                return new LoadResult.Error<>(new Exception("Error parsing posts"));
+            } else {
+                int currentPostsSize = postLinkedHashSet.size();
+                postLinkedHashSet.addAll(newPosts);
+                if (currentPostsSize == postLinkedHashSet.size()) {
+                    return new LoadResult.Page<>(new ArrayList<>(), null, lastItem);
+                } else {
+                    return new LoadResult.Page<>(new ArrayList<>(postLinkedHashSet).subList(currentPostsSize, postLinkedHashSet.size()), null, lastItem);
+                }
+            }
+        } else {
+            return new LoadResult.Error<>(new Exception("Response failed"));
+        }
+    }
+
     private ListenableFuture<LoadResult<String, Post>> loadHomePosts(@NonNull LoadParams<String> loadParams, RedditAPI api) {
         ListenableFuture<Response<String>> bestPost;
         String afterKey;
@@ -275,18 +296,27 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
         return data;
     }
 
-    private ListenableFuture<LoadResult<String, Post>> loadSubredditPosts(@NonNull LoadParams<String> loadParams, GqlAPI api, RedditAPI redditAPI) {
+    private ListenableFuture<LoadResult<String, Post>> loadSubredditPosts(@NonNull LoadParams<String> loadParams, GqlAPI gqlAPI, RedditAPI redditAPI) {
         ListenableFuture<Response<String>> subredditPost;
+        boolean fallback = subredditOrUserName.equals("popular") || subredditOrUserName.equals("all");
         if (accessToken == null) {
             subredditPost = redditAPI.getSubredditBestPostsListenableFuture(subredditOrUserName, sortType.getType(), sortType.getTime(), loadParams.getKey());
         } else {
-            JSONObject data = createSubredditPostsVars(subredditOrUserName, sortType.getType(), sortType.getTime(), loadParams.getKey());
-            RequestBody body = RequestBody.create(data.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
-            subredditPost = api.getSubredditBestPostsOauthListenableFuture(APIUtils.getOAuthHeader(accessToken), body);
-            //redditAPI.getSubredditBestPostsOauthListenableFuture(subredditOrUserName, sortType.getType(), sortType.getTime(), loadParams.getKey(), APIUtils.getOAuthHeader(accessToken));
+            if( fallback ){
+                subredditPost = redditAPI.getSubredditBestPostsOauthListenableFuture(subredditOrUserName, sortType.getType(), sortType.getTime(), loadParams.getKey(), APIUtils.getOAuthHeader(accessToken));
+            } else{
+                JSONObject data = createSubredditPostsVars(subredditOrUserName, sortType.getType(), sortType.getTime(), loadParams.getKey());
+                RequestBody body = RequestBody.create(data.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
+                subredditPost = gqlAPI.getSubredditBestPostsOauthListenableFuture(APIUtils.getOAuthHeader(accessToken), body);
+            }
+        }
+        ListenableFuture<LoadResult<String, Post>> pageFuture;
+        if(fallback){
+            pageFuture = Futures.transform(subredditPost, this::transformData, executor);
+        }else{
+            pageFuture = Futures.transform(subredditPost, this::transformDataGQL, executor);
         }
 
-        ListenableFuture<LoadResult<String, Post>> pageFuture = Futures.transform(subredditPost, this::transformData, executor);
 
         ListenableFuture<LoadResult<String, Post>> partialLoadResultFuture =
                 Futures.catching(pageFuture, HttpException.class,
