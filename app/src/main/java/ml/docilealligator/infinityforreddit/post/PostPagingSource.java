@@ -67,12 +67,13 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
     private LinkedHashSet<Post> postLinkedHashSet;
     private String previousLastItem;
 
-    PostPagingSource(Executor executor, Retrofit retrofit, String accessToken, String accountName,
+    PostPagingSource(Executor executor, Retrofit retrofit, Retrofit gqlRetrofit, String accessToken, String accountName,
                      SharedPreferences sharedPreferences,
                      SharedPreferences postFeedScrolledPositionSharedPreferences, int postType,
                      SortType sortType, PostFilter postFilter, List<String> readPostList) {
         this.executor = executor;
         this.retrofit = retrofit;
+        this.gqlRetrofit = gqlRetrofit;
         this.accessToken = accessToken;
         this.accountName = accountName;
         this.sharedPreferences = sharedPreferences;
@@ -175,13 +176,18 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
 
         switch (postType) {
             case TYPE_FRONT_PAGE:
-                return loadHomePosts(loadParams, api);
+                if (gqlRetrofit != null){
+                    GqlAPI gqlAPI = gqlRetrofit.create(GqlAPI.class);
+                    return loadHomePosts(loadParams, api, gqlAPI);
+                }else {
+                    return loadHomePosts(loadParams, api, null);
+                }
             case TYPE_SUBREDDIT:
                 if (gqlRetrofit != null){
                     GqlAPI gqlAPI = gqlRetrofit.create(GqlAPI.class);
-                    return loadSubredditPosts(loadParams, gqlAPI, api);
+                    return loadSubredditPosts(loadParams, api, gqlAPI);
                 }else {
-                    return loadSubredditPosts(loadParams, null, api);
+                    return loadSubredditPosts(loadParams, api, null);
                 }
             case TYPE_USER:
                 return loadUserPosts(loadParams, api);
@@ -241,9 +247,11 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
         }
     }
 
-    private ListenableFuture<LoadResult<String, Post>> loadHomePosts(@NonNull LoadParams<String> loadParams, RedditAPI api) {
+    private ListenableFuture<LoadResult<String, Post>> loadHomePosts(@NonNull LoadParams<String> loadParams, RedditAPI redditAPI, GqlAPI gqlAPI) {
         ListenableFuture<Response<String>> bestPost;
         String afterKey;
+        ListenableFuture<LoadResult<String, Post>> pageFuture;
+
         if (loadParams.getKey() == null) {
             boolean savePostFeedScrolledPosition = sortType != null && sortType.getType() == SortType.Type.BEST && sharedPreferences.getBoolean(SharedPreferencesUtils.SAVE_FRONT_PAGE_SCROLLED_POSITION, false);
             if (savePostFeedScrolledPosition) {
@@ -255,10 +263,19 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
         } else {
             afterKey = loadParams.getKey();
         }
-        bestPost = api.getBestPostsListenableFuture(sortType.getType(), sortType.getTime(), afterKey,
-                APIUtils.getOAuthHeader(accessToken));
-
-        ListenableFuture<LoadResult<String, Post>> pageFuture = Futures.transform(bestPost, this::transformData, executor);
+        if(gqlAPI != null){
+            JSONObject data = createHomePostsVars(sortType.getType(), sortType.getTime(), afterKey);
+            RequestBody body = RequestBody.create(data.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
+            bestPost = redditAPI.getBestPostsListenableFuture(sortType.getType(), sortType.getTime(), afterKey,
+                    APIUtils.getOAuthHeader(accessToken));
+            //bestPost = gqlAPI.getBestPostsListenableFuture(APIUtils.getOAuthHeader(accessToken), body);
+            //pageFuture = Futures.transform(bestPost, this::transformDataGQL, executor);
+            pageFuture = Futures.transform(bestPost, this::transformData, executor);
+        }else{
+            bestPost = redditAPI.getBestPostsListenableFuture(sortType.getType(), sortType.getTime(), afterKey,
+                    APIUtils.getOAuthHeader(accessToken));
+            pageFuture = Futures.transform(bestPost, this::transformData, executor);
+        }
 
         ListenableFuture<LoadResult<String, Post>> partialLoadResultFuture =
                 Futures.catching(pageFuture, HttpException.class,
@@ -266,6 +283,44 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
 
         return Futures.catching(partialLoadResultFuture,
                 IOException.class, LoadResult.Error::new, executor);
+    }
+
+    private JSONObject createHomePostsVars(SortType.Type sortType, SortType.Time sortTime, String lastItem){
+        JSONObject data = new JSONObject();
+        try{
+            data.put("id", "769ee26e130d");
+
+            JSONObject variables = new JSONObject();
+
+            JSONObject advancedConfiguration = new JSONObject().put("eligibleExperienceOverrides", new JSONArray());
+            JSONArray experienceInputs = new JSONArray().put("REONBOARDING_IN_FEED");
+
+
+            variables.put("advancedConfiguration", advancedConfiguration);
+            variables.put("feedContext", new JSONObject().put("experimentOverrides", new JSONArray()));
+
+
+            if(lastItem != null){
+                variables.put("after", lastItem);
+            }
+
+            variables.put("forceAds", new JSONObject());
+            variables.put("includeAnnouncements", false);
+            variables.put("includeAwards", true);
+            variables.put("includeCommentPostUnits", false);
+            variables.put("includeExposureEvents", false);
+            variables.put("includePostStats", true);
+            variables.put("includeTopicRecommendations", false);
+            variables.put("interestTopicIds", new JSONArray());
+            variables.put("pageSize", 15);
+            variables.put("sort", sortType.value.toUpperCase(Locale.ROOT));
+
+
+            data.put("variables", variables);
+        }catch (JSONException e){
+
+        }
+        return data;
     }
 
     private JSONObject createSubredditPostsVars(String subredditName, SortType.Type sortType, SortType.Time sortTime, String lastItem){
@@ -296,7 +351,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
         return data;
     }
 
-    private ListenableFuture<LoadResult<String, Post>> loadSubredditPosts(@NonNull LoadParams<String> loadParams, GqlAPI gqlAPI, RedditAPI redditAPI) {
+    private ListenableFuture<LoadResult<String, Post>> loadSubredditPosts(@NonNull LoadParams<String> loadParams, RedditAPI redditAPI, GqlAPI gqlAPI ) {
         ListenableFuture<Response<String>> subredditPost;
         boolean fallback = subredditOrUserName.equals("popular") || subredditOrUserName.equals("all");
         if (accessToken == null) {

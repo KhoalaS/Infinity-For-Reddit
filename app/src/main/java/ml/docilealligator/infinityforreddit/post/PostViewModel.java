@@ -237,7 +237,7 @@ public class PostViewModel extends ViewModel {
         PostPagingSource paging3PagingSource;
         switch (postType) {
             case PostPagingSource.TYPE_FRONT_PAGE:
-                paging3PagingSource = new PostPagingSource(executor, retrofit, accessToken, accountName,
+                paging3PagingSource = new PostPagingSource(executor, retrofit,gqlRetrofit, accessToken, accountName,
                         sharedPreferences, postFeedScrolledPositionSharedPreferences, postType, sortType,
                         postFilter, readPostList);
                 break;
@@ -294,12 +294,13 @@ public class PostViewModel extends ViewModel {
         private String userWhere;
         private List<String> readPostList;
 
-        public Factory(Executor executor, Retrofit retrofit, String accessToken, String accountName,
+        public Factory(Executor executor, Retrofit retrofit, Retrofit gqlRetrofit, String accessToken, String accountName,
                        SharedPreferences sharedPreferences, SharedPreferences postFeedScrolledPositionSharedPreferences,
                        SharedPreferences postHistorySharedPreferences, int postType, SortType sortType,
                        PostFilter postFilter, List<String> readPostList) {
             this.executor = executor;
             this.retrofit = retrofit;
+            this.gqlRetrofit = gqlRetrofit;
             this.accessToken = accessToken;
             this.accountName = accountName;
             this.sharedPreferences = sharedPreferences;
