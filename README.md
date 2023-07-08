@@ -5,11 +5,11 @@
 
 ## Changes
 
-This Fork enables a user to login via the official Reddit Accounts endpoint (no 3P authorize). The App will make requests that look like they are coming from the official Reddit App. 
+This Fork enables a user to login via the official Reddit Accounts endpoint (no 3P authorize). The App will make requests that look like they are coming from the official Reddit App. External videos like REDGifs will be loaded from the Reddit servers and not through an external API if possible.
 
 ## ⚠️ Warning
 
-Asking users to input their credentials directly in the app is a big __security risk__. 
+Asking users to input their credentials directly in the app is a big __security risk__. As a user you are also violating the Reddit User Agreement.
 
 I implore everyone who uses this fork and similar projects to look at the commits yourself and ensure that the credentials are not being stolen.
 
@@ -25,6 +25,9 @@ I was originally looking into using the Sendbird SDK for chats, but recently Red
 
 - [ ] Chat
 - [ ] Inline Subreddit Emotes, (needs some richtext parser, SpannableString stuff)
+- [x] use GQL API for Subreddit posts
+  - [x] use the 1P Reddit DASH streams for external videos, i.e. REDGifs will load without a REDGifs API-Key.
+  - [ ] fix video downloads missing audio
 
 ---
 
