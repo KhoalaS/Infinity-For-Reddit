@@ -404,12 +404,17 @@ public class ParsePost {
             String iconUrl = award.getJSONObject("icon_32").getString(JSONUtils.URL_KEY);
             awardingsBuilder.append("<img src=\"").append(Html.escapeHtml(iconUrl)).append("\"> ").append("x").append(count).append(" ");
         }
-
-        if (data.isNull(JSONUtils.LIKES_KEY)) {
-            voteType = 0;
-        } else {
-            voteType = data.getBoolean(JSONUtils.LIKES_KEY) ? 1 : -1;
-            score -= voteType;
+        voteType = 0;
+        switch(data.getString("voteState")){
+            case "NONE":
+                voteType = 0;
+                break;
+            case "UP":
+                voteType = 1;
+                break;
+            case "DOWN":
+                voteType = -1;
+                break;
         }
 
         String permalink = Html.fromHtml(data.getString(JSONUtils.PERMALINK_KEY)).toString();
