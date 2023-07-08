@@ -55,6 +55,7 @@ import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Tracks;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
+import com.google.android.exoplayer2.source.dash.DashMediaSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionOverride;
@@ -601,7 +602,13 @@ public class ViewVideoActivity extends AppCompatActivity implements CustomFontRe
                     .setUpstreamDataSourceFactory(new DefaultHttpDataSource.Factory().setAllowCrossProtocolRedirects(true).setUserAgent(APIUtils.USER_AGENT));
             // Prepare the player with the source.
             player.prepare();
-            player.setMediaSource(new HlsMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(mVideoUri)));
+            MediaItem mediaItem = MediaItem.fromUri(mVideoUri);
+            if(mVideoUri.toString().contains(".mpd")){
+                player.setMediaSource(new DashMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem));
+            }else{
+                player.setMediaSource(new HlsMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem));
+            }
+
             preparePlayer(savedInstanceState);
         }
     }
