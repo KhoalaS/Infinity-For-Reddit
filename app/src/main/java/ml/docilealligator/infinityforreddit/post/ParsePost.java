@@ -58,7 +58,6 @@ public class ParsePost {
                 try {
                     JSONObject data = allData.getJSONObject(i).getJSONObject("node");
                     if (data.getString("__typename").equals("SubredditPost")) {
-                        // TODO change parsing
                         Post post = parseBasicData(data);
                         if (readPostHashSet != null && readPostHashSet.contains(post.getId())) {
                             post.markAsRead();
@@ -85,8 +84,7 @@ public class ParsePost {
             if(object.isNull("endCursor")){
                 return  null;
             } else{
-                byte[] decoded = BaseEncoding.base64().decode(object.getString("endCursor"));
-                return new String(decoded, StandardCharsets.UTF_8);
+                return object.getString("endCursor");
             }
 
         } catch (JSONException e) {
@@ -156,8 +154,9 @@ public class ParsePost {
     public static Post parseBasicData(JSONObject data) throws JSONException {
         String fullName = data.getString(JSONUtils.ID_KEY);
         String id = fullName.replace("t3_", "");
-        String subredditName = data.getString("domain").split(".")[1];
-        String subredditNamePrefixed = "r/" + subredditName;
+        String[] permaLinkSplit = data.getString("permalink").split("/");
+        String subredditName = permaLinkSplit[2];
+        String subredditNamePrefixed = permaLinkSplit[1] + "/" + permaLinkSplit[2];
         String author = data.getJSONObject("authorInfo").getString("name");
         StringBuilder authorFlairHTMLBuilder = new StringBuilder();
         if (!data.isNull("authorFlair")) {
@@ -176,7 +175,7 @@ public class ParsePost {
             }
         }
         String authorFlair = data.isNull("authorFlair") ? "" : data.getJSONObject("authorFlair").getString("text");
-        String distinguished = data.getString("distinguishedAds");
+        String distinguished = data.getString("distinguishedAs");
         String suggestedSort = data.has("suggestedCommentSort") ? data.getString("suggestedCommentSort") : null;
         long postTime = getUnixTime(data.getString("createdAt"));
         String title = data.getString(JSONUtils.TITLE_KEY);
@@ -200,20 +199,22 @@ public class ParsePost {
         String flair = "";
         if (!data.isNull("flair")) {
             JSONObject flairs = data.getJSONObject("flair");
-            JSONArray flairArray = new JSONArray(flairs.getString("richtext"));
-            for (int i = 0; i < flairArray.length(); i++) {
-                JSONObject flairObject = flairArray.getJSONObject(i);
-                String e = flairObject.getString(JSONUtils.E_KEY);
-                if (e.equals("text")) {
-                    postFlairHTMLBuilder.append(Html.escapeHtml(flairObject.getString(JSONUtils.T_KEY)));
-                } else if (e.equals("emoji")) {
-                    postFlairHTMLBuilder.append("<img src=\"").append(Html.escapeHtml(flairObject.getString(JSONUtils.U_KEY))).append("\">");
+            if(!flairs.isNull("richtext")){
+                JSONArray flairArray = new JSONArray(flairs.getString("richtext"));
+                for (int i = 0; i < flairArray.length(); i++) {
+                    JSONObject flairObject = flairArray.getJSONObject(i);
+                    String e = flairObject.getString(JSONUtils.E_KEY);
+                    if (e.equals("text")) {
+                        postFlairHTMLBuilder.append(Html.escapeHtml(flairObject.getString(JSONUtils.T_KEY)));
+                    } else if (e.equals("emoji")) {
+                        postFlairHTMLBuilder.append("<img src=\"").append(Html.escapeHtml(flairObject.getString(JSONUtils.U_KEY))).append("\">");
+                    }
                 }
+                flair = postFlairHTMLBuilder.toString();
             }
-            flair = postFlairHTMLBuilder.toString();
         }
 
-        if (flair.equals("") && data.has("flair") && !data.isNull("flair")) {
+        if (flair.equals("") && data.has("flair") && !data.isNull("flair") && !data.getJSONObject("flair").isNull("richtext")) {
             flair = data.getJSONObject("flair").getString("text");
         }
         
@@ -260,7 +261,7 @@ public class ParsePost {
                 previews.add(new Post.Preview(thumbnailPreviewUrl, thumbnailPreviewWidth, thumbnailPreviewHeight, "", ""));
             }
         }
-        if (data.has("crosspostRoot")) {
+        if (!data.isNull("crosspostRoot")) {
             //Cross post
             //data.getJSONArray(JSONUtils.CROSSPOST_PARENT_LIST).getJSONObject(0) out of bounds????????????
             data = data.getJSONObject("crosspostRoot").getJSONObject("post");
@@ -300,7 +301,7 @@ public class ParsePost {
         Uri uri = Uri.parse(url);
         String path = uri.getPath();
 
-        if(data.getBoolean("isSelfText")){
+        if(data.getBoolean("isSelfPost")){
             //Text post
             int postType = Post.TEXT_TYPE;
             post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
@@ -326,6 +327,9 @@ public class ParsePost {
             post.setPreviews(previews);
         } else if (data.getString("postHint").equals("HOSTED_VIDEO") || data.get("postHint").equals("RICH_VIDEO")){
             JSONObject redditVideoObject = data.getJSONObject(JSONUtils.MEDIA_KEY).getJSONObject("streaming");
+            if(data.getJSONObject(JSONUtils.MEDIA_KEY).isNull("streaming")){
+                int x = 10;
+            }
             JSONObject download = data.getJSONObject(JSONUtils.MEDIA_KEY).getJSONObject("download");
             int postType = Post.VIDEO_TYPE;
             String videoUrl = Html.fromHtml(redditVideoObject.getString("hlsUrl")).toString();
@@ -354,7 +358,14 @@ public class ParsePost {
             if(!previews.isEmpty()){
                 post.setPreviews(previews);
             }
-        }else if (!data.isNull("gallery")) {
+            setText(post, data);
+        }else if (!data.isNull("gallerys")) {
+            int postType = Post.LINK_TYPE;
+            post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
+                    authorFlair, authorFlairHTML, postTimeMillis, title, url, permalink, score,
+                    postType, voteType, nComments, upvoteRatio, flair, awards, nAwards, hidden,
+                    spoiler, nsfw, stickied, archived, locked, saved, isCrosspost, distinguished, suggestedSort);
+
             JSONArray galleryIdsArray = data.getJSONObject(JSONUtils.GALLERY_DATA_KEY).getJSONArray(JSONUtils.ITEMS_KEY);
             JSONObject galleryObject = data.getJSONObject(JSONUtils.MEDIA_METADATA_KEY);
             ArrayList<Post.Gallery> gallery = new ArrayList<>();
@@ -408,41 +419,54 @@ public class ParsePost {
                 post.setPreviews(previews);
             }
 
+        }else{
+            //Text post
+            int postType = Post.TEXT_TYPE;
+            post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
+                    authorFlair, authorFlairHTML, postTimeMillis, title, permalink, score, postType,
+                    voteType, nComments, upvoteRatio, flair, awards, nAwards, hidden, spoiler, nsfw,
+                    stickied, archived, locked, saved, isCrosspost, distinguished, suggestedSort);
+            if(!previews.isEmpty()){
+                post.setPreviews(previews);
+            }
         }
+        return post;
+    }
 
-        ////////////////////////////////////////////////
-
-        if (post.getPostType() != Post.LINK_TYPE && post.getPostType() != Post.NO_PREVIEW_LINK_TYPE) {
-            if (data.isNull(JSONUtils.SELFTEXT_KEY)) {
-                post.setSelfText("");
-            } else {
-                String selfText = Utils.modifyMarkdown(Utils.trimTrailingWhitespace(data.getString(JSONUtils.SELFTEXT_KEY)));
-                post.setSelfText(selfText);
-                if (data.isNull(JSONUtils.SELFTEXT_HTML_KEY)) {
-                    post.setSelfTextPlainTrimmed("");
+    public static void setText(Post post, JSONObject data){
+        try {
+                if (data.isNull("isSelfPost")) {
+                    post.setSelfText("");
                 } else {
-                    String selfTextPlain = Utils.trimTrailingWhitespace(
-                            Html.fromHtml(data.getString(JSONUtils.SELFTEXT_HTML_KEY))).toString();
-                    post.setSelfTextPlain(selfTextPlain);
-                    if (selfTextPlain.length() > 250) {
-                        selfTextPlain = selfTextPlain.substring(0, 250);
-                    }
-                    if (!selfText.equals("")) {
-                        Pattern p = Pattern.compile(">!.+!<");
-                        Matcher m = p.matcher(selfText.substring(0, Math.min(selfText.length(), 400)));
-                        if (m.find()) {
-                            post.setSelfTextPlainTrimmed("");
+                    JSONObject content = data.getJSONObject("content");
+                    String selfText = Utils.modifyMarkdown(Utils.trimTrailingWhitespace(content.getString("markdown")));
+                    post.setSelfText(selfText);
+                    if (data.isNull(content.getString("html"))) {
+                        post.setSelfTextPlainTrimmed("");
+                    } else {
+                        String selfTextPlain = Utils.trimTrailingWhitespace(
+                                Html.fromHtml(data.getString(content.getString("html")))).toString();
+                        post.setSelfTextPlain(selfTextPlain);
+                        if (selfTextPlain.length() > 250) {
+                            selfTextPlain = selfTextPlain.substring(0, 250);
+                        }
+                        if (!selfText.equals("")) {
+                            Pattern p = Pattern.compile(">!.+!<");
+                            Matcher m = p.matcher(selfText.substring(0, Math.min(selfText.length(), 400)));
+                            if (m.find()) {
+                                post.setSelfTextPlainTrimmed("");
+                            } else {
+                                post.setSelfTextPlainTrimmed(selfTextPlain);
+                            }
                         } else {
                             post.setSelfTextPlainTrimmed(selfTextPlain);
                         }
-                    } else {
-                        post.setSelfTextPlainTrimmed(selfTextPlain);
                     }
                 }
-            }
-        }
 
-        return post;
+        }catch (JSONException e){
+
+        }
     }
 
     public interface ParsePostsListingListener {

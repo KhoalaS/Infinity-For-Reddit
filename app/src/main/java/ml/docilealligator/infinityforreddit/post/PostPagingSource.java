@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Executor;
 
 import ml.docilealligator.infinityforreddit.SortType;
@@ -49,6 +50,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
 
     private Executor executor;
     private Retrofit retrofit;
+    private Retrofit gqlRetrofit;
     private String accessToken;
     private String accountName;
     private SharedPreferences sharedPreferences;
@@ -82,12 +84,13 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
         postLinkedHashSet = new LinkedHashSet<>();
     }
 
-    PostPagingSource(Executor executor, Retrofit retrofit, String accessToken, String accountName,
+    PostPagingSource(Executor executor, Retrofit retrofit, Retrofit gqlRetrofit, String accessToken, String accountName,
                      SharedPreferences sharedPreferences, SharedPreferences postFeedScrolledPositionSharedPreferences,
                      String path, int postType, SortType sortType, PostFilter postFilter,
                      List<String> readPostList) {
         this.executor = executor;
         this.retrofit = retrofit;
+        this.gqlRetrofit = gqlRetrofit;
         this.accessToken = accessToken;
         this.accountName = accountName;
         this.sharedPreferences = sharedPreferences;
@@ -169,12 +172,17 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
     @Override
     public ListenableFuture<LoadResult<String, Post>> loadFuture(@NonNull LoadParams<String> loadParams) {
         RedditAPI api = retrofit.create(RedditAPI.class);
-        GqlAPI gqlAPI = retrofit.create(GqlAPI.class);
+
         switch (postType) {
             case TYPE_FRONT_PAGE:
                 return loadHomePosts(loadParams, api);
             case TYPE_SUBREDDIT:
-                return loadSubredditPosts(loadParams, gqlAPI, api);
+                if (gqlRetrofit != null){
+                    GqlAPI gqlAPI = gqlRetrofit.create(GqlAPI.class);
+                    return loadSubredditPosts(loadParams, gqlAPI, api);
+                }else {
+                    return loadSubredditPosts(loadParams, null, api);
+                }
             case TYPE_USER:
                 return loadUserPosts(loadParams, api);
             case TYPE_SEARCH:
@@ -246,7 +254,12 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
 
             JSONObject variables = new JSONObject();
             variables.put("subredditName", subredditName);
-            variables.put("sort", sortType.value);
+            variables.put("sort", sortType.value.toUpperCase(Locale.ROOT));
+
+            if(lastItem != null){
+                variables.put("after", lastItem);
+            }
+
             variables.put("forceAds", new JSONObject());
             variables.put("feedFilters", new JSONObject());
             variables.put("optedIn", true);
