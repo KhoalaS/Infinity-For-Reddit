@@ -8,8 +8,8 @@ android {
         applicationId "ml.docilealligator.infinityforreddit"
         minSdk 21
         targetSdk 33
-        versionCode 134
-        versionName "6.3.0-beta1"
+        versionCode 117
+        versionName "5.5.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {
@@ -174,7 +174,7 @@ dependencies {
     implementation 'com.lsjwzh:materialloadingprogressbar:0.5.8-RELEASE'
 
     // Customizable TextView
-    implementation files("Modules/customtextview-2.1.aar")
+    implementation 'com.libRG:customtextview:2.4'
 
     // Dismiss gesturing
     implementation 'app.futured.hauler:hauler:5.0.0'
@@ -189,8 +189,6 @@ dependencies {
     implementation 'me.zhanghai.android.fastscroll:library:1.1.8'
 
     implementation 'com.otaliastudios:zoomlayout:1.9.0'
-
-    implementation 'androidx.core:core-splashscreen:1.0.1'
 
 
 /**** Builds and flavors ****/

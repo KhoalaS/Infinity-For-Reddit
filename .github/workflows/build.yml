@@ -38,8 +38,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v5.4.2  # Replace with your desired tag name
-          release_name: Release v5.4.2  # Replace with your desired release name
+          tag_name: v5.5.0  # Replace with your desired tag name
+          release_name: Release v5.5.0  # Replace with your desired release name
           body: |
             Infinity for Reddit automated Build.
 
