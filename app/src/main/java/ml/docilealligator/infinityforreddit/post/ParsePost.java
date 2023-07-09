@@ -971,6 +971,8 @@ public class ParsePost {
             if(!previews.isEmpty()){
                 post.setPreviews(previews);
             }
+            setText(post, data);
+
         } else if(data.getString("postHint").equals("IMAGE")){
             //Image post
 
@@ -1015,47 +1017,50 @@ public class ParsePost {
             if(!previews.isEmpty()){
                 post.setPreviews(previews);
             }
-            setText(post, data);
-        }else if (!data.isNull("gallerys")) {
+        }else if (!data.isNull("gallery")) {
             int postType = Post.LINK_TYPE;
             post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
                     authorFlair, authorFlairHTML, postTimeMillis, title, url, permalink, score,
                     postType, voteType, nComments, upvoteRatio, flair, awards, nAwards, hidden,
                     spoiler, nsfw, stickied, archived, locked, saved, isCrosspost, distinguished, suggestedSort);
 
-            JSONArray galleryIdsArray = data.getJSONObject(JSONUtils.GALLERY_DATA_KEY).getJSONArray(JSONUtils.ITEMS_KEY);
-            JSONObject galleryObject = data.getJSONObject(JSONUtils.MEDIA_METADATA_KEY);
+            JSONArray galleryArray = data.getJSONObject("gallery").getJSONArray(JSONUtils.ITEMS_KEY);
             ArrayList<Post.Gallery> gallery = new ArrayList<>();
-            for (int i = 0; i < galleryIdsArray.length(); i++) {
-                String galleryId = galleryIdsArray.getJSONObject(i).getString(JSONUtils.MEDIA_ID_KEY);
-                JSONObject singleGalleryObject = galleryObject.getJSONObject(galleryId);
-                String mimeType = singleGalleryObject.getString(JSONUtils.M_KEY);
-                String galleryItemUrl;
-                if (mimeType.contains("jpg") || mimeType.contains("png")) {
-                    galleryItemUrl = singleGalleryObject.getJSONObject(JSONUtils.S_KEY).getString(JSONUtils.U_KEY);
-                } else {
-                    JSONObject sourceObject = singleGalleryObject.getJSONObject(JSONUtils.S_KEY);
-                    if (mimeType.contains("gif")) {
-                        galleryItemUrl = sourceObject.getString(JSONUtils.GIF_KEY);
-                    } else {
-                        galleryItemUrl = sourceObject.getString(JSONUtils.MP4_KEY);
-                    }
-                }
+            for (int i = 0; i < galleryArray.length(); i++) {
+                JSONObject galleryItem = galleryArray.getJSONObject(i);
+                JSONObject mediaObject = galleryItem.getJSONObject("media");
+                String galleryId = mediaObject.getString("id");
+                String mimeType = mediaObject.getString("mimetype");
+                String galleryItemUrl = mediaObject.getString("url");
 
-                JSONObject galleryItem = galleryIdsArray.getJSONObject(i);
                 String galleryItemCaption = "";
                 String galleryItemCaptionUrl = "";
-                if (galleryItem.has(JSONUtils.CAPTION_KEY)) {
+                if (!galleryItem.isNull(JSONUtils.CAPTION_KEY)) {
                     galleryItemCaption = galleryItem.getString(JSONUtils.CAPTION_KEY).trim();
                 }
 
-                if (galleryItem.has(JSONUtils.CAPTION_URL_KEY)) {
-                    galleryItemCaptionUrl = galleryItem.getString(JSONUtils.CAPTION_URL_KEY).trim();
+                if (!galleryItem.isNull(JSONUtils.CAPTION_URL_KEY)) {
+                    galleryItemCaptionUrl = galleryItem.getString("outboundUrl").trim();
+                }
+
+                // get preview data
+
+                String[] resolutions = {"small", "medium", "large", "xlarge", "xxlarge", "xxxlarge"};
+                for (String res : resolutions) {
+                    if(mediaObject.isNull(res)){
+                        continue;
+                    }
+                    JSONObject thumbnailPreview = mediaObject.getJSONObject(res);
+                    String thumbnailPreviewUrl = thumbnailPreview.getString(JSONUtils.URL_KEY);
+                    int thumbnailPreviewWidth = thumbnailPreview.getJSONObject("dimensions").getInt(JSONUtils.WIDTH_KEY);
+                    int thumbnailPreviewHeight = thumbnailPreview.getJSONObject("dimensions").getInt(JSONUtils.HEIGHT_KEY);
+
+                    previews.add(new Post.Preview(thumbnailPreviewUrl, thumbnailPreviewWidth, thumbnailPreviewHeight, "", ""));
                 }
 
                 if (previews.isEmpty() && (mimeType.contains("jpg") || mimeType.contains("png"))) {
-                    previews.add(new Post.Preview(galleryItemUrl, singleGalleryObject.getJSONObject(JSONUtils.S_KEY).getInt(JSONUtils.X_KEY),
-                            singleGalleryObject.getJSONObject(JSONUtils.S_KEY).getInt(JSONUtils.Y_KEY), galleryItemCaption, galleryItemCaptionUrl));
+                    previews.add(new Post.Preview(galleryItemUrl, mediaObject.getInt("width"),
+                            mediaObject.getInt("heigth"), galleryItemCaption, galleryItemCaptionUrl));
                 }
 
                 Post.Gallery postGalleryItem = new Post.Gallery(mimeType, galleryItemUrl, "", subredditName + "-" + galleryId + "." + mimeType.substring(mimeType.lastIndexOf("/") + 1), galleryItemCaption, galleryItemCaptionUrl);
@@ -1098,11 +1103,11 @@ public class ParsePost {
                     JSONObject content = data.getJSONObject("content");
                     String selfText = Utils.modifyMarkdown(Utils.trimTrailingWhitespace(content.getString("markdown")));
                     post.setSelfText(selfText);
-                    if (data.isNull(content.getString("html"))) {
+                    if (content.isNull("html")) {
                         post.setSelfTextPlainTrimmed("");
                     } else {
                         String selfTextPlain = Utils.trimTrailingWhitespace(
-                                Html.fromHtml(data.getString(content.getString("html")))).toString();
+                                Html.fromHtml(content.getString("html"))).toString();
                         post.setSelfTextPlain(selfTextPlain);
                         if (selfTextPlain.length() > 250) {
                             selfTextPlain = selfTextPlain.substring(0, 250);
