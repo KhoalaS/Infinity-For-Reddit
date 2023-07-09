@@ -9,9 +9,11 @@ This Fork enables a user to login via the official Reddit Accounts endpoint (no 
 
 ## ⚠️ Warning
 
-Asking users to input their credentials directly in the app is a big __security risk__. As a user you are also violating the Reddit User Agreement.
+Asking users to input their credentials directly in the app is a big __security risk__. As a user you are also __violating the Reddit User Agreement__.
 
 I implore everyone who uses this fork and similar projects to look at the commits yourself and ensure that the credentials are not being stolen.
+
+The releases are automated.
 
 ## Want to input your own Client-ID?
 
@@ -27,7 +29,8 @@ I was originally looking into using the Sendbird SDK for chats, but recently Red
 - [ ] Inline Subreddit Emotes, (needs some richtext parser, SpannableString stuff)
 - [x] use GQL API for Subreddit posts
   - [x] use the 1P Reddit DASH streams for external videos, i.e. REDGifs will load without a REDGifs API-Key.
-  - [ ] fix video downloads missing audio
+  - [x] fix video downloads missing audio
+- [ ] update to new federated GQL API
 
 ---
 
