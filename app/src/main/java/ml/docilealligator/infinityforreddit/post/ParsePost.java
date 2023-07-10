@@ -331,8 +331,9 @@ public class ParsePost {
         String subredditName = permaLinkSplit[2];
         String subredditNamePrefixed = permaLinkSplit[1] + "/" + permaLinkSplit[2];
         String author = data.getJSONObject("authorInfo").getString("name");
+
         StringBuilder authorFlairHTMLBuilder = new StringBuilder();
-        if (!data.isNull("authorFlair")) {
+        if (!data.isNull("authorFlair") && !data.getJSONObject("authorFlair").isNull("richtext")) {
             JSONObject flair = data.getJSONObject("authorFlair");
             //JSONArray flairArray = data.getJSONArray(JSONUtils.AUTHOR_FLAIR_RICHTEXT_KEY);
             JSONArray flairArray = new JSONArray(flair.getString("richtext"));
@@ -370,7 +371,7 @@ public class ParsePost {
 
         StringBuilder postFlairHTMLBuilder = new StringBuilder();
         String flair = "";
-        if (!data.isNull("flair")) {
+        if (!data.isNull("flair") && !data.getJSONObject("flair").isNull("richtext")) {
             JSONObject flairs = data.getJSONObject("flair");
             if(!flairs.isNull("richtext")){
                 JSONArray flairArray = new JSONArray(flairs.getString("richtext"));
@@ -387,7 +388,7 @@ public class ParsePost {
             }
         }
 
-        if (flair.equals("") && data.has("flair") && !data.isNull("flair") && !data.getJSONObject("flair").isNull("richtext")) {
+        if (flair.equals("") && !data.isNull("flair")) {
             flair = data.getJSONObject("flair").getString("text");
         }
 
@@ -956,10 +957,10 @@ public class ParsePost {
         Post post;
 
         String url = Html.fromHtml(data.getString(JSONUtils.URL_KEY)).toString();
-        Uri uri = Uri.parse(url);
 
         if(data.getBoolean("isSelfPost")){
             //Text post
+
             int postType = Post.TEXT_TYPE;
             post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
                     authorFlair, authorFlairHTML, postTimeMillis, title, permalink, score, postType,
@@ -971,8 +972,6 @@ public class ParsePost {
             setText(post, data);
 
         } else if(data.getString("postHint").equals("IMAGE")){
-            //Image post
-
             int postType = Post.IMAGE_TYPE;
 
             post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
@@ -984,7 +983,7 @@ public class ParsePost {
                 previews.add(new Post.Preview(url, 0, 0, "", ""));
             }
             post.setPreviews(previews);
-        } else if (data.getString("postHint").equals("HOSTED_VIDEO") || data.get("postHint").equals("RICH_VIDEO")){
+        } else if (data.getString("postHint").equals("HOSTED_VIDEO")){
             JSONObject redditVideoObject = data.getJSONObject(JSONUtils.MEDIA_KEY).getJSONObject("streaming");
             JSONObject download = data.getJSONObject(JSONUtils.MEDIA_KEY).getJSONObject("download");
             int postType = Post.VIDEO_TYPE;
@@ -1127,7 +1126,7 @@ public class ParsePost {
                 }
 
         }catch (JSONException e){
-
+            post.setSelfTextPlainTrimmed("Could not parse post content");
         }
     }
 
