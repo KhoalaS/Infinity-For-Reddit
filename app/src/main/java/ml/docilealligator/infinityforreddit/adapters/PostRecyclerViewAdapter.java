@@ -2064,7 +2064,7 @@ public class PostRecyclerViewAdapter extends PagingDataAdapter<Post, RecyclerVie
         if (!previews.isEmpty()) {
             int previewIndex;
             if (mDataSavingMode && previews.size() > 2) {
-                previewIndex = previews.size() / 2;
+                previewIndex = previews.size() - 2;
             } else {
                 previewIndex = 0;
             }
