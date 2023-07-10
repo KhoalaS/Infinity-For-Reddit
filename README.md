@@ -5,7 +5,9 @@
 
 ## Changes
 
-This Fork enables a user to login via the official Reddit Accounts endpoint (no 3P authorize). The App will make requests that look like they are coming from the official Reddit App. External videos like REDGifs will be loaded from the Reddit servers and not through an external API if possible.
+This Fork enables a user to login via the official Reddit Accounts endpoint (no 3P authorize). The App will make requests that look like they are coming from the official Reddit App. 
+
+- External videos like REDGifs will be loaded from the Reddit servers and not through an external API if possible. You will be able to see the content of broken links, if they were mirrored to Reddit's servers before breaking.
 
 ## ⚠️ Warning
 
