@@ -193,10 +193,9 @@ public class ParsePost {
 
     public static long getUnixTime(String timestamp) {
         String pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ";
-        String timestampAsString = "2023-07-05T12:47:50.355000+0000";
         SimpleDateFormat formatter = new SimpleDateFormat(pattern);
         try {
-            return formatter.parse(timestampAsString).getTime();
+            return formatter.parse(timestamp).getTime();
         } catch (ParseException e) {
             return new Date().getTime();
         }
@@ -956,10 +955,8 @@ public class ParsePost {
                                   String distinguished, String suggestedSort) throws JSONException {
         Post post;
 
-        boolean isVideo = data.getString("postHint").equals("HOSTED_VIDEO");
         String url = Html.fromHtml(data.getString(JSONUtils.URL_KEY)).toString();
         Uri uri = Uri.parse(url);
-        String path = uri.getPath();
 
         if(data.getBoolean("isSelfPost")){
             //Text post
@@ -1003,7 +1000,6 @@ public class ParsePost {
             post.setVideoUrl(videoUrl);
             post.setVideoDownloadUrl(videoDownloadUrl);
         } else if (data.getString("postHint").equals("LINK")){
-            //No preview link post
             int postType = Post.LINK_TYPE;
             post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
                     authorFlair, authorFlairHTML, postTimeMillis, title, url, permalink, score,
@@ -1082,12 +1078,16 @@ public class ParsePost {
             }
 
         }else{
-            //Text post
-            int postType = Post.TEXT_TYPE;
+            int postType = Post.LINK_TYPE;
             post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
-                    authorFlair, authorFlairHTML, postTimeMillis, title, permalink, score, postType,
-                    voteType, nComments, upvoteRatio, flair, awards, nAwards, hidden, spoiler, nsfw,
-                    stickied, archived, locked, saved, isCrosspost, distinguished, suggestedSort);
+                    authorFlair, authorFlairHTML, postTimeMillis, title, url, permalink, score,
+                    postType, voteType, nComments, upvoteRatio, flair, awards, nAwards, hidden,
+                    spoiler, nsfw, stickied, archived, locked, saved, isCrosspost, distinguished, suggestedSort);
+            if (data.getBoolean("isSelfPost")) {
+                post.setSelfText(Utils.modifyMarkdown(Utils.trimTrailingWhitespace(data.getJSONObject("content").getString("markdown"))));
+            } else {
+                post.setSelfText("");
+            }
             if(!previews.isEmpty()){
                 post.setPreviews(previews);
             }
