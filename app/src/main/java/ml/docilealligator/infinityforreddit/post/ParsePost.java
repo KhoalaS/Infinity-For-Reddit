@@ -353,7 +353,12 @@ public class ParsePost {
         String suggestedSort = data.has("suggestedCommentSort") ? data.getString("suggestedCommentSort") : null;
         long postTime = getUnixTime(data.getString("createdAt"));
         String title = data.getString(JSONUtils.TITLE_KEY);
-        int score = (int) data.getDouble(JSONUtils.SCORE_KEY);
+        int score;
+        if(data.isNull(JSONUtils.SCORE_KEY)){
+            score = 0;
+        }else{
+             score = (int) data.getDouble(JSONUtils.SCORE_KEY);
+        }
         int voteType;
         int nComments = data.getInt("commentCount");
         int upvoteRatio = (int) (data.getDouble("upvoteRatio") * 100);
@@ -445,7 +450,7 @@ public class ParsePost {
             //data.getJSONArray(JSONUtils.CROSSPOST_PARENT_LIST).getJSONObject(0) out of bounds????????????
             data = data.getJSONObject("crosspostRoot").getJSONObject("post");
             Post crosspostParent = parseBasicDataGQL(data);
-            Post post = parseData(data, permalink, id, fullName, subredditName, subredditNamePrefixed,
+            Post post = parseDataGQL(data, permalink, id, fullName, subredditName, subredditNamePrefixed,
                     author, authorFlair, authorFlairHTMLBuilder.toString(),
                     postTime, title, previews,
                     score, voteType, nComments, upvoteRatio, flair, awardingsBuilder.toString(), nAwards, hidden,
