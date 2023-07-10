@@ -5,13 +5,18 @@
 
 ## Changes
 
-This Fork enables a user to login via the official Reddit Accounts endpoint (no 3P authorize). The App will make requests that look like they are coming from the official Reddit App. 
+This Fork enables a user to login via the official Reddit Accounts endpoint (no 3P authorize). The App will make requests that look like they are coming from the official Reddit App.
 
-- External videos like REDGifs will be loaded from the Reddit servers and not through an external API if possible. You will be able to see the content of broken links, if they were mirrored to Reddit's servers before breaking.
+#### External Videos
+
+-   External videos like REDGifs will be loaded from the Reddit servers and not through an external API if possible.
+-   You will be able to see the content of broken links, if they were mirrored to Reddit's servers before breaking.
+-   This only works if you go to the subreddit directly. Support for Home/Popular feeds TBD.
+-   Might break if the GQL API changes, also not tested with imgur, gfycat.
 
 ## ⚠️ Warning
 
-Asking users to input their credentials directly in the app is a big __security risk__. As a user you are also __violating the Reddit User Agreement__.
+Asking users to input their credentials directly in the app is a big **security risk**. As a user you are also **violating the Reddit User Agreement**.
 
 I implore everyone who uses this fork and similar projects to look at the commits yourself and ensure that the credentials are not being stolen.
 
@@ -27,12 +32,14 @@ https://github.com/KhoalaS/Infinity-For-Reddit/assets/83372697/5c752092-3f11-4e1
 
 I was originally looking into using the Sendbird SDK for chats, but recently Reddit changed their chat backend. They are now using [Matrix](https://github.com/matrix-org/matrix-android-sdk2).
 
-- [ ] Chat
-- [ ] Inline Subreddit Emotes, (needs some richtext parser, SpannableString stuff)
-- [x] use GQL API for Subreddit posts
-  - [x] use the 1P Reddit DASH streams for external videos, i.e. REDGifs will load without a REDGifs API-Key.
-  - [x] fix video downloads missing audio
-- [ ] update to new federated GQL API
+-   [ ] Chat
+-   [ ] Inline Subreddit Emotes, (needs some richtext parser, SpannableString stuff)
+-   [ ] use GQL API for Home posts
+-   [ ] use GQL API for Popular/All posts
+-   [x] use GQL API for Subreddit posts
+    -   [x] use the 1P Reddit DASH streams for external videos, i.e. REDGifs will load without a REDGifs API-Key.
+    -   [x] fix video downloads missing audio
+-   [ ] update to new federated GQL API
 
 ---
 
@@ -89,10 +96,11 @@ Infinity for Reddit is available on Google Play and F-Droid
 You can send me an email at docilealligator.app@gmail.com or message [u/Hostilenemy](https://www.reddit.com/user/Hostilenemy) on Reddit.
 
 ## Donation
+
 <p>Infinity for Reddit+:</p>
 <a href="https://play.google.com/store/apps/details?id=ml.docilealligator.infinityforreddit.plus">
     <img alt="Get it on Google Play" height="80" src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" />
-</a> 
+</a>
 
 Patreon: https://www.patreon.com/docile_alligator
 
@@ -101,19 +109,19 @@ Bitcoin: bc1qxtkd5ap9na7uy8nr9qpt6jny6tdwaj4v43ddle
 <details>
   <summary>Table of Contents</summary>
 
-- [About](#about)
-  - [Built With](#built-with)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Usage](#usage)
-    - [Cookiecutter template](#cookiecutter-template)
-    - [Manual setup](#manual-setup)
-    - [Variables reference](#variables-reference)
-- [Roadmap](#roadmap)
-- [Contributing](#contributing)
-- [Support](#support)
-- [License](#license)
-- [Acknowledgements](#acknowledgements)
+-   [About](#about)
+    -   [Built With](#built-with)
+-   [Getting Started](#getting-started)
+    -   [Prerequisites](#prerequisites)
+    -   [Usage](#usage)
+        -   [Cookiecutter template](#cookiecutter-template)
+        -   [Manual setup](#manual-setup)
+        -   [Variables reference](#variables-reference)
+-   [Roadmap](#roadmap)
+-   [Contributing](#contributing)
+-   [Support](#support)
+-   [License](#license)
+-   [Acknowledgements](#acknowledgements)
 
 </details>
 
@@ -127,20 +135,20 @@ Bitcoin: bc1qxtkd5ap9na7uy8nr9qpt6jny6tdwaj4v43ddle
 
 Key features of **Infinity For Reddit**:
 
-- Lazy mode: Automatic scrolling of posts enables you to enjoy amazing posts without moving your thumb.
-- Browsing posts
-- View comments
-- Expand and collapse comments section
-- Vote posts and comments
-- Save posts
-- Write comments
-- Edit comments and delete comments
-- Submit posts (text, link, image and video)
-- Edit posts (mark and unmark NSFW and spoiler and edit flair) and delete posts
-- See all the subscribed subreddits and followed users
-- View the messages
-- Get notifications of unread messages
-- etc...
+-   Lazy mode: Automatic scrolling of posts enables you to enjoy amazing posts without moving your thumb.
+-   Browsing posts
+-   View comments
+-   Expand and collapse comments section
+-   Vote posts and comments
+-   Save posts
+-   Write comments
+-   Edit comments and delete comments
+-   Submit posts (text, link, image and video)
+-   Edit posts (mark and unmark NSFW and spoiler and edit flair) and delete posts
+-   See all the subscribed subreddits and followed users
+-   View the messages
+-   Get notifications of unread messages
+-   etc...
 
 </td>
 </tr>
@@ -194,9 +202,9 @@ Don't forget to give the project a star! Thanks again!
 
 Here are other ways you can help:
 
-- [Report Bugs](https://github.com/Docile-Alligator/Infinity-For-Reddit/issues)
-- [Make Suggestions](https://github.com/Docile-Alligator/Infinity-For-Reddit/discussions)
-- [Translate The App](https://poeditor.com/join/project?hash=b2IRyfaJv6)
+-   [Report Bugs](https://github.com/Docile-Alligator/Infinity-For-Reddit/issues)
+-   [Make Suggestions](https://github.com/Docile-Alligator/Infinity-For-Reddit/discussions)
+-   [Translate The App](https://poeditor.com/join/project?hash=b2IRyfaJv6)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
