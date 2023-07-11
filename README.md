@@ -17,6 +17,7 @@ This Fork enables a user to login via the official Reddit Accounts endpoint (no 
 #### Known Issues Version 5.5.0
 - Images in text posts no loading correctly
 - external Videos being displayed as links
+- Devices with >= Android 13 login error
 
 ## ⚠️ Warning
 
