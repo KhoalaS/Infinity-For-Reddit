@@ -7,6 +7,7 @@ import java.util.concurrent.Executor;
 
 import ml.docilealligator.infinityforreddit.account.Account;
 import ml.docilealligator.infinityforreddit.RedditDataRoomDatabase;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 
 public class SwitchAccount {
@@ -21,6 +22,8 @@ public class SwitchAccount {
             currentAccountSharedPreferences.edit()
                     .putString(SharedPreferencesUtils.ACCESS_TOKEN, account.getAccessToken())
                     .putString(SharedPreferencesUtils.ACCOUNT_NAME, account.getAccountName())
+                    .putString(SharedPreferencesUtils.USERAGENT_USERNAME_KEY, account.getUseragentUsername())
+                    .putString(SharedPreferencesUtils.APPNAME_KEY, account.getAppname())
                     .putString(SharedPreferencesUtils.ACCOUNT_IMAGE_URL, account.getProfileImageUrl()).apply();
             handler.post(() -> switchAccountListener.switched(account));
         });

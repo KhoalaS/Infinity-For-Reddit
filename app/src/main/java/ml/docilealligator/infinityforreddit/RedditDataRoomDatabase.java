@@ -383,4 +383,12 @@ public abstract class RedditDataRoomDatabase extends RoomDatabase {
             }
         }
     };
+
+    private static final Migration MIGRATION_23_24 = new Migration(23, 24) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE accounts ADD COLUMN appname TEXT DEFAULT 'myapp' NOT NULL");
+            database.execSQL("ALTER TABLE accounts ADD COLUMN useragent_username TEXT DEFAULT 'deleted' NOT NULL");
+        }
+    };
 }

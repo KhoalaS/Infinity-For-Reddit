@@ -101,6 +101,9 @@ public class LoginActivity extends BaseActivity {
     @Named("default")
     SharedPreferences mSharedPreferences;
     @Inject
+    @Named("internal")
+    SharedPreferences mInternalSharedPreferences;
+    @Inject
     @Named("current_account")
     SharedPreferences mCurrentAccountSharedPreferences;
     @Inject
@@ -160,7 +163,7 @@ public class LoginActivity extends BaseActivity {
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(enableDom);
 
-        String client_id = mCurrentAccountSharedPreferences.getString(APIUtils.CLIENT_ID_KEY, "");
+        String client_id = mInternalSharedPreferences.getString(APIUtils.CLIENT_ID_KEY, "");
         String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
         String username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
 
@@ -173,7 +176,7 @@ public class LoginActivity extends BaseActivity {
         }
 
         if(!client_id.isBlank() && !appname.isBlank() && !username.isBlank()) {
-            loadLoginWebview(client_id);
+            loadLoginWebview(client_id, appname, username);
         }
 
 
@@ -187,12 +190,14 @@ public class LoginActivity extends BaseActivity {
             String l_username = userAgentUsernameEditText.getText().toString();
             String l_appname = userAgentAppnameEditText.getText().toString();
 
-
             if(l_client_id.isBlank()){
                 Toast.makeText(LoginActivity.this, "Please input a Client-ID first", Toast.LENGTH_LONG).show();
                 view.setClickable(true);
                 return;
+            }else{
+                mInternalSharedPreferences.edit().putString(APIUtils.CLIENT_ID_KEY, l_client_id).apply();
             }
+
             if(l_appname.isBlank()){
                 Toast.makeText(LoginActivity.this, "Please input an App name first", Toast.LENGTH_LONG).show();
                 view.setClickable(true);
@@ -203,13 +208,9 @@ public class LoginActivity extends BaseActivity {
                 view.setClickable(true);
                 return;
             }
-            mCurrentAccountSharedPreferences.edit()
-                    .putString(APIUtils.CLIENT_ID_KEY, l_client_id)
-                    .putString(APIUtils.USER_AGENT_APPNAME_KEY, l_appname)
-                    .putString(APIUtils.USER_AGENT_USERNAME_KEY, l_username)
-                    .apply();
+
             view.setClickable(true);
-            loadLoginWebview(l_client_id);
+            loadLoginWebview(l_client_id, l_appname, l_username);
         });
 
 
@@ -242,7 +243,7 @@ public class LoginActivity extends BaseActivity {
         }
     }
 
-    void loadLoginWebview(String client_id){
+    void loadLoginWebview(String client_id, String appname, String useragentUsername){
         Uri baseUri = Uri.parse(APIUtils.OAUTH_URL);
         Uri.Builder uriBuilder = baseUri.buildUpon();
         uriBuilder.appendQueryParameter(APIUtils.CLIENT_ID_KEY, client_id);
@@ -289,10 +290,7 @@ public class LoginActivity extends BaseActivity {
                                         String accessToken = responseJSON.getString(APIUtils.ACCESS_TOKEN_KEY);
                                         String refreshToken = responseJSON.getString(APIUtils.REFRESH_TOKEN_KEY);
 
-                                        String username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
-                                        String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
-                                        String useragent = UseragentUtil.getUserAgent(appname, username);
-
+                                        String useragent = UseragentUtil.getUserAgent(appname, useragentUsername);
 
                                         FetchMyInfo.fetchAccountInfo(mOauthRetrofit, mRedditDataRoomDatabase,
                                                 accessToken, useragent, new FetchMyInfo.FetchMyInfoListener() {
@@ -300,9 +298,11 @@ public class LoginActivity extends BaseActivity {
                                                     public void onFetchMyInfoSuccess(String name, String profileImageUrl, String bannerImageUrl, int karma) {
                                                         mCurrentAccountSharedPreferences.edit().putString(SharedPreferencesUtils.ACCESS_TOKEN, accessToken)
                                                                 .putString(SharedPreferencesUtils.ACCOUNT_NAME, name)
+                                                                .putString(SharedPreferencesUtils.USERAGENT_USERNAME_KEY, useragentUsername)
+                                                                .putString(SharedPreferencesUtils.APPNAME_KEY, appname)
                                                                 .putString(SharedPreferencesUtils.ACCOUNT_IMAGE_URL, profileImageUrl).apply();
                                                         ParseAndInsertNewAccount.parseAndInsertNewAccount(mExecutor, new Handler(), name, accessToken, refreshToken, profileImageUrl, bannerImageUrl,
-                                                                karma, authCode, mRedditDataRoomDatabase.accountDao(),
+                                                                karma, authCode, appname, useragentUsername, mRedditDataRoomDatabase.accountDao(),
                                                                 () -> {
                                                                     Intent resultIntent = new Intent();
                                                                     setResult(Activity.RESULT_OK, resultIntent);

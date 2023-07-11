@@ -29,6 +29,10 @@ public class Account implements Parcelable {
     private String code;
     @ColumnInfo(name = "is_current_user")
     private boolean isCurrentUser;
+    @ColumnInfo(name = "appname")
+    private String appname;
+    @ColumnInfo(name = "useragent_username")
+    private String useragentUsername;
 
     @Ignore
     protected Account(Parcel in) {
@@ -40,6 +44,8 @@ public class Account implements Parcelable {
         refreshToken = in.readString();
         code = in.readString();
         isCurrentUser = in.readByte() != 0;
+        appname = in.readString();
+        useragentUsername = in.readString();
     }
 
     public static final Creator<Account> CREATOR = new Creator<Account>() {
@@ -56,11 +62,11 @@ public class Account implements Parcelable {
 
     @Ignore
     public static Account getAnonymousAccount() {
-        return new Account("-", null, null, null, null, null, 0, false);
+        return new Account("-", null, null, null, null, null, 0, false, "", "");
     }
 
     public Account(@NonNull String accountName, String accessToken, String refreshToken, String code,
-                   String profileImageUrl, String bannerImageUrl, int karma, boolean isCurrentUser) {
+                   String profileImageUrl, String bannerImageUrl, int karma, boolean isCurrentUser, String appname, String useragentUsername) {
         this.accountName = accountName;
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
@@ -69,6 +75,8 @@ public class Account implements Parcelable {
         this.bannerImageUrl = bannerImageUrl;
         this.karma = karma;
         this.isCurrentUser = isCurrentUser;
+        this.appname = appname;
+        this.useragentUsername = useragentUsername;
     }
 
     @NonNull
@@ -108,6 +116,12 @@ public class Account implements Parcelable {
         return isCurrentUser;
     }
 
+    public String getAppname() {
+        return appname;
+    }
+
+    public String getUseragentUsername() { return useragentUsername; };
+
     @Override
     public int describeContents() {
         return 0;
@@ -123,5 +137,7 @@ public class Account implements Parcelable {
         dest.writeString(refreshToken);
         dest.writeString(code);
         dest.writeByte((byte) (isCurrentUser ? 1 : 0));
+        dest.writeString(appname);
+        dest.writeString(useragentUsername);
     }
 }

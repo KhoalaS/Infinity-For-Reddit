@@ -38,10 +38,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v6.0.2-sub  # Replace with your desired tag name
-          release_name: Release v6.0.2-sub  # Replace with your desired release name
+          tag_name: v6.0.3-sub  # Replace with your desired tag name
+          release_name: Release v6.0.3-sub  # Replace with your desired release name
           body: |
-            Infinity for Reddit automated Build. This is the version that lets you input your own Client-ID and User-Agent.
+            Infinity for Reddit automated Build. 
+            This is the version that lets you input your own Client-ID and User-Agent.
+            Fixes issues when using multiple accounts.
 
       - name: Sign APK
         env:
