@@ -14,6 +14,10 @@ This Fork enables a user to login via the official Reddit Accounts endpoint (no 
 -   This only works if you go to the subreddit directly. Support for Home/Popular feeds TBD.
 -   Might break if the GQL API changes, also not tested with imgur, gfycat.
 
+#### Known Issues Version 5.5.0
+- Images in text posts no loading correctly
+- external Videos being displayed as links
+
 ## ⚠️ Warning
 
 Asking users to input their credentials directly in the app is a big **security risk**. As a user you are also **violating the Reddit User Agreement**.
