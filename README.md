@@ -14,10 +14,19 @@ This Fork enables a user to login via the official Reddit Accounts endpoint (no 
 -   This only works if you go to the subreddit directly. Support for Home/Popular feeds TBD.
 -   Might break if the GQL API changes, also not tested with imgur, gfycat.
 
+#### Known Issues Version 5.5.1
+- Images in text posts not loading correctly
+  - probably due to the way the GQL API delivers the markdown text
+- ~~external Videos being displayed as links~~
+- Devices with >= Android 13 login error
+  - maybe some HMAC related Crypto APIs changed?
+- ~~Youtube links not being displayed~~
+
 #### Known Issues Version 5.5.0
-- Images in text posts no loading correctly
+- Images in text posts not loading correctly
 - external Videos being displayed as links
 - Devices with >= Android 13 login error
+- Youtube links not being displayed
 
 ## ⚠️ Warning
 
