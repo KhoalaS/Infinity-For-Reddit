@@ -191,8 +191,6 @@ public class LoginActivity extends BaseActivity {
                 Toast.makeText(LoginActivity.this, "Please input a Client-ID first", Toast.LENGTH_LONG).show();
                 view.setClickable(true);
                 return;
-            }else{
-                mCurrentAccountSharedPreferences.edit().putString(APIUtils.CLIENT_ID_KEY, l_client_id).apply();
             }
 
             if(l_appname.isBlank()){
