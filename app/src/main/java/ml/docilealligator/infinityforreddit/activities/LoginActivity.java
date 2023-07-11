@@ -269,13 +269,15 @@ public class LoginActivity extends BaseActivity {
                         }
 
 
+                    } else {
+                        Toast.makeText(LoginActivity.this, "Login Error", Toast.LENGTH_SHORT).show();
+                        finish();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<String> call, Throwable t) {
                     Toast.makeText(LoginActivity.this, "Login Error", Toast.LENGTH_SHORT).show();
-                    t.printStackTrace();
                     finish();
                 }
             });
