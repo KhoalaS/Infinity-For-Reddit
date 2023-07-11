@@ -101,9 +101,6 @@ public class LoginActivity extends BaseActivity {
     @Named("default")
     SharedPreferences mSharedPreferences;
     @Inject
-    @Named("internal")
-    SharedPreferences mInternalSharedPreferences;
-    @Inject
     @Named("current_account")
     SharedPreferences mCurrentAccountSharedPreferences;
     @Inject
@@ -163,7 +160,7 @@ public class LoginActivity extends BaseActivity {
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(enableDom);
 
-        String client_id = mInternalSharedPreferences.getString(APIUtils.CLIENT_ID_KEY, "");
+        String client_id = mCurrentAccountSharedPreferences.getString(APIUtils.CLIENT_ID_KEY, "");
         String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
         String username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
 
@@ -195,7 +192,7 @@ public class LoginActivity extends BaseActivity {
                 view.setClickable(true);
                 return;
             }else{
-                mInternalSharedPreferences.edit().putString(APIUtils.CLIENT_ID_KEY, l_client_id).apply();
+                mCurrentAccountSharedPreferences.edit().putString(APIUtils.CLIENT_ID_KEY, l_client_id).apply();
             }
 
             if(l_appname.isBlank()){
@@ -297,12 +294,13 @@ public class LoginActivity extends BaseActivity {
                                                     @Override
                                                     public void onFetchMyInfoSuccess(String name, String profileImageUrl, String bannerImageUrl, int karma) {
                                                         mCurrentAccountSharedPreferences.edit().putString(SharedPreferencesUtils.ACCESS_TOKEN, accessToken)
+                                                                .putString(APIUtils.CLIENT_ID_KEY, client_id)
                                                                 .putString(SharedPreferencesUtils.ACCOUNT_NAME, name)
                                                                 .putString(SharedPreferencesUtils.USERAGENT_USERNAME_KEY, useragentUsername)
                                                                 .putString(SharedPreferencesUtils.APPNAME_KEY, appname)
                                                                 .putString(SharedPreferencesUtils.ACCOUNT_IMAGE_URL, profileImageUrl).apply();
                                                         ParseAndInsertNewAccount.parseAndInsertNewAccount(mExecutor, new Handler(), name, accessToken, refreshToken, profileImageUrl, bannerImageUrl,
-                                                                karma, authCode, appname, useragentUsername, mRedditDataRoomDatabase.accountDao(),
+                                                                karma, authCode, appname, useragentUsername, client_id, mRedditDataRoomDatabase.accountDao(),
                                                                 () -> {
                                                                     Intent resultIntent = new Intent();
                                                                     setResult(Activity.RESULT_OK, resultIntent);

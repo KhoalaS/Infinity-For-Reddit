@@ -21,6 +21,7 @@ public class SwitchAccount {
             Account account = redditDataRoomDatabase.accountDao().getCurrentAccount();
             currentAccountSharedPreferences.edit()
                     .putString(SharedPreferencesUtils.ACCESS_TOKEN, account.getAccessToken())
+                    .putString(APIUtils.CLIENT_ID_KEY, account.getClient_id())
                     .putString(SharedPreferencesUtils.ACCOUNT_NAME, account.getAccountName())
                     .putString(SharedPreferencesUtils.USERAGENT_USERNAME_KEY, account.getUseragentUsername())
                     .putString(SharedPreferencesUtils.APPNAME_KEY, account.getAppname())

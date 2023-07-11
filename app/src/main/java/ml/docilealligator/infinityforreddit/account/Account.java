@@ -33,6 +33,8 @@ public class Account implements Parcelable {
     private String appname;
     @ColumnInfo(name = "useragent_username")
     private String useragentUsername;
+    @ColumnInfo(name = "client_id")
+    private String client_id;
 
     @Ignore
     protected Account(Parcel in) {
@@ -46,6 +48,7 @@ public class Account implements Parcelable {
         isCurrentUser = in.readByte() != 0;
         appname = in.readString();
         useragentUsername = in.readString();
+        client_id = in.readString();
     }
 
     public static final Creator<Account> CREATOR = new Creator<Account>() {
@@ -62,11 +65,11 @@ public class Account implements Parcelable {
 
     @Ignore
     public static Account getAnonymousAccount() {
-        return new Account("-", null, null, null, null, null, 0, false, "", "");
+        return new Account("-", null, null, null, null, null, 0, false, "", "", "");
     }
 
     public Account(@NonNull String accountName, String accessToken, String refreshToken, String code,
-                   String profileImageUrl, String bannerImageUrl, int karma, boolean isCurrentUser, String appname, String useragentUsername) {
+                   String profileImageUrl, String bannerImageUrl, int karma, boolean isCurrentUser, String appname, String useragentUsername, String client_id) {
         this.accountName = accountName;
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
@@ -77,6 +80,7 @@ public class Account implements Parcelable {
         this.isCurrentUser = isCurrentUser;
         this.appname = appname;
         this.useragentUsername = useragentUsername;
+        this.client_id = client_id;
     }
 
     @NonNull
@@ -122,6 +126,10 @@ public class Account implements Parcelable {
 
     public String getUseragentUsername() { return useragentUsername; };
 
+    public String getClient_id() { return client_id; }
+
+
+
     @Override
     public int describeContents() {
         return 0;
@@ -139,5 +147,6 @@ public class Account implements Parcelable {
         dest.writeByte((byte) (isCurrentUser ? 1 : 0));
         dest.writeString(appname);
         dest.writeString(useragentUsername);
+        dest.writeString(client_id);
     }
 }

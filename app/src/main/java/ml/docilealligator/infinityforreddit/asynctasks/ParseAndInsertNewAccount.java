@@ -11,11 +11,12 @@ public class ParseAndInsertNewAccount {
 
     public static void parseAndInsertNewAccount(Executor executor, Handler handler, String username,
                                                 String accessToken, String refreshToken, String profileImageUrl,
-                                                String bannerImageUrl, int karma, String code, String appname, String useragentUsername, AccountDao accountDao,
+                                                String bannerImageUrl, int karma, String code, String appname, String useragentUsername,
+                                                String client_id, AccountDao accountDao,
                                                 ParseAndInsertAccountListener parseAndInsertAccountListener) {
         executor.execute(() -> {
             Account account = new Account(username, accessToken, refreshToken, code, profileImageUrl,
-                    bannerImageUrl, karma, true, appname, useragentUsername);
+                    bannerImageUrl, karma, true, appname, useragentUsername, client_id);
             accountDao.markAllAccountsNonCurrent();
             accountDao.insert(account);
 

@@ -52,8 +52,8 @@ class AccessTokenAuthenticator implements Authenticator {
                     return null;
                 }
                 String accessTokenFromDatabase = account.getAccessToken();
-                String username = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_USERNAME_KEY, "");
-                String appname = mCurrentAccountSharedPreferences.getString(APIUtils.USER_AGENT_APPNAME_KEY, "");
+                String username = account.getUseragentUsername();
+                String appname = account.getAppname();
                 String useragent = UseragentUtil.getUserAgent(appname, username);
 
                 if (accessToken.equals(accessTokenFromDatabase)) {
@@ -79,7 +79,7 @@ class AccessTokenAuthenticator implements Authenticator {
         Map<String, String> params = new HashMap<>();
         params.put(APIUtils.GRANT_TYPE_KEY, APIUtils.GRANT_TYPE_REFRESH_TOKEN);
         params.put(APIUtils.REFRESH_TOKEN_KEY, refreshToken);
-        String client_id = mCurrentAccountSharedPreferences.getString(APIUtils.CLIENT_ID_KEY, "");
+        String client_id = account.getClient_id();
 
         Call<String> accessTokenCall = api.getAccessToken(APIUtils.getHttpBasicAuthHeader(client_id), params);
         try {
