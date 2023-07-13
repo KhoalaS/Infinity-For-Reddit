@@ -82,7 +82,6 @@ dependencies {
     implementation 'androidx.viewpager2:viewpager2:1.1.0-beta01'
     implementation 'androidx.work:work-runtime:2.7.1'
     implementation 'com.google.android.material:material:1.8.0'
-
 /** ExoPlayer **/
     def exoplayerVersion = "2.18.2"
     implementation "com.google.android.exoplayer:exoplayer-core:$exoplayerVersion"
@@ -92,6 +91,8 @@ dependencies {
     implementation "com.google.android.exoplayer:exoplayer-smoothstreaming:$exoplayerVersion"
 
 /** Third-party **/
+    implementation 'com.giphy.sdk:ui:2.3.6'
+
 
 /**** Backend logic ****/
 

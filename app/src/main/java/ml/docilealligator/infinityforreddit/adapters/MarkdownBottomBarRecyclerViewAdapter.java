@@ -8,14 +8,19 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.giphy.sdk.ui.GPHSettings;
+import com.giphy.sdk.ui.themes.GPHTheme;
+import com.giphy.sdk.ui.views.GiphyDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.Slider;
 import com.google.android.material.textfield.TextInputEditText;
 
 import ml.docilealligator.infinityforreddit.R;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
+import ml.docilealligator.infinityforreddit.utils.APIUtils;
 
 public class MarkdownBottomBarRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -30,8 +35,9 @@ public class MarkdownBottomBarRecyclerViewAdapter extends RecyclerView.Adapter<R
     public static final int QUOTE = 8;
     public static final int CODE_BLOCK = 9;
     public static final int UPLOAD_IMAGE = 10;
+    public static final int GIPHY_IMAGE = 11;
 
-    private static final int ITEM_COUNT = 10;
+    private static final int ITEM_COUNT = 12;
 
     private CustomThemeWrapper customThemeWrapper;
     private ItemClickListener itemClickListener;
@@ -90,6 +96,9 @@ public class MarkdownBottomBarRecyclerViewAdapter extends RecyclerView.Adapter<R
                 case UPLOAD_IMAGE:
                     ((MarkdownBottomBarItemViewHolder) holder).imageView.setImageResource(R.drawable.ic_image_24dp);
                     break;
+                case GIPHY_IMAGE:
+                    ((MarkdownBottomBarItemViewHolder) holder).imageView.setImageResource(R.drawable.ic_giphy_logo_24dp);
+                    break;
             }
         }
     }
@@ -101,7 +110,7 @@ public class MarkdownBottomBarRecyclerViewAdapter extends RecyclerView.Adapter<R
 
     public static void bindEditTextWithItemClickListener(Activity activity, EditText commentEditText, int item) {
         switch (item) {
-            case MarkdownBottomBarRecyclerViewAdapter.BOLD: {
+            case BOLD: {
                 int start = Math.max(commentEditText.getSelectionStart(), 0);
                 int end = Math.max(commentEditText.getSelectionEnd(), 0);
                 if (end != start) {
@@ -115,7 +124,7 @@ public class MarkdownBottomBarRecyclerViewAdapter extends RecyclerView.Adapter<R
                 }
                 break;
             }
-            case MarkdownBottomBarRecyclerViewAdapter.ITALIC: {
+            case ITALIC: {
                 int start = Math.max(commentEditText.getSelectionStart(), 0);
                 int end = Math.max(commentEditText.getSelectionEnd(), 0);
                 if (end != start) {
@@ -129,7 +138,7 @@ public class MarkdownBottomBarRecyclerViewAdapter extends RecyclerView.Adapter<R
                 }
                 break;
             }
-            case MarkdownBottomBarRecyclerViewAdapter.LINK: {
+            case LINK: {
                 View dialogView = activity.getLayoutInflater().inflate(R.layout.dialog_insert_link, null);
                 TextInputEditText textEditText = dialogView.findViewById(R.id.edit_text_insert_link_dialog);
                 TextInputEditText linkEditText = dialogView.findViewById(R.id.edit_link_insert_link_dialog);
@@ -159,7 +168,7 @@ public class MarkdownBottomBarRecyclerViewAdapter extends RecyclerView.Adapter<R
                         .show();
                 break;
             }
-            case MarkdownBottomBarRecyclerViewAdapter.STRIKE_THROUGH: {
+            case STRIKE_THROUGH: {
                 int start = Math.max(commentEditText.getSelectionStart(), 0);
                 int end = Math.max(commentEditText.getSelectionEnd(), 0);
                 if (end != start) {
@@ -173,7 +182,7 @@ public class MarkdownBottomBarRecyclerViewAdapter extends RecyclerView.Adapter<R
                 }
                 break;
             }
-            case MarkdownBottomBarRecyclerViewAdapter.HEADER: {
+            case HEADER: {
                 View dialogView = activity.getLayoutInflater().inflate(R.layout.dialog_select_header, null);
                 Slider seekBar = dialogView.findViewById(R.id.seek_bar_dialog_select_header);
                 new MaterialAlertDialogBuilder(activity, R.style.MaterialAlertDialogTheme)
@@ -217,7 +226,7 @@ public class MarkdownBottomBarRecyclerViewAdapter extends RecyclerView.Adapter<R
                         .show();
                 break;
             }
-            case MarkdownBottomBarRecyclerViewAdapter.ORDERED_LIST: {
+            case ORDERED_LIST: {
                 int start = Math.max(commentEditText.getSelectionStart(), 0);
                 int end = Math.max(commentEditText.getSelectionEnd(), 0);
                 if (end != start) {
@@ -230,7 +239,7 @@ public class MarkdownBottomBarRecyclerViewAdapter extends RecyclerView.Adapter<R
                 }
                 break;
             }
-            case MarkdownBottomBarRecyclerViewAdapter.UNORDERED_LIST: {
+            case UNORDERED_LIST: {
                 int start = Math.max(commentEditText.getSelectionStart(), 0);
                 int end = Math.max(commentEditText.getSelectionEnd(), 0);
                 if (end != start) {
@@ -243,7 +252,7 @@ public class MarkdownBottomBarRecyclerViewAdapter extends RecyclerView.Adapter<R
                 }
                 break;
             }
-            case MarkdownBottomBarRecyclerViewAdapter.SPOILER: {
+            case SPOILER: {
                 int start = Math.max(commentEditText.getSelectionStart(), 0);
                 int end = Math.max(commentEditText.getSelectionEnd(), 0);
                 if (end != start) {
@@ -283,6 +292,12 @@ public class MarkdownBottomBarRecyclerViewAdapter extends RecyclerView.Adapter<R
                             "```\n\n```\n", 0, "```\n\n```\n".length());
                     commentEditText.setSelection(start + "```\n".length());
                 }
+                break;
+            }
+            case GIPHY_IMAGE: {
+                GPHSettings settings = new GPHSettings();
+                GiphyDialogFragment dialog = GiphyDialogFragment.Companion.newInstance(settings, APIUtils.GIPHY_SDK_KEY);
+                dialog.show(((FragmentActivity)activity).getSupportFragmentManager(), "gifs_dialog");
                 break;
             }
         }
