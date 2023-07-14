@@ -30,6 +30,13 @@ public class Account implements Parcelable {
     @ColumnInfo(name = "is_current_user")
     private boolean isCurrentUser;
 
+
+
+    @ColumnInfo(name = "session_cookie")
+    private String sessionCookie;
+    @ColumnInfo(name = "session_expiry")
+    private String sessionExpiry;
+
     @Ignore
     protected Account(Parcel in) {
         accountName = in.readString();
@@ -40,6 +47,8 @@ public class Account implements Parcelable {
         refreshToken = in.readString();
         code = in.readString();
         isCurrentUser = in.readByte() != 0;
+        sessionCookie = in.readString();
+        sessionExpiry = in.readString();
     }
 
     public static final Creator<Account> CREATOR = new Creator<Account>() {
@@ -56,11 +65,11 @@ public class Account implements Parcelable {
 
     @Ignore
     public static Account getAnonymousAccount() {
-        return new Account("-", null, null, null, null, null, 0, false);
+        return new Account("-", null, null, null, null, null, 0, false, "", "");
     }
 
     public Account(@NonNull String accountName, String accessToken, String refreshToken, String code,
-                   String profileImageUrl, String bannerImageUrl, int karma, boolean isCurrentUser) {
+                   String profileImageUrl, String bannerImageUrl, int karma, boolean isCurrentUser, String sessionCookie, String sessionExpiry) {
         this.accountName = accountName;
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
@@ -69,6 +78,8 @@ public class Account implements Parcelable {
         this.bannerImageUrl = bannerImageUrl;
         this.karma = karma;
         this.isCurrentUser = isCurrentUser;
+        this.sessionCookie = sessionCookie;
+        this.sessionExpiry = sessionExpiry;
     }
 
     @NonNull
@@ -108,6 +119,14 @@ public class Account implements Parcelable {
         return isCurrentUser;
     }
 
+    public String getSessionCookie() {
+        return sessionCookie;
+    }
+
+    public String getSessionExpiry() {
+        return sessionExpiry;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -123,5 +142,7 @@ public class Account implements Parcelable {
         dest.writeString(refreshToken);
         dest.writeString(code);
         dest.writeByte((byte) (isCurrentUser ? 1 : 0));
+        dest.writeString(sessionCookie);
+        dest.writeString(sessionExpiry);
     }
 }

@@ -31,6 +31,8 @@ import com.google.android.material.progressindicator.IndeterminateDrawable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
@@ -195,11 +197,19 @@ public class LoginActivity extends BaseActivity {
                                 return;
                             }
                             String sessionCookie = response.headers().get("set-cookie");
-                            String reddit_session = sessionCookie.split("; ")[0];
-                            mCurrentAccountSharedPreferences.edit().putString(SharedPreferencesUtils.SESSION_COOKIE, sessionCookie).putString(SharedPreferencesUtils.REDDIT_SESSION, reddit_session).apply();
+                            String redditSession = sessionCookie.split("; ")[0].trim();
+                            String sessionExpiryDate = sessionCookie.split(";")[4].split(",")[1].trim();
+                            String sessionPattern = "dd-MMM-yyyy HH:mm:ss z";
+                            SimpleDateFormat formatter = new SimpleDateFormat(sessionPattern, new Locale("en", "US"));
+                            String sessionExpiryTimestamp = String.valueOf(formatter.parse(sessionExpiryDate).getTime());
+
+                            mCurrentAccountSharedPreferences.edit()
+                                    .putString(SharedPreferencesUtils.SESSION_COOKIE, redditSession)
+                                    .putString(SharedPreferencesUtils.SESSION_EXPIRY, sessionExpiryTimestamp)
+                                    .apply();
 
                             Map<String, String> accessTokenHeaders = APIUtils.getHttpBasicAuthHeader();
-                            accessTokenHeaders.put("cookie", reddit_session);
+                            accessTokenHeaders.put("cookie", redditSession);
                             Call<String> accessTokenCall = api.getAccessToken(accessTokenHeaders, APIUtils.SCOPE);
                             accessTokenCall.enqueue(new Callback<>() {
                                 @Override
@@ -228,7 +238,7 @@ public class LoginActivity extends BaseActivity {
                                                                     .putInt(APIUtils.EXPIRY_TS_KEY, expiry)
                                                                     .putString(SharedPreferencesUtils.ACCOUNT_IMAGE_URL, profileImageUrl).apply();
                                                             ParseAndInsertNewAccount.parseAndInsertNewAccount(mExecutor, new Handler(), name, accessToken, "", profileImageUrl, bannerImageUrl,
-                                                                    karma, authCode, mRedditDataRoomDatabase.accountDao(),
+                                                                    karma, authCode, redditSession, sessionExpiryTimestamp, mRedditDataRoomDatabase.accountDao(),
                                                                     () -> {
                                                                         Intent resultIntent = new Intent();
                                                                         setResult(Activity.RESULT_OK, resultIntent);
@@ -266,6 +276,8 @@ public class LoginActivity extends BaseActivity {
                         } catch (JSONException e) {
                             loginButton.setIcon(null);
                             loginButton.setClickable(true);
+                        } catch (ParseException e) {
+                            throw new RuntimeException(e);
                         }
 
 

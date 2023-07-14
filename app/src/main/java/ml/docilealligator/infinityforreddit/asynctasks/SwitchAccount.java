@@ -19,6 +19,8 @@ public class SwitchAccount {
             redditDataRoomDatabase.accountDao().markAccountCurrent(newAccountName);
             Account account = redditDataRoomDatabase.accountDao().getCurrentAccount();
             currentAccountSharedPreferences.edit()
+                    .putString(SharedPreferencesUtils.SESSION_COOKIE, account.getSessionCookie())
+                    .putString(SharedPreferencesUtils.SESSION_EXPIRY, account.getSessionExpiry())
                     .putString(SharedPreferencesUtils.ACCESS_TOKEN, account.getAccessToken())
                     .putString(SharedPreferencesUtils.ACCOUNT_NAME, account.getAccountName())
                     .putString(SharedPreferencesUtils.ACCOUNT_IMAGE_URL, account.getProfileImageUrl()).apply();

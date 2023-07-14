@@ -346,6 +346,7 @@ public class SharedPreferencesUtils {
     public static final String ACCOUNT_IMAGE_URL = "account_image_url";
     public static final String REDGIFS_ACCESS_TOKEN = "redgifs_access_token";
     public static final String SESSION_COOKIE = "session_cookie";
+    public static final String SESSION_EXPIRY = "session_expiry";
     public static final String REDDIT_SESSION = "reddit_session";
 
 
