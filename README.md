@@ -14,6 +14,16 @@ This Fork enables a user to login via the official Reddit Accounts endpoint (no 
 -   This only works if you go to the subreddit directly. Support for Home/Popular feeds TBD.
 -   Might break if the GQL API changes, also not tested with imgur, gfycat.
 
+#### Issues with multiple Accounts
+If you previously had problems using multiple accounts, this update fixes this. Please log out of all accounts and login again for the changes to take effect.
+
+#### Known Issues Version 5.6.0
+- Images in text posts not loading correctly
+  - probably due to the way the GQL API delivers the markdown text
+- Devices with >= Android 13 login error
+  - maybe some HMAC related Crypto APIs changed?
+- ~~the app uses the latest session cookie (i.e. the one from the last logged in account) for all access token refreshes~~
+
 #### Known Issues Version 5.5.1
 - Images in text posts not loading correctly
   - probably due to the way the GQL API delivers the markdown text
@@ -21,6 +31,7 @@ This Fork enables a user to login via the official Reddit Accounts endpoint (no 
 - Devices with >= Android 13 login error
   - maybe some HMAC related Crypto APIs changed?
 - ~~Youtube links not being displayed~~
+- the app uses the latest session cookie (i.e. the one from the last logged in account) for all access token refreshes
 
 #### Known Issues Version 5.5.0
 - Images in text posts not loading correctly
@@ -54,6 +65,10 @@ I was originally looking into using the Sendbird SDK for chats, but recently Red
     -   [x] use the 1P Reddit DASH streams for external videos, i.e. REDGifs will load without a REDGifs API-Key.
     -   [x] fix video downloads missing audio
 -   [ ] update to new federated GQL API
+-   [ ] Giphy SDK
+    -   [x] integrate SDK
+    -   [ ] use comment endpoint to post with RichtextJSON
+    -   [ ] Gif Preview in Comment
 
 ---
 

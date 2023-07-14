@@ -43,6 +43,7 @@ jobs:
           body: |
             Infinity for Reddit automated Build. Fixing external Videos displaying as Links.
             Fixing latest Session Cookie getting reused on all accounts that are logged in.
+            Please log out of all accounts and login again for the changes to take effect.
 
       - name: Sign APK
         env:
