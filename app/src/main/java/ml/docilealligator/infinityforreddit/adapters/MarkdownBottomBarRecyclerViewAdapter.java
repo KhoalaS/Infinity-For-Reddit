@@ -8,9 +8,12 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.giphy.sdk.core.models.Media;
+import com.giphy.sdk.ui.GPHContentType;
 import com.giphy.sdk.ui.GPHSettings;
 import com.giphy.sdk.ui.themes.GPHTheme;
 import com.giphy.sdk.ui.views.GiphyDialogFragment;
@@ -297,11 +300,39 @@ public class MarkdownBottomBarRecyclerViewAdapter extends RecyclerView.Adapter<R
             case GIPHY_IMAGE: {
                 GPHSettings settings = new GPHSettings();
                 GiphyDialogFragment dialog = GiphyDialogFragment.Companion.newInstance(settings, APIUtils.GIPHY_SDK_KEY);
+                dialog.setGifSelectionListener(new GiphyDialogFragment.GifSelectionListener() {
+                    @Override
+                    public void onGifSelected(@NonNull Media media, @Nullable String s, @NonNull GPHContentType gphContentType) {
+                        int start = Math.max(commentEditText.getSelectionStart(), 0);
+                        int end = Math.max(commentEditText.getSelectionEnd(), 0);
+                        String embedUrl = media.getEmbedUrl();
+                        if (end != start) {
+                            String currentSelection = commentEditText.getText().subSequence(start, end).toString();
+                            commentEditText.getText().replace(Math.min(start, end), Math.max(start, end),
+                                    embedUrl + currentSelection + "\n\n", 0, embedUrl.length() + "\n\n".length() + currentSelection.length());
+                        } else {
+                            commentEditText.getText().replace(start, end,
+                                    embedUrl + "\n\n", 0, embedUrl.length() + "\n\n".length());
+                            commentEditText.setSelection(start + embedUrl.length());
+                        }
+                    }
+
+                    @Override
+                    public void onDismissed(@NonNull GPHContentType gphContentType) {
+
+                    }
+
+                    @Override
+                    public void didSearchTerm(@NonNull String s) {
+
+                    }
+                });
                 dialog.show(((FragmentActivity)activity).getSupportFragmentManager(), "gifs_dialog");
                 break;
             }
         }
     }
+
 
     class MarkdownBottomBarItemViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
