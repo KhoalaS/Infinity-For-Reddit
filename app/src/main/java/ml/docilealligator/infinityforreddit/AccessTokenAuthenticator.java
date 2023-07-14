@@ -68,9 +68,9 @@ class AccessTokenAuthenticator implements Authenticator {
     private String refreshAccessToken(Account account) {
         RedditAccountsAPI api = mRetrofit.create(RedditAccountsAPI.class);
 
-        String reddit_session = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.REDDIT_SESSION, "");
+        String redditSession = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.SESSION_COOKIE, "");
         Map<String, String> accessTokenHeaders = APIUtils.getHttpBasicAuthHeader();
-        accessTokenHeaders.put("cookie", reddit_session);
+        accessTokenHeaders.put("cookie", redditSession);
 
         Call<String> accessTokenCall = api.getAccessToken(accessTokenHeaders, APIUtils.SCOPE);
         try {
