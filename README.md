@@ -17,11 +17,22 @@ This Fork enables a user to login via the official Reddit Accounts endpoint (no 
 #### Issues with multiple Accounts
 If you previously had problems using multiple accounts, this update fixes this. Please log out of all accounts and login again for the changes to take effect.
 
+#### Issues getting logged out
+If you previously had problems where you seem to have been logged out (posts on home and popular are the same), the newest update should fix that.
+
+#### Known Issues Version 5.6.1
+- Images in text posts not loading correctly
+  - probably due to the way the GQL API delivers the markdown text
+- Devices with >= Android 13 login error
+  - maybe some HMAC related Crypto APIs changed?
+- ~~The App refreshes the Access Token incorrectly resulting in logged in Users browsing with an anonymous account~~
+
 #### Known Issues Version 5.6.0
 - Images in text posts not loading correctly
   - probably due to the way the GQL API delivers the markdown text
 - Devices with >= Android 13 login error
   - maybe some HMAC related Crypto APIs changed?
+- The App refreshes the Access Token incorrectly resulting in logged in Users browsing with an anonymous account
 - ~~the app uses the latest session cookie (i.e. the one from the last logged in account) for all access token refreshes~~
 
 #### Known Issues Version 5.5.1

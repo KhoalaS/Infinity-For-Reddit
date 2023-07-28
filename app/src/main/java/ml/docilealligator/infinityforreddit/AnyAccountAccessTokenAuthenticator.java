@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Map;
 
 import ml.docilealligator.infinityforreddit.account.Account;
 import ml.docilealligator.infinityforreddit.apis.RedditAccountsAPI;
@@ -69,7 +70,11 @@ public class AnyAccountAccessTokenAuthenticator implements Authenticator {
     private String refreshAccessToken(Account account) {
         RedditAccountsAPI api = mRetrofit.create(RedditAccountsAPI.class);
 
-        Call<String> accessTokenCall = api.getAccessToken(APIUtils.getHttpBasicAuthHeader(), APIUtils.SCOPE);
+        String redditSession = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.SESSION_COOKIE, "");
+        Map<String, String> accessTokenHeaders = APIUtils.getHttpBasicAuthHeader();
+        accessTokenHeaders.put("cookie", redditSession);
+
+        Call<String> accessTokenCall = api.getAccessToken(accessTokenHeaders, APIUtils.SCOPE);
         try {
             retrofit2.Response<String> response = accessTokenCall.execute();
             if (response.isSuccessful() && response.body() != null) {
