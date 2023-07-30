@@ -20,12 +20,20 @@ If you previously had problems using multiple accounts, this update fixes this. 
 #### Issues getting logged out
 If you previously had problems where you seem to have been logged out (posts on home and popular are the same), the newest update should fix that.
 
+#### Known Issues Version 5.6.2
+- Images in text posts not loading correctly
+  - probably due to the way the GQL API delivers the markdown text
+- Devices with >= Android 13 login error
+  - maybe some HMAC related Crypto APIs changed?
+- ~~The App refreshes the Access Token incorrectly resulting in logged in Users browsing with an anonymous account~~
+
 #### Known Issues Version 5.6.1
 - Images in text posts not loading correctly
   - probably due to the way the GQL API delivers the markdown text
 - Devices with >= Android 13 login error
   - maybe some HMAC related Crypto APIs changed?
 - ~~The App refreshes the Access Token incorrectly resulting in logged in Users browsing with an anonymous account~~
+- The App refreshes the Access Token incorrectly during a pull refresh, resulting in logged in Users browsing with an anonymous account
 
 #### Known Issues Version 5.6.0
 - Images in text posts not loading correctly

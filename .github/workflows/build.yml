@@ -38,11 +38,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v5.6.1  # Replace with your desired tag name
-          release_name: Release v5.6.1  # Replace with your desired release name
+          tag_name: v5.6.2  # Replace with your desired tag name
+          release_name: Release v5.6.2  # Replace with your desired release name
           body: |
             Infinity for Reddit automated Build.
-            Fixing users getting logged out, due to the call that refreshes the access token not providing the session cookie.
+            Fixing users getting logged out during a pull refresh, due to the call that refreshes the access token not providing the session cookie.
 
       - name: Sign APK
         env:
