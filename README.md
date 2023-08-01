@@ -9,16 +9,23 @@ This Fork enables a user to login via the official Reddit Accounts endpoint (no 
 
 #### External Videos
 
--   External videos like REDGifs will be loaded from the Reddit servers and not through an external API if possible.
+-   External videos like REDGifs/Imgur will be loaded from the Reddit servers and not through an external API if possible.
 -   You will be able to see the content of broken links, if they were mirrored to Reddit's servers before breaking.
 -   This only works if you go to the subreddit directly. Support for Home/Popular feeds TBD.
--   Might break if the GQL API changes, also not tested with imgur, gfycat.
+-   Might break if the GQL API changes
+-   old Gfycat links might not work 
 
 #### Issues with multiple Accounts
 If you previously had problems using multiple accounts, this update fixes this. Please log out of all accounts and login again for the changes to take effect.
 
 #### Issues getting logged out
 If you previously had problems where you seem to have been logged out (posts on home and popular are the same), the newest update should fix that.
+
+#### Known Issues Version 5.6.3
+- Images in text posts not loading correctly
+  - probably due to the way the GQL API delivers the markdown text
+- Devices with >= Android 13 login error
+  - maybe some HMAC related Crypto APIs changed?
 
 #### Known Issues Version 5.6.2
 - Images in text posts not loading correctly
