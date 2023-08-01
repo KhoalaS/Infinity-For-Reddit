@@ -1007,13 +1007,19 @@ public class ParsePost {
                 }
             }
 
+            String srcUrl = url;
+
+            if(data.getString("domain").contains("imgur")){
+                srcUrl = data.getJSONObject("media").getJSONObject("still").getJSONObject("source").getString("url");
+            }
+
             post = new Post(id, fullName, subredditName, subredditNamePrefixed, author,
-                    authorFlair, authorFlairHTML, postTimeMillis, title, url, permalink, score,
+                    authorFlair, authorFlairHTML, postTimeMillis, title, srcUrl, permalink, score,
                     postType, voteType, nComments, upvoteRatio, flair, awards, nAwards, hidden,
                     spoiler, nsfw, stickied, archived, locked, saved, isCrosspost, distinguished, suggestedSort);
 
             if (previews.isEmpty()) {
-                previews.add(new Post.Preview(url, 0, 0, "", ""));
+                previews.add(new Post.Preview(srcUrl, 0, 0, "", ""));
             }
             post.setPreviews(previews);
         } else if (data.getString("postHint").equals("HOSTED_VIDEO") || data.getString("postHint").equals("RICH_VIDEO")){
