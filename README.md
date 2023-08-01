@@ -21,11 +21,19 @@ If you previously had problems using multiple accounts, this update fixes this. 
 #### Issues getting logged out
 If you previously had problems where you seem to have been logged out (posts on home and popular are the same), the newest update should fix that.
 
+#### Known Issues Version 5.6.4
+- Images in text posts not loading correctly
+  - probably due to the way the GQL API delivers the markdown text
+- Devices with >= Android 13 login error
+  - maybe some HMAC related Crypto APIs changed?
+- ~~Reddit GIFs cant be loaded~~
+
 #### Known Issues Version 5.6.3
 - Images in text posts not loading correctly
   - probably due to the way the GQL API delivers the markdown text
 - Devices with >= Android 13 login error
   - maybe some HMAC related Crypto APIs changed?
+- Reddit GIFs cant be loaded
 
 #### Known Issues Version 5.6.2
 - Images in text posts not loading correctly

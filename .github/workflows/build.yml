@@ -38,12 +38,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v5.6.3  # Replace with your desired tag name
-          release_name: Release v5.6.3  # Replace with your desired release name
+          tag_name: v5.6.4  # Replace with your desired tag name
+          release_name: Release v5.6.4  # Replace with your desired release name
           body: |
             Infinity for Reddit automated Build.
-            Imgur GIFs/Videos are now loading correctly
-            Reddit GIFs are now tagged as Videos and not as Images
+            Hotfix: Loading Reddit GIFs as MP4 not working 
 
       - name: Sign APK
         env:

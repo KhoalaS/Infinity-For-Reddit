@@ -605,7 +605,9 @@ public class ViewVideoActivity extends AppCompatActivity implements CustomFontRe
             MediaItem mediaItem = MediaItem.fromUri(mVideoUri);
             if(mVideoUri.toString().contains(".mpd")){
                 player.setMediaSource(new DashMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem));
-            }else{
+            }else if (mVideoUri.toString().contains("format=mp4")){
+                player.setMediaSource(new ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(mVideoUri)));
+            } else {
                 player.setMediaSource(new HlsMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem));
             }
 
