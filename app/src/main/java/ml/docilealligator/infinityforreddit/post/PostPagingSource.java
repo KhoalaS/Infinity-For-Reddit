@@ -270,7 +270,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             afterKey = loadParams.getKey();
         }
         if(gqlAPI != null){
-            JSONObject data = createHomePostsVars(sortType.getType(), afterKey);
+            JSONObject data = createHomePostsVars(sortType.getType(), sortType.getTime(), afterKey);
             RequestBody body = RequestBody.create(data.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
             bestPost = gqlAPI.getBestPostsListenableFuture(APIUtils.getOAuthHeader(accessToken), body);
             pageFuture = Futures.transform(bestPost, this::transformDataGQL, executor);
@@ -288,7 +288,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
                 IOException.class, LoadResult.Error::new, executor);
     }
 
-    private JSONObject createHomePostsVars(SortType.Type sortType, String lastItem){
+    private JSONObject createHomePostsVars(SortType.Type sortType, SortType.Time sortTime, String lastItem){
         JSONObject data = new JSONObject();
         try{
             data.put("id", "769ee26e130d");
@@ -318,6 +318,9 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             variables.put("interestTopicIds", new JSONArray());
             variables.put("pageSize", 15);
             variables.put("sort", sortType.value.toUpperCase(Locale.ROOT));
+            if(sortTime != null){
+                variables.put("range", sortTime.value.toUpperCase(Locale.ROOT));
+            }
 
 
             data.put("variables", variables);
@@ -336,6 +339,9 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             variables.put("subredditName", subredditName);
             variables.put("sort", sortType.value.toUpperCase(Locale.ROOT));
 
+            if(sortTime != null){
+                variables.put("range", sortTime.value.toUpperCase(Locale.ROOT));
+            }
             if(lastItem != null){
                 variables.put("after", lastItem);
             }
