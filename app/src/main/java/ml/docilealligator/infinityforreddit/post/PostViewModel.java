@@ -135,7 +135,7 @@ public class PostViewModel extends ViewModel {
                 && postHistorySharedPreferences.getBoolean((accountName == null ? "" : accountName) + SharedPreferencesUtils.HIDE_READ_POSTS_AUTOMATICALLY_BASE, false));
     }
 
-    public PostViewModel(Executor executor, Retrofit retrofit, String accessToken, String accountName,
+    public PostViewModel(Executor executor, Retrofit retrofit, Retrofit gqlRetrofit, String accessToken, String accountName,
                          SharedPreferences sharedPreferences,
                          SharedPreferences postFeedScrolledPositionSharedPreferences,
                          @Nullable SharedPreferences postHistorySharedPreferences, String username,
@@ -143,6 +143,7 @@ public class PostViewModel extends ViewModel {
                          List<String> readPostList) {
         this.executor = executor;
         this.retrofit = retrofit;
+        this.gqlRetrofit = gqlRetrofit;
         this.accessToken = accessToken;
         this.accountName = accountName;
         this.sharedPreferences = sharedPreferences;
@@ -255,7 +256,7 @@ public class PostViewModel extends ViewModel {
                 break;
             default:
                 //User
-                paging3PagingSource = new PostPagingSource(executor, retrofit, accessToken, accountName,
+                paging3PagingSource = new PostPagingSource(executor, retrofit, gqlRetrofit, accessToken, accountName,
                         sharedPreferences, postFeedScrolledPositionSharedPreferences, name, postType,
                         sortType, postFilter, userWhere, readPostList);
                 break;
@@ -332,12 +333,13 @@ public class PostViewModel extends ViewModel {
         }
 
         //User posts
-        public Factory(Executor executor, Retrofit retrofit, String accessToken, String accountName,
+        public Factory(Executor executor, Retrofit retrofit, Retrofit gqlRetrofit, String accessToken, String accountName,
                        SharedPreferences sharedPreferences, SharedPreferences postFeedScrolledPositionSharedPreferences,
                        SharedPreferences postHistorySharedPreferences, String username, int postType,
                        SortType sortType, PostFilter postFilter, String where, List<String> readPostList) {
             this.executor = executor;
             this.retrofit = retrofit;
+            this.gqlRetrofit = gqlRetrofit;
             this.accessToken = accessToken;
             this.accountName = accountName;
             this.sharedPreferences = sharedPreferences;
@@ -403,7 +405,7 @@ public class PostViewModel extends ViewModel {
                         null, null, name, postType, sortType,
                         postFilter, null);
             } else {
-                return (T) new PostViewModel(executor, retrofit, accessToken, accountName, sharedPreferences,
+                return (T) new PostViewModel(executor, retrofit, gqlRetrofit, accessToken, accountName, sharedPreferences,
                         postFeedScrolledPositionSharedPreferences, postHistorySharedPreferences, name,
                         postType, sortType, postFilter, userWhere, readPostList);
             }

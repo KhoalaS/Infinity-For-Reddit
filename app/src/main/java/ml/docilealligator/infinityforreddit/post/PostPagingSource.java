@@ -124,12 +124,13 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
         postLinkedHashSet = new LinkedHashSet<>();
     }
 
-    PostPagingSource(Executor executor, Retrofit retrofit, String accessToken, String accountName,
+    PostPagingSource(Executor executor, Retrofit retrofit, Retrofit gqlRetrofit, String accessToken, String accountName,
                      SharedPreferences sharedPreferences, SharedPreferences postFeedScrolledPositionSharedPreferences,
                      String subredditOrUserName, int postType, SortType sortType, PostFilter postFilter,
                      String where, List<String> readPostList) {
         this.executor = executor;
         this.retrofit = retrofit;
+        this.gqlRetrofit = gqlRetrofit;
         this.accessToken = accessToken;
         this.accountName = accountName;
         this.sharedPreferences = sharedPreferences;
@@ -379,9 +380,15 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             JSONObject variables = new JSONObject();
             variables.put("username", username);
             variables.put("sort", sortType.value.toUpperCase(Locale.ROOT));
-            variables.put("filter", "POSTS_SET");
+
+            if(lastItem != null){
+                variables.put("after", lastItem);
+            }
+
+            variables.put("filter", "POSTS_SETS");
             variables.put("includeAwards", true);
             variables.put("includePostStats", true);
+
 
             data.put("variables", variables);
         } catch (JSONException e) {
@@ -428,7 +435,6 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             userPosts = api.getUserPostsListenableFuture(subredditOrUserName, loadParams.getKey(), sortType.getType(),
                     sortType.getTime());
             pageFuture = Futures.transform(userPosts, this::transformData, executor);
-
         } else {
             if(gql != null){
                 JSONObject data = createUserPostsVariables(subredditOrUserName, sortType.getType(), loadParams.getKey());

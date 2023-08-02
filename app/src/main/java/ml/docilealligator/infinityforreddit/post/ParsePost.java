@@ -98,7 +98,8 @@ public class ParsePost {
             for (int i = 0; i < size; i++) {
                 try {
                     JSONObject data = allData.getJSONObject(i).getJSONObject("node");
-                    if (data.getString("__typename").equals("SubredditPost")) {
+                    String typename = data.getString("__typename");
+                    if (typename.equals("SubredditPost") || typename.equals("ProfilePost")) {
                         Post post = parseBasicDataGQL(data);
                         if (readPostHashSet != null && readPostHashSet.contains(post.getId())) {
                             post.markAsRead();
