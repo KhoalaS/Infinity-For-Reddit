@@ -190,7 +190,12 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
                     return loadSubredditPosts(loadParams, api, null);
                 }
             case TYPE_USER:
-                return loadUserPosts(loadParams, api);
+                if (gqlRetrofit != null){
+                    GqlAPI gqlAPI = gqlRetrofit.create(GqlAPI.class);
+                    return loadUserPosts(loadParams, api, gqlAPI);
+                } else {
+                    return loadUserPosts(loadParams, api, null);
+                }
             case TYPE_SEARCH:
                 return loadSearchPosts(loadParams, api);
             case TYPE_MULTI_REDDIT:
@@ -352,6 +357,39 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
         return data;
     }
 
+    private JSONObject createUserPostsVariables(String username, SortType.Type sortType, String lastItem){
+        /*
+        {
+	"id": "908cb14d33d1",
+	"variables": {
+		"username": "milkandginger",
+		"sort": "HOT",
+		"filter": "POSTS_SETS",
+		"includeAwards": false,
+		"includePostStats": true
+	}
+}
+         */
+
+        JSONObject data = new JSONObject();
+
+        try {
+            data.put("id", "908cb14d33d1");
+
+            JSONObject variables = new JSONObject();
+            variables.put("username", username);
+            variables.put("sort", sortType.value.toUpperCase(Locale.ROOT));
+            variables.put("filter", "POSTS_SET");
+            variables.put("includeAwards", true);
+            variables.put("includePostStats", true);
+
+            data.put("variables", variables);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+        return data;
+    }
+
     private ListenableFuture<LoadResult<String, Post>> loadSubredditPosts(@NonNull LoadParams<String> loadParams, RedditAPI redditAPI, GqlAPI gqlAPI ) {
         ListenableFuture<Response<String>> subredditPost;
         boolean fallback = subredditOrUserName.equals("popular") || subredditOrUserName.equals("all");
@@ -382,17 +420,28 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
                 IOException.class, LoadResult.Error::new, executor);
     }
 
-    private ListenableFuture<LoadResult<String, Post>> loadUserPosts(@NonNull LoadParams<String> loadParams, RedditAPI api) {
+    private ListenableFuture<LoadResult<String, Post>> loadUserPosts(@NonNull LoadParams<String> loadParams, RedditAPI api, GqlAPI gql) {
         ListenableFuture<Response<String>> userPosts;
+        ListenableFuture<LoadResult<String, Post>> pageFuture;
+
         if (accessToken == null) {
             userPosts = api.getUserPostsListenableFuture(subredditOrUserName, loadParams.getKey(), sortType.getType(),
                     sortType.getTime());
+            pageFuture = Futures.transform(userPosts, this::transformData, executor);
+
         } else {
-            userPosts = api.getUserPostsOauthListenableFuture(subredditOrUserName, userWhere, loadParams.getKey(), sortType.getType(),
-                    sortType.getTime(), APIUtils.getOAuthHeader(accessToken));
+            if(gql != null){
+                JSONObject data = createUserPostsVariables(subredditOrUserName, sortType.getType(), loadParams.getKey());
+                RequestBody body = RequestBody.create(data.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
+                userPosts = gql.getUserPostsOauthListenableFuture(APIUtils.getOAuthHeader(accessToken), body);
+                pageFuture = Futures.transform(userPosts, this::transformDataGQL, executor);
+            }else{
+                userPosts = api.getUserPostsOauthListenableFuture(subredditOrUserName, userWhere, loadParams.getKey(), sortType.getType(),
+                        sortType.getTime(), APIUtils.getOAuthHeader(accessToken));
+                pageFuture = Futures.transform(userPosts, this::transformData, executor);
+            }
         }
 
-        ListenableFuture<LoadResult<String, Post>> pageFuture = Futures.transform(userPosts, this::transformData, executor);
 
         ListenableFuture<LoadResult<String, Post>> partialLoadResultFuture =
                 Futures.catching(pageFuture, HttpException.class,

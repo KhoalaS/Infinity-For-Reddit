@@ -28,6 +28,9 @@ public interface GqlAPI {
     ListenableFuture<Response<String>> getSubredditBestPostsOauthListenableFuture(@HeaderMap Map<String, String> headers, @Body RequestBody body);
 
     @POST("/")
+    ListenableFuture<Response<String>> getUserPostsOauthListenableFuture(@HeaderMap Map<String, String> headers, @Body RequestBody body);
+
+    @POST("/")
     ListenableFuture<Response<String>> getBestPostsListenableFuture(@HeaderMap Map<String, String> headers, @Body RequestBody body);
 
 }
