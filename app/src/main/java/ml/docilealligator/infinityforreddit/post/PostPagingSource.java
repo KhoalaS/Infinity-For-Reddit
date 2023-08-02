@@ -270,13 +270,10 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             afterKey = loadParams.getKey();
         }
         if(gqlAPI != null){
-            JSONObject data = createHomePostsVars(sortType.getType(), sortType.getTime(), afterKey);
+            JSONObject data = createHomePostsVars(sortType.getType(), afterKey);
             RequestBody body = RequestBody.create(data.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
-            bestPost = redditAPI.getBestPostsListenableFuture(sortType.getType(), sortType.getTime(), afterKey,
-                    APIUtils.getOAuthHeader(accessToken));
-            //bestPost = gqlAPI.getBestPostsListenableFuture(APIUtils.getOAuthHeader(accessToken), body);
-            //pageFuture = Futures.transform(bestPost, this::transformDataGQL, executor);
-            pageFuture = Futures.transform(bestPost, this::transformData, executor);
+            bestPost = gqlAPI.getBestPostsListenableFuture(APIUtils.getOAuthHeader(accessToken), body);
+            pageFuture = Futures.transform(bestPost, this::transformDataGQL, executor);
         }else{
             bestPost = redditAPI.getBestPostsListenableFuture(sortType.getType(), sortType.getTime(), afterKey,
                     APIUtils.getOAuthHeader(accessToken));
@@ -291,7 +288,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
                 IOException.class, LoadResult.Error::new, executor);
     }
 
-    private JSONObject createHomePostsVars(SortType.Type sortType, SortType.Time sortTime, String lastItem){
+    private JSONObject createHomePostsVars(SortType.Type sortType, String lastItem){
         JSONObject data = new JSONObject();
         try{
             data.put("id", "769ee26e130d");

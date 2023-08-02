@@ -9,9 +9,9 @@ This Fork enables a user to login via the official Reddit Accounts endpoint (no 
 
 #### External Videos
 
--   External videos like REDGifs/Imgur will be loaded from the Reddit servers and not through an external API if possible.
+-   External videos like _REDGifs/Imgur_ will be loaded from the Reddit servers and not through an external API if possible.
 -   You will be able to see the content of broken links, if they were mirrored to Reddit's servers before breaking.
--   This only works if you go to the subreddit directly. Support for Home/Popular feeds TBD.
+-   This only works in the Subreddit,User and Home Feeds. Support for Popular/All will be on hold, to not break compatibility.
 -   Might break if the GQL API changes
 -   old Gfycat links might not work 
 
@@ -93,9 +93,8 @@ I was originally looking into using the Sendbird SDK for chats, but recently Red
 
 -   [ ] Chat
 -   [ ] Inline Subreddit Emotes, (needs some richtext parser, SpannableString stuff)
--   [ ] use GQL API for Home posts
--   [ ] use GQL API for Popular/All posts
--   [x] use GQL API for Subreddit posts
+-   [x] use GQL API for Home posts
+-   [x] use GQL API for Subreddit/User posts
     -   [x] use the 1P Reddit DASH streams for external videos, i.e. REDGifs will load without a REDGifs API-Key.
     -   [x] fix video downloads missing audio
 -   [ ] update to new federated GQL API

@@ -1236,7 +1236,7 @@ public class PostFragment extends Fragment implements FragmentCommunicator {
                     .get(PostViewModel.class);
         } else {
             mPostViewModel = new ViewModelProvider((ViewModelStoreOwner) PostFragment.this, (ViewModelProvider.Factory) new PostViewModel.Factory(mExecutor,
-                    mOauthRetrofit, null, accessToken,
+                    mOauthRetrofit, mGqlRetrofit, accessToken,
                     accountName, mSharedPreferences, mPostFeedScrolledPositionSharedPreferences,
                     mPostHistorySharedPreferences, postType, sortType, postFilter, readPosts)).get(PostViewModel.class);
         }

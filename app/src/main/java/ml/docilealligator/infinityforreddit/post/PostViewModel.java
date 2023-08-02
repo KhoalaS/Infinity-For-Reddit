@@ -51,12 +51,13 @@ public class PostViewModel extends ViewModel {
     private MutableLiveData<PostFilter> postFilterLiveData;
     private SortTypeAndPostFilterLiveData sortTypeAndPostFilterLiveData;
 
-    public PostViewModel(Executor executor, Retrofit retrofit, String accessToken, String accountName,
+    public PostViewModel(Executor executor, Retrofit retrofit, Retrofit gqlRetrofit, String accessToken, String accountName,
                          SharedPreferences sharedPreferences, SharedPreferences postFeedScrolledPositionSharedPreferences,
                          @Nullable SharedPreferences postHistorySharedPreferences, int postType,
                          SortType sortType, PostFilter postFilter, List<String> readPostList) {
         this.executor = executor;
         this.retrofit = retrofit;
+        this.gqlRetrofit = gqlRetrofit;
         this.accessToken = accessToken;
         this.accountName = accountName;
         this.sharedPreferences = sharedPreferences;
@@ -389,7 +390,7 @@ public class PostViewModel extends ViewModel {
         @Override
         public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
             if (postType == PostPagingSource.TYPE_FRONT_PAGE) {
-                return (T) new PostViewModel(executor, retrofit, accessToken, accountName, sharedPreferences,
+                return (T) new PostViewModel(executor, retrofit, gqlRetrofit, accessToken, accountName, sharedPreferences,
                         postFeedScrolledPositionSharedPreferences, postHistorySharedPreferences, postType,
                         sortType, postFilter, readPostList);
             } else if (postType == PostPagingSource.TYPE_SEARCH) {
