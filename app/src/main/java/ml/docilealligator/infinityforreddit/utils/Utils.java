@@ -50,7 +50,6 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import io.noties.markwon.core.spans.CustomTypefaceSpan;
@@ -86,36 +85,8 @@ public final class Utils {
         return regexed;
     }
 
-    public static String parseInlineGifInComments(String markdown) {
-        StringBuilder markdownStringBuilder = new StringBuilder(markdown);
-        Pattern inlineGifPattern = REGEX_PATTERNS[3];
-        Matcher matcher = inlineGifPattern.matcher(markdownStringBuilder);
-        while (matcher.find()) {
-            markdownStringBuilder.replace(matcher.start(), matcher.end(), "[gif](https://i.giphy.com/media/" + markdownStringBuilder.substring(matcher.start() + "![gif](giphy|".length(), matcher.end() - 1) + "/giphy.mp4)");
-            matcher = inlineGifPattern.matcher(markdownStringBuilder);
-        }
 
-        Pattern inlineGifPattern2 = REGEX_PATTERNS[4];
-        Matcher matcher2 = inlineGifPattern2.matcher(markdownStringBuilder);
-        while (matcher2.find()) {
-            markdownStringBuilder.replace(matcher2.start(), matcher2.end(), "[gif](https://i.giphy.com/media/" + markdownStringBuilder.substring(matcher2.start() + "![gif](giphy|".length(), matcher2.end() - "|downsized\\)".length() + 1) + "/giphy.mp4)");
-            matcher2 = inlineGifPattern2.matcher(markdownStringBuilder);
-        }
-
-        Pattern inlineGifPattern3 = REGEX_PATTERNS[5];
-        Matcher matcher3 = inlineGifPattern3.matcher(markdownStringBuilder);
-        while (matcher3.find()) {
-            markdownStringBuilder.replace(matcher3.start(), matcher3.end(),
-                    "[gif](https://reddit-meta-production.s3.amazonaws.com/public/fortnitebr/emotes/snoomoji_emotes/"
-                            + markdownStringBuilder.substring(
-                            matcher3.start() + "![gif](emote|".length(), matcher3.end() - 1).replace('|', '/') + ".gif)");
-            matcher3 = inlineGifPattern3.matcher(markdownStringBuilder);
-        }
-
-        return markdownStringBuilder.toString();
-    }
-
-    public static String parseInlineEmotes(String markdown, JSONObject mediaMetadataObject) throws JSONException {
+    public static String parseInlineEmotesAndGifs(String markdown, JSONObject mediaMetadataObject) throws JSONException {
         JSONArray mediaMetadataNames = mediaMetadataObject.names();
         if (mediaMetadataNames != null) {
             for (int i = 0; i < mediaMetadataNames.length(); i++) {
@@ -132,16 +103,21 @@ public final class Utils {
                             || item.isNull(JSONUtils.S_KEY)) {
                         continue;
                     }
-                    String emote_type = item.getString(JSONUtils.T_KEY);
+                    String mime_type = item.getString("m");
+                    String type = item.getString("t");
                     String emote_id = item.getString(JSONUtils.ID_KEY);
-
                     JSONObject s_key = item.getJSONObject(JSONUtils.S_KEY);
-                    if (s_key.isNull(JSONUtils.U_KEY)) {
+                    String emote_url = "";
+
+
+                    if(mime_type.equals("image/gif")){
+                        emote_url = s_key.getString("gif");
+                    }else if(type.equals("sticker")){
+                        emote_url = s_key.getString("u");
+                    }else{
                         continue;
                     }
-                    String emote_url = s_key.getString(JSONUtils.U_KEY);
-
-                    markdown = markdown.replace("![img](" + emote_id + ")", "[" + emote_type + "](" + emote_url + ") ");
+                    markdown = markdown.replace(emote_id, emote_url);
                 }
             }
         }

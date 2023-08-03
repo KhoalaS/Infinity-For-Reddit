@@ -6,12 +6,10 @@ import static ml.docilealligator.infinityforreddit.comment.Comment.VOTE_TYPE_UPV
 
 import android.os.Handler;
 import android.text.Html;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.checkerframework.checker.units.qual.A;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -263,10 +261,10 @@ public class ParseComment {
         String distinguished = singleCommentData.getString(JSONUtils.DISTINGUISHED_KEY);
         String commentMarkdown = "";
         if (!singleCommentData.isNull(JSONUtils.BODY_KEY)) {
-            commentMarkdown = Utils.parseInlineGifInComments(Utils.modifyMarkdown(Utils.trimTrailingWhitespace(singleCommentData.getString(JSONUtils.BODY_KEY))));
+            commentMarkdown = Utils.modifyMarkdown(Utils.trimTrailingWhitespace(singleCommentData.getString(JSONUtils.BODY_KEY)));
             if (!singleCommentData.isNull(JSONUtils.MEDIA_METADATA_KEY)) {
                 JSONObject mediaMetadataObject = singleCommentData.getJSONObject(JSONUtils.MEDIA_METADATA_KEY);
-                commentMarkdown = Utils.parseInlineEmotes(commentMarkdown, mediaMetadataObject);
+                commentMarkdown = Utils.parseInlineEmotesAndGifs(commentMarkdown, mediaMetadataObject);
             }
         }
         String commentRawText = Utils.trimTrailingWhitespace(
