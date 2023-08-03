@@ -1212,7 +1212,7 @@ public class PostFragment extends Fragment implements FragmentCommunicator {
     private void initializeAndBindPostViewModel(String accessToken) {
         if (postType == PostPagingSource.TYPE_SEARCH) {
             mPostViewModel = new ViewModelProvider((ViewModelStoreOwner) PostFragment.this, (ViewModelProvider.Factory) new PostViewModel.Factory(mExecutor,
-                    accessToken == null ? mRetrofit : mOauthRetrofit, accessToken,
+                    accessToken == null ? mRetrofit : mOauthRetrofit, accessToken == null ? null : mGqlRetrofit, accessToken,
                     accountName, mSharedPreferences,
                     mPostFeedScrolledPositionSharedPreferences, mPostHistorySharedPreferences, subredditName,
                     query, trendingSource, postType, sortType, postFilter, readPosts)).get(PostViewModel.class);
@@ -1248,7 +1248,7 @@ public class PostFragment extends Fragment implements FragmentCommunicator {
         //For anonymous user
         if (postType == PostPagingSource.TYPE_SEARCH) {
             mPostViewModel = new ViewModelProvider((ViewModelStoreOwner) PostFragment.this, (ViewModelProvider.Factory) new PostViewModel.Factory(mExecutor,
-                    mRetrofit, null, accountName, mSharedPreferences,
+                    mRetrofit, null, null, accountName, mSharedPreferences,
                     mPostFeedScrolledPositionSharedPreferences, null, subredditName, query, trendingSource,
                     postType, sortType, postFilter, readPosts)).get(PostViewModel.class);
         } else if (postType == PostPagingSource.TYPE_SUBREDDIT) {

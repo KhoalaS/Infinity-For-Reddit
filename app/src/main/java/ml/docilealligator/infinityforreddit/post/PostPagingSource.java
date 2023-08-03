@@ -144,12 +144,13 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
         postLinkedHashSet = new LinkedHashSet<>();
     }
 
-    PostPagingSource(Executor executor, Retrofit retrofit, String accessToken, String accountName,
+    PostPagingSource(Executor executor, Retrofit retrofit, Retrofit gqlRetrofit, String accessToken, String accountName,
                      SharedPreferences sharedPreferences, SharedPreferences postFeedScrolledPositionSharedPreferences,
                      String subredditOrUserName, String query, String trendingSource, int postType,
                      SortType sortType, PostFilter postFilter, List<String> readPostList) {
         this.executor = executor;
         this.retrofit = retrofit;
+        this.gqlRetrofit = gqlRetrofit;
         this.accessToken = accessToken;
         this.accountName = accountName;
         this.sharedPreferences = sharedPreferences;
@@ -306,7 +307,11 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
                         {
                             "key": "nsfw",
                             "value": "1"
-                        }
+                        },
+                        {
+			                "key": "time_range",
+			                "value": "month"
+		                }
                     ],
                     "searchInput": {
                         "queryId": "3ad85c27-8e02-42d7-8ad8-7a7d1ad1ef90",
@@ -329,10 +334,21 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             variables.put("sort", sortType.value.toUpperCase(Locale.ROOT));
 
             JSONArray filters = new JSONArray();
+
             JSONObject nsfwFilter = new JSONObject();
             nsfwFilter.put("key", "nsfw");
             nsfwFilter.put("value", "1");
             filters.put(nsfwFilter);
+
+            if(sortTime != null){
+                if(!sortTime.value.equals("all")){
+                    JSONObject timeFilter = new JSONObject();
+                    timeFilter.put("key", "time_range");
+                    timeFilter.put("value", sortTime.value);
+                    filters.put(timeFilter);
+                }
+            }
+
             variables.put("filters", filters);
 
             JSONObject searchInput = new JSONObject();
