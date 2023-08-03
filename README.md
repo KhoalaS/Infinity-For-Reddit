@@ -7,11 +7,43 @@
 
 This Fork enables a user to login via the official Reddit Accounts endpoint (no 3P authorize). The App will make requests that look like they are coming from the official Reddit App.
 
+## ⚠️ Warning
+
+Asking users to input their credentials directly in the app is a big **security risk**. As a user you are also **violating the Reddit User Agreement**.
+
+I implore everyone who uses this fork and similar projects to look at the commits yourself and ensure that the credentials are not being stolen.
+
+The releases are automated.
+
+## Want to input your own Client-ID?
+
+Check out the [Sub-Branch](https://github.com/KhoalaS/Infinity-For-Reddit/tree/sub). You will be prompted to enter a Client-ID during login. The User-Agent will be determined by the two additional inputs, App name and Username.
+
+https://github.com/KhoalaS/Infinity-For-Reddit/assets/83372697/5c752092-3f11-4e1d-a309-f8f7178a266c
+
+## TODO (First Party Features)
+
+I was originally looking into using the Sendbird SDK for chats, but recently Reddit changed their chat backend. They are now using [Matrix](https://github.com/matrix-org/matrix-android-sdk2).
+
+-   [ ] Chat
+-   [x] Inline Subreddit Emotes and Gifs in Comments
+-   [x] use GQL API for Home posts
+-   [x] use GQL API for Subreddit/User/Search posts
+  -   [x] use the 1P Reddit DASH streams for external videos, i.e. REDGifs will load without a REDGifs API-Key.
+  -   [x] fix video downloads missing audio
+-   [ ] update to new federated GQL API
+-   [ ] Giphy SDK
+  -   [x] integrate SDK
+  -   [ ] use comment endpoint to post with RichtextJSON
+  -   [ ] Gif Preview in Comment
+
+---
+
 #### External Videos
 
 -   External videos like _REDGifs/Imgur_ will be loaded from the Reddit servers and not through an external API if possible.
 -   You will be able to see the content of broken links, if they were mirrored to Reddit's servers before breaking.
--   This only works in the Subreddit,User and Home Feeds. Support for Popular/All will be on hold, to not break compatibility.
+-   This only works in the Subreddit,User,Search and Home Feeds. Support for Popular/All will be on hold, to not break compatibility.
 -   Might break if the GQL API changes
 -   old Gfycat links might not work 
 
@@ -72,38 +104,6 @@ If you previously had problems where you seem to have been logged out (posts on 
 - external Videos being displayed as links
 - Devices with >= Android 13 login error
 - Youtube links not being displayed
-
-## ⚠️ Warning
-
-Asking users to input their credentials directly in the app is a big **security risk**. As a user you are also **violating the Reddit User Agreement**.
-
-I implore everyone who uses this fork and similar projects to look at the commits yourself and ensure that the credentials are not being stolen.
-
-The releases are automated.
-
-## Want to input your own Client-ID?
-
-Check out the [Sub-Branch](https://github.com/KhoalaS/Infinity-For-Reddit/tree/sub). You will be prompted to enter a Client-ID during login. The User-Agent will be determined by the two additional inputs, App name and Username.
-
-https://github.com/KhoalaS/Infinity-For-Reddit/assets/83372697/5c752092-3f11-4e1d-a309-f8f7178a266c
-
-## TODO (First Party Features)
-
-I was originally looking into using the Sendbird SDK for chats, but recently Reddit changed their chat backend. They are now using [Matrix](https://github.com/matrix-org/matrix-android-sdk2).
-
--   [ ] Chat
--   [ ] Inline Subreddit Emotes, (needs some richtext parser, SpannableString stuff)
--   [x] use GQL API for Home posts
--   [x] use GQL API for Subreddit/User posts
-    -   [x] use the 1P Reddit DASH streams for external videos, i.e. REDGifs will load without a REDGifs API-Key.
-    -   [x] fix video downloads missing audio
--   [ ] update to new federated GQL API
--   [ ] Giphy SDK
-    -   [x] integrate SDK
-    -   [ ] use comment endpoint to post with RichtextJSON
-    -   [ ] Gif Preview in Comment
-
----
 
 <div align="center">
 
