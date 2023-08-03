@@ -20,9 +20,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1031,7 +1033,9 @@ public class ParsePost {
                         postType, voteType, nComments, upvoteRatio, flair, awards, nAwards, hidden,
                         spoiler, nsfw, stickied, archived, locked, saved, isCrosspost, distinguished, suggestedSort);
                 if (data.getBoolean("isSelfPost")) {
-                    post.setSelfText(Utils.modifyMarkdown(Utils.trimTrailingWhitespace(data.getJSONObject("content").getString("markdown"))));
+                    String selfText = data.getJSONObject("content").getString("markdown");
+                    String selfTextModified = insertImages(selfText, data.getJSONObject("content").getJSONArray("richtextMedia"));
+                    post.setSelfText(Utils.modifyMarkdown(Utils.trimTrailingWhitespace(selfTextModified)));
                 } else {
                     post.setSelfText("");
                 }
@@ -1084,7 +1088,9 @@ public class ParsePost {
                         postType, voteType, nComments, upvoteRatio, flair, awards, nAwards, hidden,
                         spoiler, nsfw, stickied, archived, locked, saved, isCrosspost, distinguished, suggestedSort);
                 if (data.getBoolean("isSelfPost")) {
-                    post.setSelfText(Utils.modifyMarkdown(Utils.trimTrailingWhitespace(data.getJSONObject("content").getString("markdown"))));
+                    String selfText = data.getJSONObject("content").getString("markdown");
+                    String selfTextModified = insertImages(selfText, data.getJSONObject("content").getJSONArray("richtextMedia"));
+                    post.setSelfText(Utils.modifyMarkdown(Utils.trimTrailingWhitespace(selfTextModified)));
                 } else {
                     post.setSelfText("");
                 }
@@ -1096,7 +1102,9 @@ public class ParsePost {
                     postType, voteType, nComments, upvoteRatio, flair, awards, nAwards, hidden,
                     spoiler, nsfw, stickied, archived, locked, saved, isCrosspost, distinguished, suggestedSort);
             if (data.getBoolean("isSelfPost")) {
-                post.setSelfText(Utils.modifyMarkdown(Utils.trimTrailingWhitespace(data.getJSONObject("content").getString("markdown"))));
+                String selfText = data.getJSONObject("content").getString("markdown");
+                String selfTextModified = insertImages(selfText, data.getJSONObject("content").getJSONArray("richtextMedia"));
+                post.setSelfText(Utils.modifyMarkdown(Utils.trimTrailingWhitespace(selfTextModified)));
             } else {
                 post.setSelfText("");
             }
@@ -1180,7 +1188,9 @@ public class ParsePost {
                     postType, voteType, nComments, upvoteRatio, flair, awards, nAwards, hidden,
                     spoiler, nsfw, stickied, archived, locked, saved, isCrosspost, distinguished, suggestedSort);
             if (data.getBoolean("isSelfPost")) {
-                post.setSelfText(Utils.modifyMarkdown(Utils.trimTrailingWhitespace(data.getJSONObject("content").getString("markdown"))));
+                String selfText = data.getJSONObject("content").getString("markdown");
+                String selfTextModified = insertImages(selfText, data.getJSONObject("content").getJSONArray("richtextMedia"));
+                post.setSelfText(Utils.modifyMarkdown(Utils.trimTrailingWhitespace(selfTextModified)));
             } else {
                 post.setSelfText("");
             }
@@ -1199,7 +1209,8 @@ public class ParsePost {
                 } else {
                     JSONObject content = data.getJSONObject("content");
                     String selfText = Utils.modifyMarkdown(Utils.trimTrailingWhitespace(content.getString("markdown")));
-                    post.setSelfText(selfText);
+                    String selfTextModified = insertImages(selfText, content.getJSONArray("richtextMedia"));
+                    post.setSelfText(selfTextModified);
                     if (content.isNull("html")) {
                         post.setSelfTextPlainTrimmed("");
                     } else {
@@ -1226,6 +1237,43 @@ public class ParsePost {
         }catch (JSONException e){
             post.setSelfTextPlainTrimmed("");
         }
+    }
+
+    public static String insertImages(String content, JSONArray richtextMedia) {
+
+        Pattern patternImageLink = Pattern.compile("!\\[img\\]\\([^\\)]*\\)");
+        Pattern patternLink = Pattern.compile("\\([^\\)]*\\)");
+        Matcher matcher = patternImageLink.matcher(content);
+        String value = content;
+
+        Map replace = new HashMap<String, String>();
+
+        int i = 0;
+        while (matcher.find()) {
+            String imageLink = matcher.group();
+            Matcher matcher2 = patternLink.matcher(imageLink);
+
+            if(matcher2.find()){
+                String linkContent = matcher2.group().replaceAll("[()]", "");
+                String[] parts = linkContent.split(" ");
+                String caption = "";
+
+                if(parts.length > 1){
+                    caption = parts[1].replace("\"","");
+                }
+                try{
+                    String url = richtextMedia.getJSONObject(i).getString("url");
+                    replace.put(imageLink, String.format("![%s](%s)", caption, url));
+                }catch (JSONException e){
+                }
+            }
+            i++;
+        }
+        for(Object key : replace.keySet()){
+            String k = key.toString();
+            value = value.replace(k,replace.get(key).toString());
+        }
+        return value;
     }
 
     public interface ParsePostsListingListener {

@@ -11,6 +11,7 @@ import org.commonmark.ext.gfm.tables.TableBlock;
 import io.noties.markwon.Markwon;
 import io.noties.markwon.MarkwonPlugin;
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin;
+import io.noties.markwon.image.ImagesPlugin;
 import io.noties.markwon.inlineparser.BangInlineProcessor;
 import io.noties.markwon.inlineparser.HtmlInlineProcessor;
 import io.noties.markwon.inlineparser.MarkwonInlineParserPlugin;
@@ -37,7 +38,7 @@ public class MarkdownUtils {
         return Markwon.builder(context)
                 .usePlugin(MarkwonInlineParserPlugin.create(plugin -> {
                     plugin.excludeInlineProcessor(HtmlInlineProcessor.class);
-                    plugin.excludeInlineProcessor(BangInlineProcessor.class);
+                    //plugin.excludeInlineProcessor(BangInlineProcessor.class);
                 }))
                 .usePlugin(miscPlugin)
                 .usePlugin(SuperscriptPlugin.create())
@@ -48,6 +49,7 @@ public class MarkdownUtils {
                         .setOnLinkLongClickListener(onLinkLongClickListener)))
                 .usePlugin(LinkifyPlugin.create(Linkify.WEB_URLS))
                 .usePlugin(TableEntryPlugin.create(context))
+                .usePlugin(ImagesPlugin.create())
                 .build();
     }
 
