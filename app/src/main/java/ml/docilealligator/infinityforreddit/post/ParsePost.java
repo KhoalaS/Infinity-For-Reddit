@@ -83,7 +83,13 @@ public class ParsePost {
         LinkedHashSet<Post> newPosts = new LinkedHashSet<>();
         try {
             JSONObject jsonResponse = new JSONObject(response);
-            JSONArray allData = jsonResponse.getJSONObject(JSONUtils.DATA_KEY).getJSONObject("postFeed").getJSONObject("elements").getJSONArray("edges");
+            JSONArray allData;
+
+            if(jsonResponse.getJSONObject(JSONUtils.DATA_KEY).has("search")){
+                allData = jsonResponse.getJSONObject(JSONUtils.DATA_KEY).getJSONObject("search").getJSONObject("general").getJSONObject("posts").getJSONArray("edges");
+            }else{
+                allData = jsonResponse.getJSONObject(JSONUtils.DATA_KEY).getJSONObject("postFeed").getJSONObject("elements").getJSONArray("edges");
+            }
 
             //Posts listing
             int size;
@@ -134,13 +140,20 @@ public class ParsePost {
 
     public static String getLastItemGQL(String response) {
         try {
-            JSONObject object = new JSONObject(response).getJSONObject("data").getJSONObject("postFeed").getJSONObject("elements").getJSONObject("pageInfo");
+            JSONObject data =  new JSONObject(response).getJSONObject(JSONUtils.DATA_KEY);
+            JSONObject object;
+
+            if(data.has("search")){
+                object = data.getJSONObject("search").getJSONObject("general").getJSONObject("posts").getJSONObject("pageInfo");
+            }else{
+                object = data.getJSONObject("postFeed").getJSONObject("elements").getJSONObject("pageInfo");
+            }
+
             if(object.isNull("endCursor")){
                 return  null;
             } else{
                 return object.getString("endCursor");
             }
-
         } catch (JSONException e) {
             e.printStackTrace();
             return null;

@@ -198,7 +198,11 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
                     return loadUserPosts(loadParams, api, null);
                 }
             case TYPE_SEARCH:
-                return loadSearchPosts(loadParams, api);
+                if(gqlRetrofit != null){
+                    GqlAPI gqlAPI = gqlRetrofit.create(GqlAPI.class);
+                    return loadSearchPosts(loadParams, api, gqlAPI);
+                }
+                return loadSearchPosts(loadParams, api, null);
             case TYPE_MULTI_REDDIT:
                 return loadMultiRedditPosts(loadParams, api);
             default:
@@ -287,6 +291,64 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
         return Futures.catching(partialLoadResultFuture,
                 IOException.class, LoadResult.Error::new, executor);
     }
+
+    private JSONObject createSearchPostsVars(String query, SortType.Type sortType, SortType.Time sortTime, String lastItem){
+/*
+        {
+            "id": "78271215900a",
+                "variables": {
+                    "query": "widowmaker",
+                    "productSurface": "android",
+                    "pageSize": null,
+                    "afterCursor": "MjQ=",
+                    "sort": "RELEVANCE",
+                    "filters": [
+                        {
+                            "key": "nsfw",
+                            "value": "1"
+                        }
+                    ],
+                    "searchInput": {
+                        "queryId": "3ad85c27-8e02-42d7-8ad8-7a7d1ad1ef90",
+                        "correlationId": "cf55deea-2891-432d-8166-4eab9d16184d",
+                        "originPageType": "home",
+                        "structureType": "search"
+                    },
+                    "includeAwards": true
+        }
+
+ */
+        JSONObject data = new JSONObject();
+        try{
+            data.put("id", "78271215900a");
+            JSONObject variables = new JSONObject();
+            variables.put("query", query);
+            variables.put("productSurface", "android");
+            variables.put("pageSize", null);
+            variables.put("afterCursor", lastItem);
+            variables.put("sort", sortType.value.toUpperCase(Locale.ROOT));
+
+            JSONArray filters = new JSONArray();
+            JSONObject nsfwFilter = new JSONObject();
+            nsfwFilter.put("key", "nsfw");
+            nsfwFilter.put("value", "1");
+            filters.put(nsfwFilter);
+            variables.put("filters", filters);
+
+            JSONObject searchInput = new JSONObject();
+            searchInput.put("originPageType", "home");
+            searchInput.put("structureType", "search");
+            variables.put("searchInput", searchInput);
+
+            variables.put("includeAwards", true);
+
+            data.put("variables", variables);
+        }catch (JSONException e){
+
+        }
+
+        return data;
+        }
 
     private JSONObject createHomePostsVars(SortType.Type sortType, SortType.Time sortTime, String lastItem){
         JSONObject data = new JSONObject();
@@ -460,15 +522,21 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
                 IOException.class, LoadResult.Error::new, executor);
     }
 
-    private ListenableFuture<LoadResult<String, Post>> loadSearchPosts(@NonNull LoadParams<String> loadParams, RedditAPI api) {
+    private ListenableFuture<LoadResult<String, Post>> loadSearchPosts(@NonNull LoadParams<String> loadParams, RedditAPI api, GqlAPI gql) {
         ListenableFuture<Response<String>> searchPosts;
+
+        boolean gqlEnabled = false;
+
         if (subredditOrUserName == null) {
             if (accessToken == null) {
                 searchPosts = api.searchPostsListenableFuture(query, loadParams.getKey(), sortType.getType(), sortType.getTime(),
                         trendingSource);
             } else {
-                searchPosts = api.searchPostsOauthListenableFuture(query, loadParams.getKey(), sortType.getType(),
-                        sortType.getTime(), trendingSource, APIUtils.getOAuthHeader(accessToken));
+                //searchPosts = api.searchPostsOauthListenableFuture(query, loadParams.getKey(), sortType.getType(),sortType.getTime(), trendingSource, APIUtils.getOAuthHeader(accessToken));
+                JSONObject data = createSearchPostsVars(query, sortType.getType(), sortType.getTime(), loadParams.getKey());
+                RequestBody body = RequestBody.create(data.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
+                searchPosts = gql.searchPostsOauthListenableFuture(APIUtils.getOAuthHeader(accessToken), body);
+                gqlEnabled = true;
             }
         } else {
             if (accessToken == null) {
@@ -481,7 +549,12 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             }
         }
 
-        ListenableFuture<LoadResult<String, Post>> pageFuture = Futures.transform(searchPosts, this::transformData, executor);
+        ListenableFuture<LoadResult<String, Post>> pageFuture;
+        if(gqlEnabled){
+            pageFuture = Futures.transform(searchPosts, this::transformDataGQL, executor);
+        }else{
+            pageFuture = Futures.transform(searchPosts, this::transformData, executor);
+        }
 
         ListenableFuture<LoadResult<String, Post>> partialLoadResultFuture =
                 Futures.catching(pageFuture, HttpException.class,
