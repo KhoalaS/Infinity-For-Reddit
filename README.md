@@ -53,7 +53,7 @@ If you previously had problems using multiple accounts, this update fixes this. 
 #### Issues getting logged out
 If you previously had problems where you seem to have been logged out (posts on home and popular are the same), the newest update should fix that.
 
-#### Known Issues Version 5.8.0
+#### Known Issues Version 5.7.2
 - Devices with >= Android 13 login error
   - maybe some HMAC related Crypto APIs changed?
 - ~~Home feed does not load with "Save Scrolled Position in HOME" enabled~~
