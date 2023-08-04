@@ -15,6 +15,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -388,7 +389,12 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             variables.put("feedContext", new JSONObject().put("experimentOverrides", new JSONArray()));
 
             if(lastItem != null){
-                variables.put("after", lastItem);
+                if(lastItem.startsWith("t3_")){
+                    String base64LastItem = android.util.Base64.encodeToString(lastItem.getBytes(StandardCharsets.UTF_8),android.util.Base64.DEFAULT);
+                    variables.put("after", base64LastItem.trim());
+                }else{
+                    variables.put("after", lastItem);
+                }
             }
 
             variables.put("forceAds", new JSONObject());
