@@ -1230,7 +1230,7 @@ public class PostFragment extends Fragment implements FragmentCommunicator {
                     .get(PostViewModel.class);
         } else if (postType == PostPagingSource.TYPE_USER) {
             mPostViewModel = new ViewModelProvider((ViewModelStoreOwner) PostFragment.this, (ViewModelProvider.Factory) new PostViewModel.Factory(mExecutor,
-                    accessToken == null ? mRetrofit : mOauthRetrofit, accessToken == null ? null : mGqlRetrofit, accessToken,
+                    accessToken == null ? mRetrofit : mOauthRetrofit, mGqlRetrofit, accessToken,
                     accountName, mSharedPreferences, mPostFeedScrolledPositionSharedPreferences,
                     mPostHistorySharedPreferences, username, postType, sortType, postFilter, where, readPosts))
                     .get(PostViewModel.class);

@@ -383,11 +383,9 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             JSONObject advancedConfiguration = new JSONObject().put("eligibleExperienceOverrides", new JSONArray());
             JSONArray experienceInputs = new JSONArray().put("REONBOARDING_IN_FEED");
 
-
             variables.put("advancedConfiguration", advancedConfiguration);
             variables.put("experienceInputs", experienceInputs);
             variables.put("feedContext", new JSONObject().put("experimentOverrides", new JSONArray()));
-
 
             if(lastItem != null){
                 variables.put("after", lastItem);
@@ -403,11 +401,10 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             variables.put("interestTopicIds", new JSONArray());
             variables.put("pageSize", 15);
             variables.put("sort", sortType.value.toUpperCase(Locale.ROOT));
+
             if(sortTime != null){
                 variables.put("range", sortTime.value.toUpperCase(Locale.ROOT));
             }
-
-
             data.put("variables", variables);
         }catch (JSONException e){
 
