@@ -527,7 +527,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
                     sortType.getTime());
             pageFuture = Futures.transform(userPosts, this::transformData, executor);
         } else {
-            if(gql != null){
+            if(gql != null && userWhere.equals(USER_WHERE_SUBMITTED)){
                 JSONObject data = createUserPostsVariables(subredditOrUserName, sortType.getType(), loadParams.getKey());
                 RequestBody body = RequestBody.create(data.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
                 userPosts = gql.getUserPostsOauthListenableFuture(APIUtils.getOAuthHeader(accessToken), body);

@@ -38,11 +38,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v5.7.2  # Replace with your desired tag name
-          release_name: Release v5.7.2  # Replace with your desired release name
+          tag_name: v5.7.3  # Replace with your desired tag name
+          release_name: Release v5.7.3  # Replace with your desired release name
           body: |
             Infinity for Reddit automated Build.
-            Load Posts from Search and in Subreddit Search Feed with Gql API. 
 
       - name: Sign APK
         env:

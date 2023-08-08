@@ -15,12 +15,6 @@ I implore everyone who uses this fork and similar projects to look at the commit
 
 The releases are automated.
 
-## Want to input your own Client-ID?
-
-Check out the [Sub-Branch](https://github.com/KhoalaS/Infinity-For-Reddit/tree/sub). You will be prompted to enter a Client-ID during login. The User-Agent will be determined by the two additional inputs, App name and Username.
-
-https://github.com/KhoalaS/Infinity-For-Reddit/assets/83372697/5c752092-3f11-4e1d-a309-f8f7178a266c
-
 ## TODO (First Party Features)
 
 I was originally looking into using the Sendbird SDK for chats, but recently Reddit changed their chat backend. They are now using [Matrix](https://github.com/matrix-org/matrix-android-sdk2).
@@ -39,24 +33,28 @@ I was originally looking into using the Sendbird SDK for chats, but recently Red
 
 ---
 
-#### External Videos
+#### External Media
 
 -   External videos like _REDGifs/Imgur_ will be loaded from the Reddit servers and not through an external API if possible.
 -   You will be able to see the content of broken links, if they were mirrored to Reddit's servers before breaking.
--   This only works in the Subreddit,User,Search and Home Feeds. Support for Popular/All will be on hold, to not break compatibility.
+-   This only works in the Subreddit, User, Search and Home Feeds. Support for Popular/All will be on hold, to not break compatibility.
 -   Might break if the GQL API changes
 -   old Gfycat links might not work 
 
-#### Issues with multiple Accounts
-If you previously had problems using multiple accounts, this update fixes this. Please log out of all accounts and login again for the changes to take effect.
+## Want to input your own Client-ID?
 
-#### Issues getting logged out
-If you previously had problems where you seem to have been logged out (posts on home and popular are the same), the newest update should fix that.
+Check out the [Sub-Branch](https://github.com/KhoalaS/Infinity-For-Reddit/tree/sub). You will be prompted to enter a Client-ID during login. The User-Agent will be determined by the two additional inputs, App name and Username.
+
+#### Known Issues Version 5.7.3
+- Devices with >= Android 13 login error
+  - maybe some HMAC related Crypto APIs changed?
+- ~~User related Feeds under "Post" section display the posts of the user~~
 
 #### Known Issues Version 5.7.2
 - Devices with >= Android 13 login error
   - maybe some HMAC related Crypto APIs changed?
 - ~~Home feed does not load with "Save Scrolled Position in HOME" enabled~~
+- User related Feeds under "Post" section display the posts of the user
 
 #### Known Issues Version 5.7.0
 - ~~Images in text posts not loading correctly~~
