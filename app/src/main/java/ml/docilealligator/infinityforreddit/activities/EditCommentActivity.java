@@ -28,6 +28,8 @@ import com.google.android.material.snackbar.Snackbar;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,6 +37,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -48,10 +52,13 @@ import ml.docilealligator.infinityforreddit.UploadedImage;
 import ml.docilealligator.infinityforreddit.adapters.MarkdownBottomBarRecyclerViewAdapter;
 import ml.docilealligator.infinityforreddit.apis.RedditAPI;
 import ml.docilealligator.infinityforreddit.bottomsheetfragments.UploadedImagesBottomSheetFragment;
+import ml.docilealligator.infinityforreddit.comment.Comment;
+import ml.docilealligator.infinityforreddit.comment.ParseComment;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.customviews.LinearLayoutManagerBugFixed;
 import ml.docilealligator.infinityforreddit.events.SwitchAccountEvent;
 import ml.docilealligator.infinityforreddit.utils.APIUtils;
+import ml.docilealligator.infinityforreddit.utils.JSONUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import ml.docilealligator.infinityforreddit.utils.Utils;
 import retrofit2.Call;
@@ -225,12 +232,83 @@ public class EditCommentActivity extends BaseActivity implements UploadImageEnab
 
             String content = contentEditText.getText().toString();
 
+            Pattern gifPattern = Pattern.compile("!\\[gif]\\(giphy\\|\\w+\\)");
+            Matcher matcher = gifPattern.matcher(content);
+            boolean containsMedia = matcher.find();
+
+            RedditAPI api = mOauthRetrofit.create(RedditAPI.class);
+            Map<String, String> headers = APIUtils.getOAuthHeader(mAccessToken);
+
             Map<String, String> params = new HashMap<>();
+
+            if (containsMedia){
+                api.convertRichTextToJson(content, "rtjson", headers).enqueue(new Callback<String>() {
+                    @Override
+                    public void onResponse(Call<String> call, Response<String> response) {
+                        if (response.isSuccessful()) {
+                            try{
+                                JSONObject responseJSON = new JSONObject(response.body());
+                                JSONObject data = responseJSON.getJSONObject("output");
+                                String stringData = data.toString();
+
+                                params.put(APIUtils.RICHTEXT_JSON_KEY, stringData);
+                                params.put(APIUtils.THING_ID_KEY, mFullName);
+                                api.editPostOrComment(headers, params)
+                                        .enqueue(new Callback<String>() {
+                                            @Override
+                                            public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
+                                                isSubmitting = false;
+                                                if (response.isSuccessful()) {
+                                                    Toast.makeText(EditCommentActivity.this, R.string.edit_success, Toast.LENGTH_SHORT).show();
+
+                                                    try{
+
+                                                    JSONObject responseJSON = new JSONObject(response.body());
+                                                    String body = responseJSON.getString("body");
+                                                    JSONObject mediaMetadata = responseJSON.getJSONObject(JSONUtils.MEDIA_METADATA_KEY);
+                                                    String formattedBody = Utils.parseInlineEmotesAndGifs(body, mediaMetadata);
+
+                                                    Intent returnIntent = new Intent();
+                                                    returnIntent.putExtra(EXTRA_EDITED_COMMENT_CONTENT, Utils.modifyMarkdown(formattedBody));
+                                                    returnIntent.putExtra(EXTRA_EDITED_COMMENT_POSITION, getIntent().getExtras().getInt(EXTRA_POSITION));
+                                                    setResult(RESULT_OK, returnIntent);
+
+                                                    } catch (JSONException e){
+                                                    }
+
+                                                    finish();
+                                                } else {
+                                                    Snackbar.make(coordinatorLayout, R.string.post_failed, Snackbar.LENGTH_SHORT).show();
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onFailure(@NonNull Call<String> call, @NonNull Throwable t) {
+                                                isSubmitting = false;
+                                                Snackbar.make(coordinatorLayout, R.string.post_failed, Snackbar.LENGTH_SHORT).show();
+                                            }
+                                        });
+
+
+                            } catch (JSONException e){
+
+                            }
+
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<String> call, Throwable t) {
+                    }
+                });
+            }
+
+            if (containsMedia) return;
+
             params.put(APIUtils.THING_ID_KEY, mFullName);
             params.put(APIUtils.TEXT_KEY, content);
 
-            mOauthRetrofit.create(RedditAPI.class)
-                    .editPostOrComment(APIUtils.getOAuthHeader(mAccessToken), params)
+            api.editPostOrComment(headers, params)
                     .enqueue(new Callback<String>() {
                         @Override
                         public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {

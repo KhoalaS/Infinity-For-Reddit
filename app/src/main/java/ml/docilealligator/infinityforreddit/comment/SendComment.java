@@ -11,6 +11,8 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import ml.docilealligator.infinityforreddit.account.Account;
 import ml.docilealligator.infinityforreddit.apis.RedditAPI;
@@ -30,7 +32,9 @@ public class SendComment {
         RedditAPI api = newAuthenticatorOauthRetrofit.create(RedditAPI.class);
         Map<String, String> params = new HashMap<>();
 
-        boolean containsMedia = commentMarkdown.contains("![gif](giphy|");
+        Pattern gifPattern = Pattern.compile("!\\[gif]\\(giphy\\|\\w+\\)");
+        Matcher matcher = gifPattern.matcher(commentMarkdown);
+        boolean containsMedia = matcher.find();
 
         if (containsMedia){
             api.convertRichTextToJson(commentMarkdown, "rtjson", headers).enqueue(new Callback<String>() {

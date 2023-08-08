@@ -320,11 +320,11 @@ public class MarkdownBottomBarRecyclerViewAdapter extends RecyclerView.Adapter<R
                         if (end != start) {
                             String currentSelection = commentEditText.getText().subSequence(start, end).toString();
                             commentEditText.getText().replace(Math.min(start, end), Math.max(start, end),
-                                    embedUrl + currentSelection + "\n\n", 0, embedUrl.length() + "\n\n".length() + currentSelection.length());
+                                    "\n\n" + embedUrl + "\n\n" + currentSelection , 0, embedUrl.length() + ("\n\n".length())*2 + currentSelection.length());
                         } else {
                             commentEditText.getText().replace(start, end,
                                     embedUrl + "\n\n", 0, embedUrl.length() + "\n\n".length());
-                            commentEditText.setSelection(start + embedUrl.length());
+                            commentEditText.setSelection(start + embedUrl.length() + "\n\n".length());
                         }
                     }
 
