@@ -19,7 +19,11 @@ import com.giphy.sdk.ui.themes.GPHTheme;
 import com.giphy.sdk.ui.views.GiphyDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.Slider;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import ml.docilealligator.infinityforreddit.R;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
@@ -27,18 +31,18 @@ import ml.docilealligator.infinityforreddit.utils.APIUtils;
 
 public class MarkdownBottomBarRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    public static final int BOLD = 0;
-    public static final int ITALIC = 1;
-    public static final int LINK = 2;
-    public static final int STRIKE_THROUGH = 3;
-    public static final int HEADER = 4;
-    public static final int ORDERED_LIST = 5;
-    public static final int UNORDERED_LIST = 6;
-    public static final int SPOILER = 7;
-    public static final int QUOTE = 8;
-    public static final int CODE_BLOCK = 9;
-    public static final int UPLOAD_IMAGE = 10;
-    public static final int GIPHY_IMAGE = 11;
+    public static final int GIPHY_IMAGE = 0;
+    public static final int BOLD = 1;
+    public static final int ITALIC = 2;
+    public static final int LINK = 3;
+    public static final int STRIKE_THROUGH = 4;
+    public static final int HEADER = 5;
+    public static final int ORDERED_LIST = 6;
+    public static final int UNORDERED_LIST = 7;
+    public static final int SPOILER = 8;
+    public static final int QUOTE = 9;
+    public static final int CODE_BLOCK = 10;
+    public static final int UPLOAD_IMAGE = 11;
 
     private static final int ITEM_COUNT = 12;
 
@@ -298,6 +302,13 @@ public class MarkdownBottomBarRecyclerViewAdapter extends RecyclerView.Adapter<R
                 break;
             }
             case GIPHY_IMAGE: {
+                Pattern gifPattern = Pattern.compile("!\\[gif]\\(giphy\\|\\w+\\)");
+                Matcher matcher = gifPattern.matcher(commentEditText.getText());
+                boolean matchFound = matcher.find();
+                if(matchFound){
+                    return;
+                }
+
                 GPHSettings settings = new GPHSettings();
                 GiphyDialogFragment dialog = GiphyDialogFragment.Companion.newInstance(settings, APIUtils.GIPHY_SDK_KEY);
                 dialog.setGifSelectionListener(new GiphyDialogFragment.GifSelectionListener() {
@@ -305,7 +316,7 @@ public class MarkdownBottomBarRecyclerViewAdapter extends RecyclerView.Adapter<R
                     public void onGifSelected(@NonNull Media media, @Nullable String s, @NonNull GPHContentType gphContentType) {
                         int start = Math.max(commentEditText.getSelectionStart(), 0);
                         int end = Math.max(commentEditText.getSelectionEnd(), 0);
-                        String embedUrl = media.getEmbedUrl();
+                        String embedUrl = String.format("![gif](giphy|%s)", media.getId());
                         if (end != start) {
                             String currentSelection = commentEditText.getText().subSequence(start, end).toString();
                             commentEditText.getText().replace(Math.min(start, end), Math.max(start, end),

@@ -406,4 +406,8 @@ public interface RedditAPI {
     @FormUrlEncoded
     @POST("/api/morechildren.json?raw_json=1&api_type=json")
     Call<String> moreChildrenOauth(@Field("link_id") String linkId, @Field("children") String children, @Field("sort") SortType.Type sort, @HeaderMap Map<String, String> headers);
+
+    @FormUrlEncoded
+    @POST("/api/convert_rte_body_format?raw_json=1&allow_nested_media=true&raw_json=1&feature=link_preview&sr_detail=true&expand_srs=true&from_detail=true&api_type=json&raw_json=1&always_show_media=1")
+    Call<String> convertRichTextToJson(@Field("markdown_text") String body, @Field("output_mode") String outputMode, @HeaderMap Map<String, String> headers);
 }

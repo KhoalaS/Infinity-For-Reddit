@@ -66,6 +66,8 @@ public class APIUtils {
     public static final String API_TYPE_JSON = "json";
     public static final String RETURN_RTJSON_KEY = "return_rtjson";
     public static final String TEXT_KEY = "text";
+    public static final String RICHTEXT_JSON_KEY = "richtext_json";
+
     public static final String URL_KEY = "url";
     public static final String VIDEO_POSTER_URL_KEY = "video_poster_url";
     public static final String THING_ID_KEY = "thing_id";
