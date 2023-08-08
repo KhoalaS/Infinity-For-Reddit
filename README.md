@@ -23,13 +23,13 @@ I was originally looking into using the Sendbird SDK for chats, but recently Red
 -   [x] Inline Subreddit Emotes and Gifs in Comments
 -   [x] use GQL API for Home posts
 -   [x] use GQL API for Subreddit/User/Search posts
-  -   [x] use the 1P Reddit DASH streams for external videos, i.e. REDGifs will load without a REDGifs API-Key.
-  -   [x] fix video downloads missing audio
+    -   [x] use the 1P Reddit DASH streams for external videos, i.e. REDGifs will load without a REDGifs API-Key.
+    -   [x] fix video downloads missing audio
 -   [ ] update to new federated GQL API
 -   [ ] Giphy SDK
-  -   [x] integrate SDK
-  -   [ ] use comment endpoint to post with RichtextJSON
-  -   [ ] Gif Preview in Comment
+    -   [x] integrate SDK
+    -   [ ] use comment endpoint to post with RichtextJSON
+    -   [ ] Gif Preview in Comment
 
 ---
 

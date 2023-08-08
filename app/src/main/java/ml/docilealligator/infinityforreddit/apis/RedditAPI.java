@@ -57,16 +57,16 @@ public interface RedditAPI {
     @GET("user/{username}/about.json?raw_json=1")
     Call<String> getUserDataOauth(@HeaderMap Map<String, String> headers, @Path("username") String username);
 
-    @GET("user/{username}/comments.json?raw_json=1")
+    @GET("user/{username}/comments.json?raw_json=1&raw_media_syntax=1")
     Call<String> getUserComments(@Path("username") String username, @Query("after") String after,
                                  @Query("sort") SortType.Type sortType, @Query("t") SortType.Time sortTime);
 
-    @GET("user/{username}/comments.json?raw_json=1")
+    @GET("user/{username}/comments.json?raw_json=1&raw_media_syntax=1")
     Call<String> getUserCommentsOauth(@HeaderMap Map<String, String> headers, @Path("username") String username,
                                       @Query("after") String after, @Query("sort") SortType.Type sortType,
                                       @Query("t") SortType.Time sortTime);
 
-    @GET("user/{username}/{where}.json?&type=comments&raw_json=1&limit=25")
+    @GET("user/{username}/{where}.json?&type=comments&raw_json=1&limit=25&raw_media_syntax=1")
     Call<String> getUserSavedCommentsOauth(@Path("username") String username, @Path("where") String where,
                                            @Query("after") String lastItem, @Query("sort") SortType.Type sortType,
                                            @Query("t") SortType.Time sortTime, @HeaderMap Map<String, String> headers);
@@ -115,20 +115,20 @@ public interface RedditAPI {
     @GET("/r/{subredditName}/about/rules.json?raw_json=1")
     Call<String> getRulesOauth(@HeaderMap Map<String, String> headers, @Path("subredditName") String subredditName);
 
-    @GET("/comments/{id}/placeholder/{singleCommentId}.json?raw_json=1")
+    @GET("/comments/{id}/placeholder/{singleCommentId}.json?raw_json=1&raw_media_syntax=1")
     Call<String> getPostAndCommentsSingleThreadByIdOauth(@Path("id") String id, @Path("singleCommentId") String singleCommentId,
                                                          @Query("sort") SortType.Type sortType, @Query("context") String contextNumber,
                                                          @HeaderMap Map<String, String> headers);
 
-    @GET("/comments/{id}.json?raw_json=1")
+    @GET("/comments/{id}.json?raw_json=1&raw_media_syntax=1&raw_media_syntax=1")
     Call<String> getPostAndCommentsByIdOauth(@Path("id") String id, @Query("sort") SortType.Type sortType,
                                              @HeaderMap Map<String, String> headers);
 
-    @GET("/comments/{id}/placeholder/{singleCommentId}.json?raw_json=1")
+    @GET("/comments/{id}/placeholder/{singleCommentId}.json?raw_json=1&raw_media_syntax=1")
     Call<String> getPostAndCommentsSingleThreadById(@Path("id") String id, @Path("singleCommentId") String singleCommentId,
                                                     @Query("sort") SortType.Type sortType, @Query("context") String contextNumber);
 
-    @GET("/comments/{id}.json?raw_json=1")
+    @GET("/comments/{id}.json?raw_json=1&raw_media_syntax=1")
     Call<String> getPostAndCommentsById(@Path("id") String id, @Query("sort") SortType.Type sortType);
 
     @Multipart

@@ -85,6 +85,35 @@ public final class Utils {
         return regexed;
     }
 
+    public static String inlineImages(String body, JSONObject mediaMetadata) {
+        String value = body;
+        JSONArray names = mediaMetadata.names();
+        try{
+            for(int i=0; i<names.length(); i++){
+                String id = names.getString(i);
+                JSONObject metadata = mediaMetadata.getJSONObject(id);
+                String status = metadata.getString("status");
+                if(!status.equals("valid")){
+                    continue;
+                }
+
+                String mimeType = metadata.getString("m");
+                if(!(mimeType.equals("image/jpeg") || mimeType.equals("image/png"))){
+                    continue;
+                }
+
+                JSONArray previews = metadata.getJSONArray("p");
+                int length = previews.length();
+                int index = length/2;
+                JSONObject largestPreview = previews.getJSONObject(index);
+                String url = largestPreview.getString("u");
+                value = value.replace(id, url);
+            }
+        }catch (JSONException e){
+
+        }
+        return value;
+    }
 
     public static String parseInlineEmotesAndGifs(String markdown, JSONObject mediaMetadataObject) throws JSONException {
         JSONArray mediaMetadataNames = mediaMetadataObject.names();

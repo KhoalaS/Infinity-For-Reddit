@@ -261,9 +261,11 @@ public class ParseComment {
         String distinguished = singleCommentData.getString(JSONUtils.DISTINGUISHED_KEY);
         String commentMarkdown = "";
         if (!singleCommentData.isNull(JSONUtils.BODY_KEY)) {
-            commentMarkdown = Utils.modifyMarkdown(Utils.trimTrailingWhitespace(singleCommentData.getString(JSONUtils.BODY_KEY)));
+            String body = singleCommentData.getString(JSONUtils.BODY_KEY);
+            commentMarkdown = Utils.modifyMarkdown(Utils.trimTrailingWhitespace(body));
             if (!singleCommentData.isNull(JSONUtils.MEDIA_METADATA_KEY)) {
                 JSONObject mediaMetadataObject = singleCommentData.getJSONObject(JSONUtils.MEDIA_METADATA_KEY);
+                commentMarkdown = Utils.inlineImages(commentMarkdown, mediaMetadataObject);
                 commentMarkdown = Utils.parseInlineEmotesAndGifs(commentMarkdown, mediaMetadataObject);
             }
         }
