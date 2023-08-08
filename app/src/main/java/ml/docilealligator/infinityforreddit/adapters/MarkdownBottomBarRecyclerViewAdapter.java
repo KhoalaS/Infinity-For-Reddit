@@ -70,6 +70,9 @@ public class MarkdownBottomBarRecyclerViewAdapter extends RecyclerView.Adapter<R
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof MarkdownBottomBarItemViewHolder) {
             switch (position) {
+                case GIPHY_IMAGE:
+                    ((MarkdownBottomBarItemViewHolder) holder).imageView.setImageResource(R.drawable.baseline_gif_box_black_24);
+                    break;
                 case BOLD:
                     ((MarkdownBottomBarItemViewHolder) holder).imageView.setImageResource(R.drawable.ic_bold_black_24dp);
                     break;
@@ -102,9 +105,6 @@ public class MarkdownBottomBarRecyclerViewAdapter extends RecyclerView.Adapter<R
                     break;
                 case UPLOAD_IMAGE:
                     ((MarkdownBottomBarItemViewHolder) holder).imageView.setImageResource(R.drawable.ic_image_24dp);
-                    break;
-                case GIPHY_IMAGE:
-                    ((MarkdownBottomBarItemViewHolder) holder).imageView.setImageResource(R.drawable.ic_giphy_logo_24dp);
                     break;
             }
         }
