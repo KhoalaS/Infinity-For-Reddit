@@ -20,16 +20,16 @@ The releases are automated.
 I was originally looking into using the Sendbird SDK for chats, but recently Reddit changed their chat backend. They are now using [Matrix](https://github.com/matrix-org/matrix-android-sdk2).
 
 -   [ ] Chat
--   [x] Inline Subreddit Emotes and Gifs in Comments
+-   [x] Inline Subreddit Emotes, Gifs and Images in Comments
 -   [x] use GQL API for Home posts
 -   [x] use GQL API for Subreddit/User/Search posts
     -   [x] use the 1P Reddit DASH streams for external videos, i.e. REDGifs will load without a REDGifs API-Key.
     -   [x] fix video downloads missing audio
 -   [ ] update to new federated GQL API
--   [ ] Giphy SDK
+-   [x] Giphy SDK
     -   [x] integrate SDK
-    -   [ ] use comment endpoint to post with RichtextJSON
-    -   [ ] Gif Preview in Comment
+    -   [x] use comment endpoint to post with RichtextJSON
+    -   [ ] Gif loading in Comment preview
 
 ---
 
@@ -39,81 +39,95 @@ I was originally looking into using the Sendbird SDK for chats, but recently Red
 -   You will be able to see the content of broken links, if they were mirrored to Reddit's servers before breaking.
 -   This only works in the Subreddit, User, Search and Home Feeds. Support for Popular/All will be on hold, to not break compatibility.
 -   Might break if the GQL API changes
--   old Gfycat links might not work 
+-   old Gfycat links might not work
 
 ## Want to input your own Client-ID?
 
 Check out the [Sub-Branch](https://github.com/KhoalaS/Infinity-For-Reddit/tree/sub). You will be prompted to enter a Client-ID during login. The User-Agent will be determined by the two additional inputs, App name and Username.
 
+#### Known Issues Version 5.8.0
+
+-   Devices with >= Android 13 login error
+
 #### Known Issues Version 5.7.3
-- Devices with >= Android 13 login error
-  - maybe some HMAC related Crypto APIs changed?
-- ~~User related Feeds under "Post" section display the posts of the user~~
+
+-   Devices with >= Android 13 login error
+    -   maybe some HMAC related Crypto APIs changed?
+-   ~~User related Feeds under "Post" section display the posts of the user~~
 
 #### Known Issues Version 5.7.2
-- Devices with >= Android 13 login error
-  - maybe some HMAC related Crypto APIs changed?
-- ~~Home feed does not load with "Save Scrolled Position in HOME" enabled~~
-- User related Feeds under "Post" section display the posts of the user
+
+-   Devices with >= Android 13 login error
+    -   maybe some HMAC related Crypto APIs changed?
+-   ~~Home feed does not load with "Save Scrolled Position in HOME" enabled~~
+-   User related Feeds under "Post" section display the posts of the user
 
 #### Known Issues Version 5.7.0
-- ~~Images in text posts not loading correctly~~
-  - ~~probably due to the way the GQL API delivers the markdown text~~
-- Devices with >= Android 13 login error
-  - maybe some HMAC related Crypto APIs changed?
-- Home feed does not load with "Save Scrolled Position in HOME" enabled
+
+-   ~~Images in text posts not loading correctly~~
+    -   ~~probably due to the way the GQL API delivers the markdown text~~
+-   Devices with >= Android 13 login error
+    -   maybe some HMAC related Crypto APIs changed?
+-   Home feed does not load with "Save Scrolled Position in HOME" enabled
 
 #### Known Issues Version 5.6.4
-- Images in text posts not loading correctly
-  - probably due to the way the GQL API delivers the markdown text
-- Devices with >= Android 13 login error
-  - maybe some HMAC related Crypto APIs changed?
-- ~~Reddit GIFs cant be loaded~~
+
+-   Images in text posts not loading correctly
+    -   probably due to the way the GQL API delivers the markdown text
+-   Devices with >= Android 13 login error
+    -   maybe some HMAC related Crypto APIs changed?
+-   ~~Reddit GIFs cant be loaded~~
 
 #### Known Issues Version 5.6.3
-- Images in text posts not loading correctly
-  - probably due to the way the GQL API delivers the markdown text
-- Devices with >= Android 13 login error
-  - maybe some HMAC related Crypto APIs changed?
-- Reddit GIFs cant be loaded
+
+-   Images in text posts not loading correctly
+    -   probably due to the way the GQL API delivers the markdown text
+-   Devices with >= Android 13 login error
+    -   maybe some HMAC related Crypto APIs changed?
+-   Reddit GIFs cant be loaded
 
 #### Known Issues Version 5.6.2
-- Images in text posts not loading correctly
-  - probably due to the way the GQL API delivers the markdown text
-- Devices with >= Android 13 login error
-  - maybe some HMAC related Crypto APIs changed?
-- ~~The App refreshes the Access Token incorrectly resulting in logged in Users browsing with an anonymous account~~
+
+-   Images in text posts not loading correctly
+    -   probably due to the way the GQL API delivers the markdown text
+-   Devices with >= Android 13 login error
+    -   maybe some HMAC related Crypto APIs changed?
+-   ~~The App refreshes the Access Token incorrectly resulting in logged in Users browsing with an anonymous account~~
 
 #### Known Issues Version 5.6.1
-- Images in text posts not loading correctly
-  - probably due to the way the GQL API delivers the markdown text
-- Devices with >= Android 13 login error
-  - maybe some HMAC related Crypto APIs changed?
-- ~~The App refreshes the Access Token incorrectly resulting in logged in Users browsing with an anonymous account~~
-- The App refreshes the Access Token incorrectly during a pull refresh, resulting in logged in Users browsing with an anonymous account
+
+-   Images in text posts not loading correctly
+    -   probably due to the way the GQL API delivers the markdown text
+-   Devices with >= Android 13 login error
+    -   maybe some HMAC related Crypto APIs changed?
+-   ~~The App refreshes the Access Token incorrectly resulting in logged in Users browsing with an anonymous account~~
+-   The App refreshes the Access Token incorrectly during a pull refresh, resulting in logged in Users browsing with an anonymous account
 
 #### Known Issues Version 5.6.0
-- Images in text posts not loading correctly
-  - probably due to the way the GQL API delivers the markdown text
-- Devices with >= Android 13 login error
-  - maybe some HMAC related Crypto APIs changed?
-- The App refreshes the Access Token incorrectly resulting in logged in Users browsing with an anonymous account
-- ~~the app uses the latest session cookie (i.e. the one from the last logged in account) for all access token refreshes~~
+
+-   Images in text posts not loading correctly
+    -   probably due to the way the GQL API delivers the markdown text
+-   Devices with >= Android 13 login error
+    -   maybe some HMAC related Crypto APIs changed?
+-   The App refreshes the Access Token incorrectly resulting in logged in Users browsing with an anonymous account
+-   ~~the app uses the latest session cookie (i.e. the one from the last logged in account) for all access token refreshes~~
 
 #### Known Issues Version 5.5.1
-- Images in text posts not loading correctly
-  - probably due to the way the GQL API delivers the markdown text
-- ~~external Videos being displayed as links~~
-- Devices with >= Android 13 login error
-  - maybe some HMAC related Crypto APIs changed?
-- ~~Youtube links not being displayed~~
-- the app uses the latest session cookie (i.e. the one from the last logged in account) for all access token refreshes
+
+-   Images in text posts not loading correctly
+    -   probably due to the way the GQL API delivers the markdown text
+-   ~~external Videos being displayed as links~~
+-   Devices with >= Android 13 login error
+    -   maybe some HMAC related Crypto APIs changed?
+-   ~~Youtube links not being displayed~~
+-   the app uses the latest session cookie (i.e. the one from the last logged in account) for all access token refreshes
 
 #### Known Issues Version 5.5.0
-- Images in text posts not loading correctly
-- external Videos being displayed as links
-- Devices with >= Android 13 login error
-- Youtube links not being displayed
+
+-   Images in text posts not loading correctly
+-   external Videos being displayed as links
+-   Devices with >= Android 13 login error
+-   Youtube links not being displayed
 
 <div align="center">
 
