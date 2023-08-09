@@ -1,17 +1,21 @@
 package ml.docilealligator.infinityforreddit.markdown;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.text.util.Linkify;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
 
 import org.commonmark.ext.gfm.tables.TableBlock;
 
 import io.noties.markwon.Markwon;
 import io.noties.markwon.MarkwonPlugin;
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin;
+import io.noties.markwon.image.AsyncDrawable;
 import io.noties.markwon.image.ImagesPlugin;
+import io.noties.markwon.image.gif.GifMediaDecoder;
 import io.noties.markwon.inlineparser.BangInlineProcessor;
 import io.noties.markwon.inlineparser.HtmlInlineProcessor;
 import io.noties.markwon.inlineparser.MarkwonInlineParserPlugin;
@@ -49,7 +53,12 @@ public class MarkdownUtils {
                         .setOnLinkLongClickListener(onLinkLongClickListener)))
                 .usePlugin(LinkifyPlugin.create(Linkify.WEB_URLS))
                 .usePlugin(TableEntryPlugin.create(context))
-                .usePlugin(ImagesPlugin.create())
+                .usePlugin(ImagesPlugin.create(new ImagesPlugin.ImagesConfigure() {
+                    @Override
+                    public void configureImages(@NonNull ImagesPlugin plugin) {
+                        plugin.placeholderProvider(drawable -> ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_image_24dp, context.getTheme()));
+                    }
+                }))
                 .build();
     }
 
