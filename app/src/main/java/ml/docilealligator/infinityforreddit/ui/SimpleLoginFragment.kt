@@ -1,7 +1,6 @@
 package ml.docilealligator.infinityforreddit.ui
 
 
-import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -14,32 +13,33 @@ import kotlinx.coroutines.launch
 import ml.docilealligator.infinityforreddit.R
 import ml.docilealligator.infinityforreddit.SessionHolder
 import ml.docilealligator.infinityforreddit.databinding.FragmentLoginBinding
-import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils
 import org.matrix.android.sdk.api.Matrix
 import org.matrix.android.sdk.api.auth.data.HomeServerConnectionConfig
-import javax.inject.Inject
-import javax.inject.Named
+import org.matrix.android.sdk.api.auth.data.LoginFlowResult
 
 class SimpleLoginFragment : Fragment() {
-
-    @Inject
-    @Named("current_account")
-    var mCurrentAccountSharedPreferences: SharedPreferences? = null
-
     private var _views: FragmentLoginBinding? = null
     private val views get() = _views!!
+
+    var accessToken = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        accessToken = requireArguments().getString("access_token").toString();
         _views = FragmentLoginBinding.inflate(inflater, container, false)
         return views.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        launchAuthProcess()
     }
 
     private fun launchAuthProcess() {
@@ -61,46 +61,32 @@ class SimpleLoginFragment : Fragment() {
         //
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                Matrix.getInstance(requireContext()).authenticationService().getLoginFlow(homeServerConnectionConfig);
-            } catch (failure: Throwable) {
-                Toast.makeText(requireContext(), "Failure: $failure", Toast.LENGTH_SHORT).show()
-                null
-            }?.let { result ->
-                // When you got your session, open and launch sync
+                val result = Matrix.getInstance(requireContext()).authenticationService().getLoginFlow(homeServerConnectionConfig);
                 Toast.makeText(
                     requireContext(),
                     "Homeserver is ${result.homeServerUrl}",
                     Toast.LENGTH_SHORT
                 ).show()
-            }
-            val accessToken = mCurrentAccountSharedPreferences!!.getString(
-                SharedPreferencesUtils.ACCESS_TOKEN,
-                ""
-            )
 
-            if (accessToken!!.isNotEmpty()){
-                try {
-                    val data: MutableMap<String, Any> = HashMap()
-                    data["token"] = accessToken
-                    data["initial_device_display_name"] = "Reddit Matrix Android"
-                    data["type"] = "com.reddit.token"
+                val data: MutableMap<String, Any> = HashMap()
+                data["token"] = accessToken
+                data["initial_device_display_name"] = "Reddit Matrix Android"
+                data["type"] = "com.reddit.token"
 
-                    Matrix.getInstance(requireContext()).authenticationService().getLoginWizard().loginCustom(data);
-                } catch (failure: Throwable) {
-                    Toast.makeText(requireContext(), "Failure: $failure", Toast.LENGTH_SHORT).show()
-                    null
-                }?.let { session ->
-                    // When you got your session, open and launch sync
-                    Toast.makeText(
-                        requireContext(),
-                        "Welcome ${session.myUserId}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    SessionHolder.currentSession = session
-                    session.open()
-                    session.startSync(true)
-                    displayRoomList()
-                }
+                val session = Matrix.getInstance(requireContext()).authenticationService().getLoginWizard()
+                    .loginCustom(data);
+                Toast.makeText(
+                    requireContext(),
+                    "Welcome ${session.myUserId}",
+                    Toast.LENGTH_SHORT
+                ).show()
+                SessionHolder.currentSession = session
+                //session.open()
+                session.startSync(true)
+                displayRoomList()
+
+            } catch (failure: Throwable) {
+                Toast.makeText(requireContext(), "Failure: $failure", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -108,6 +94,6 @@ class SimpleLoginFragment : Fragment() {
     private fun displayRoomList() {
         val fragment = RoomListFragment()
         requireActivity().supportFragmentManager.beginTransaction()
-            .replace(R.id.activity_chat_overview_pager, fragment).commit()
+            .replace(R.id.chatFragmentContainer, fragment).commit()
     }
 }

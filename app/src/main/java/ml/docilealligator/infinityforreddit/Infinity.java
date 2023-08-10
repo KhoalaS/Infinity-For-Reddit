@@ -43,6 +43,7 @@ import ml.docilealligator.infinityforreddit.events.ToggleSecureModeEvent;
 import ml.docilealligator.infinityforreddit.font.ContentFontFamily;
 import ml.docilealligator.infinityforreddit.font.FontFamily;
 import ml.docilealligator.infinityforreddit.font.TitleFontFamily;
+import ml.docilealligator.infinityforreddit.utils.MatrixItemDisplayNameFallbackProviderImpl;
 import ml.docilealligator.infinityforreddit.utils.RoomDisplayNameFallbackProviderImpl;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import ml.docilealligator.infinityforreddit.utils.Utils;
@@ -224,7 +225,7 @@ public class Infinity extends Application implements LifecycleObserver {
                 null,
                 ConnectionSpec.RESTRICTED_TLS,
                 false,
-                null,
+                new MatrixItemDisplayNameFallbackProviderImpl(),
                 new RoomDisplayNameFallbackProviderImpl()
                 );
     }

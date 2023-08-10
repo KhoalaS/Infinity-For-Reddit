@@ -111,7 +111,7 @@ class RoomListFragment : Fragment(), ToolbarConfigurable {
         (activity as ChatOverviewActivity).supportFragmentManager
             .beginTransaction()
             .addToBackStack(null)
-            .replace(R.id.activity_chat_overview_pager, roomDetailFragment)
+            .replace(R.id.chatFragmentContainer, roomDetailFragment)
             .commit()
     }
 

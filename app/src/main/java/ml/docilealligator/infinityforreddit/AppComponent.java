@@ -104,6 +104,7 @@ import ml.docilealligator.infinityforreddit.settings.SecurityPreferenceFragment;
 import ml.docilealligator.infinityforreddit.settings.ThemePreferenceFragment;
 import ml.docilealligator.infinityforreddit.settings.TranslationFragment;
 import ml.docilealligator.infinityforreddit.settings.VideoPreferenceFragment;
+import ml.docilealligator.infinityforreddit.ui.SimpleLoginFragment;
 
 @Singleton
 @Component(modules = {AppModule.class, NetworkModule.class})

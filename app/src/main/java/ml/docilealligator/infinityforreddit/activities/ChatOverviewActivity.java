@@ -27,8 +27,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import ml.docilealligator.infinityforreddit.Infinity;
 import ml.docilealligator.infinityforreddit.R;
+import ml.docilealligator.infinityforreddit.SessionHolder;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.customviews.slidr.Slidr;
+import ml.docilealligator.infinityforreddit.databinding.ActivityChatBinding;
+import ml.docilealligator.infinityforreddit.ui.RoomListFragment;
 import ml.docilealligator.infinityforreddit.ui.SimpleLoginFragment;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 
@@ -44,17 +47,7 @@ public class ChatOverviewActivity extends BaseActivity {
     @Inject
     CustomThemeWrapper mCustomThemeWrapper;
 
-
-    @BindView(R.id.appbar_layout_chat_overview_activity)
-    AppBarLayout appBarLayout;
-    @BindView(R.id.toolbar_chat_overview_activity)
-    Toolbar toolbar;
-    @BindView(R.id.activity_chat_overview_pager)
-    ViewPager2 viewPager;
-
-    private FragmentManager fragmentManager;
-    DemoCollectionAdapter demoCollectionAdapter;
-
+    private ActivityChatBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +56,27 @@ public class ChatOverviewActivity extends BaseActivity {
         setImmersiveModeNotApplicable();
 
         super.onCreate(savedInstanceState);
+        if (savedInstanceState == null) {
+            if (SessionHolder.INSTANCE.getCurrentSession() != null) {
+                getSupportFragmentManager().beginTransaction()
+                        .setReorderingAllowed(true)
+                        .add(R.id.chatFragmentContainer, RoomListFragment.class, null)
+                        .commit();
+            }else {
+                String accessToken = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCESS_TOKEN, "");
+
+                Bundle bundle = new Bundle();
+                bundle.putString("access_token", accessToken);
+
+                getSupportFragmentManager().beginTransaction()
+                        .setReorderingAllowed(true)
+                        .add(R.id.chatFragmentContainer, SimpleLoginFragment.class, bundle)
+                        .commit();
+            }
+
+
+        }
+
 
         setContentView(R.layout.activity_chat);
         ButterKnife.bind(this);
@@ -71,36 +85,8 @@ public class ChatOverviewActivity extends BaseActivity {
             mSliderPanel = Slidr.attach(this);
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Window window = getWindow();
-
-            if (isChangeStatusBarIconColor()) {
-                addOnOffsetChangedListener(appBarLayout);
-            }
-
-            if (isImmersiveInterface()) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    window.setDecorFitsSystemWindows(false);
-                } else {
-                    window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-                }
-                adjustToolbar(toolbar);
-            }
-        }
 
         lockSwipeRightToGoBack();
-
-        toolbar.setTitle("Chats");
-
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        setToolbarGoToTop(toolbar);
-
-        String accessToken = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCESS_TOKEN, "");
-        fragmentManager = getSupportFragmentManager();
-        demoCollectionAdapter = new DemoCollectionAdapter(this);
-        viewPager.setAdapter(demoCollectionAdapter);
-        viewPager.setBackgroundColor(mCustomThemeWrapper.getBackgroundColor());
     }
 
 
@@ -142,29 +128,4 @@ public class ChatOverviewActivity extends BaseActivity {
             mSliderPanel.lock();
         }
     }
-
-    public class DemoCollectionAdapter extends FragmentStateAdapter {
-        public DemoCollectionAdapter(FragmentActivity fragment) {
-            super(fragment);
-        }
-
-        @NonNull
-        @Override
-        public Fragment createFragment(int position) {
-            // Return a NEW fragment instance in createFragment(int)
-            // create a different Fragment if in Request position
-            // fragment still needs impl
-            Fragment fragment = new SimpleLoginFragment();
-            //Bundle args = new Bundle();
-            //args.putInt(DemoObjectFragment.ARG_OBJECT, position);
-            //fragment.setArguments(args);
-            return fragment;
-        }
-
-        @Override
-        public int getItemCount() {
-            return 1;
-        }
-    }
-
 }
