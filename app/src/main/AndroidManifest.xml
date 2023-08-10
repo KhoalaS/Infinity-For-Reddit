@@ -436,6 +436,10 @@
             <meta-data
                 android:name="com.crazylegend.crashyreporter.initializer.CrashyInitializer"
                 android:value="androidx.startup" />
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
         </provider>
 
         <service

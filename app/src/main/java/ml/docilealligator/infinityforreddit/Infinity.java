@@ -17,6 +17,11 @@ import com.livefront.bridge.SavedStateHandler;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.matrix.android.sdk.api.Matrix;
+import org.matrix.android.sdk.api.MatrixConfiguration;
+import org.matrix.android.sdk.api.SyncConfig;
+import org.matrix.android.sdk.api.crypto.MXCryptoConfig;
+import org.matrix.android.sdk.api.session.Session;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -27,6 +32,12 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import ml.docilealligator.SessionHolder;
 import ml.docilealligator.infinityforreddit.activities.LockScreenActivity;
 import ml.docilealligator.infinityforreddit.broadcastreceivers.NetworkWifiStatusReceiver;
 import ml.docilealligator.infinityforreddit.broadcastreceivers.WallpaperChangeReceiver;
@@ -36,8 +47,10 @@ import ml.docilealligator.infinityforreddit.events.ToggleSecureModeEvent;
 import ml.docilealligator.infinityforreddit.font.ContentFontFamily;
 import ml.docilealligator.infinityforreddit.font.FontFamily;
 import ml.docilealligator.infinityforreddit.font.TitleFontFamily;
+import ml.docilealligator.infinityforreddit.utils.RoomDisplayNameFallbackProviderImpl;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import ml.docilealligator.infinityforreddit.utils.Utils;
+import okhttp3.ConnectionSpec;
 
 public class Infinity extends Application implements LifecycleObserver {
     public Typeface typeface;
@@ -49,6 +62,7 @@ public class Infinity extends Application implements LifecycleObserver {
     private long appLockTimeout;
     private boolean canStartLockScreenActivity = false;
     private boolean isSecureMode;
+    private static Matrix matrix;
     @Inject
     @Named("default")
     SharedPreferences mSharedPreferences;
@@ -64,6 +78,16 @@ public class Infinity extends Application implements LifecycleObserver {
                 .create(this);
 
         mAppComponent.inject(this);
+
+        matrix = new Matrix(this, getMatrixConfiguration());
+        Session lastSession = matrix.authenticationService().getLastAuthenticatedSession();
+        if (lastSession != null) {
+            SessionHolder.getInstance().setCurrentSession(lastSession);
+            // Don't forget to open the session and start syncing.
+
+            lastSession.open();
+            lastSession.syncService().startSync(true);
+        }
 
         appLock = mSecuritySharedPreferences.getBoolean(SharedPreferencesUtils.APP_LOCK, false);
         appLockTimeout = Long.parseLong(mSecuritySharedPreferences.getString(SharedPreferencesUtils.APP_LOCK_TIMEOUT, "600000"));
@@ -187,4 +211,40 @@ public class Infinity extends Application implements LifecycleObserver {
         appLock = changeAppLockEvent.appLock;
         appLockTimeout = changeAppLockEvent.appLockTimeout;
     }
+
+    public MatrixConfiguration getMatrixConfiguration() {
+        List<String> integrationsWidgetUrls = Arrays.asList(
+                "https://scalar.vector.im/_matrix/integrations/v1",
+                "https://scalar.vector.im/api",
+                "https://scalar-staging.vector.im/_matrix/integrations/v1",
+                "https://scalar-staging.vector.im/api",
+                "https://scalar-staging.riot.im/scalar/api"
+        );
+
+        MatrixConfiguration configuration = new MatrixConfiguration(
+                "Default-application-flavor",
+                new MXCryptoConfig(),
+                "https://scalar.vector.im/",
+                "https://scalar.vector.im/api",
+                integrationsWidgetUrls,
+                null,
+                null,
+                ConnectionSpec.RESTRICTED_TLS,
+                false,
+                null,
+                new RoomDisplayNameFallbackProviderImpl(),
+                true,
+                new ArrayList<>(),
+                new SyncConfig(),
+                new ArrayList<>(),
+                null
+        );
+        return configuration;
+    }
+
+    public static Matrix getMatrix(){
+        return matrix;
+    }
+
+
 }

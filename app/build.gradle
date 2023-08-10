@@ -75,7 +75,7 @@ dependencies {
     implementation "androidx.paging:paging-guava:$pagingVersion"
     implementation 'androidx.preference:preference:1.2.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    def roomVersion = "2.4.3"
+    def roomVersion = "2.5.2"
     implementation "androidx.room:room-runtime:$roomVersion"
     annotationProcessor "androidx.room:room-compiler:$roomVersion"
     implementation "androidx.room:room-guava:$roomVersion"
@@ -92,6 +92,7 @@ dependencies {
 
 /** Third-party **/
     implementation 'com.giphy.sdk:ui:2.3.6'
+    implementation 'org.matrix.android:matrix-android-sdk2:1.5.30'
 
 
 /**** Backend logic ****/

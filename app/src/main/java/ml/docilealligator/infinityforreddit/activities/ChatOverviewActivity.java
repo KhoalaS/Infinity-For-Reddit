@@ -2,6 +2,7 @@ package ml.docilealligator.infinityforreddit.activities;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -35,7 +36,17 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.matrix.android.sdk.api.Matrix;
+import org.matrix.android.sdk.api.MatrixConfiguration;
+import org.matrix.android.sdk.api.SyncConfig;
+import org.matrix.android.sdk.api.auth.data.HomeServerConnectionConfig;
+import org.matrix.android.sdk.api.auth.data.LoginFlowResult;
+import org.matrix.android.sdk.api.crypto.MXCryptoConfig;
+import org.matrix.android.sdk.api.session.Session;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
@@ -44,6 +55,9 @@ import javax.inject.Named;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import kotlin.coroutines.Continuation;
+import kotlin.coroutines.CoroutineContext;
+import kotlin.coroutines.EmptyCoroutineContext;
 import ml.docilealligator.infinityforreddit.Infinity;
 import ml.docilealligator.infinityforreddit.R;
 import ml.docilealligator.infinityforreddit.RedditDataRoomDatabase;
@@ -52,7 +66,9 @@ import ml.docilealligator.infinityforreddit.apis.GqlAPI;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.customviews.slidr.Slidr;
 import ml.docilealligator.infinityforreddit.utils.APIUtils;
+import ml.docilealligator.infinityforreddit.utils.RoomDisplayNameFallbackProviderImpl;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
+import okhttp3.ConnectionSpec;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -61,6 +77,8 @@ import retrofit2.Retrofit;
 
 
 public class ChatOverviewActivity extends BaseActivity {
+
+    Session currentSession;
 
     @Inject
     @Named("default")
@@ -119,6 +137,32 @@ public class ChatOverviewActivity extends BaseActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setToolbarGoToTop(toolbar);
+
+        HomeServerConnectionConfig homeServerConnectionConfig;
+        try{
+            homeServerConnectionConfig = new HomeServerConnectionConfig
+                    .Builder()
+                    .withHomeServerUri(Uri.parse("https://matrix.redditspace.com/"))
+                    .build();
+            homeServerConnectionConfig.getHomeServerUri().toString();
+            Infinity.getMatrix().authenticationService().getLoginFlow(homeServerConnectionConfig, new Continuation<LoginFlowResult>() {
+                @NonNull
+                @Override
+                public CoroutineContext getContext() {
+                    return EmptyCoroutineContext.INSTANCE;
+                }
+
+                @Override
+                public void resumeWith(@NonNull Object o) {
+                    for(String s : ((LoginFlowResult)o).getSupportedLoginTypes()){
+                        Log.d("SupportedLogin", s);
+                    }
+                }
+            });
+            int x = 0;
+        }catch (Exception e){
+            Toast.makeText(this, "Home server is not valid", Toast.LENGTH_SHORT).show();
+        }
 
         fragmentManager = getSupportFragmentManager();
         demoCollectionAdapter = new DemoCollectionAdapter(this);
