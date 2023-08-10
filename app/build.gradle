@@ -97,8 +97,6 @@ dependencies {
 
 /** Third-party **/
     implementation 'com.giphy.sdk:ui:2.3.6'
-    implementation 'org.matrix.android:matrix-android-sdk2:1.5.30'
-
 
 /** Third-party **/
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.0'
