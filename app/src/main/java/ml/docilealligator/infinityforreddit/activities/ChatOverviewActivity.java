@@ -77,13 +77,13 @@ public class ChatOverviewActivity extends BaseActivity {
 
         }
 
-
-        setContentView(R.layout.activity_chat);
-        ButterKnife.bind(this);
+        binding = ActivityChatBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         if (mSharedPreferences.getBoolean(SharedPreferencesUtils.SWIPE_RIGHT_TO_GO_BACK, true)) {
             mSliderPanel = Slidr.attach(this);
         }
+        applyCustomTheme();
 
 
         lockSwipeRightToGoBack();
@@ -119,7 +119,7 @@ public class ChatOverviewActivity extends BaseActivity {
 
     @Override
     protected void applyCustomTheme() {
-
+        binding.chatFragmentContainer.setBackgroundColor(mCustomThemeWrapper.getBackgroundColor());
     }
 
     @Override

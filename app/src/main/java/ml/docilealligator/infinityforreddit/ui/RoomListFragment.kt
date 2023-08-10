@@ -2,14 +2,23 @@ package ml.docilealligator.infinityforreddit.ui
 
 
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.stfalcon.chatkit.commons.ImageLoader
 import com.stfalcon.chatkit.dialogs.DialogsListAdapter
 import kotlinx.coroutines.launch
+import ml.docilealligator.infinityforreddit.Infinity
+import ml.docilealligator.infinityforreddit.R
 import ml.docilealligator.infinityforreddit.SessionHolder
+import ml.docilealligator.infinityforreddit.activities.ChatOverviewActivity
+import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper
 import ml.docilealligator.infinityforreddit.data.RoomSummaryDialogWrapper
 import ml.docilealligator.infinityforreddit.databinding.FragmentRoomListBinding
 import ml.docilealligator.infinityforreddit.formatter.RoomListDateFormatter
@@ -19,20 +28,25 @@ import org.matrix.android.sdk.api.session.room.model.Membership
 import org.matrix.android.sdk.api.session.room.model.RoomSummary
 import org.matrix.android.sdk.api.session.room.roomSummaryQueryParams
 import org.matrix.android.sdk.api.util.toMatrixItem
-import ml.docilealligator.infinityforreddit.R
-import ml.docilealligator.infinityforreddit.activities.ChatOverviewActivity
+import javax.inject.Inject
 
 
 class RoomListFragment : Fragment(), ToolbarConfigurable {
 
     private val session = SessionHolder.currentSession!!
 
+    @Inject
+    lateinit var mCustomThemeWrapper: CustomThemeWrapper
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
+        (requireActivity().application as Infinity).appComponent.inject(this)
         _views = FragmentRoomListBinding.inflate(inflater, container, false)
+        applyCustomTheme()
         return views.root
     }
 
@@ -83,7 +97,7 @@ class RoomListFragment : Fragment(), ToolbarConfigurable {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.chat_menu -> {
-                signOut()
+                //signOut()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -123,5 +137,10 @@ class RoomListFragment : Fragment(), ToolbarConfigurable {
             RoomSummaryDialogWrapper(it)
         }
         roomAdapter.setItems(sortedRoomSummaryList)
+    }
+
+    private fun applyCustomTheme() {
+        _views?.toolbarTitleView?.setTextColor(mCustomThemeWrapper.primaryTextColor)
+        //_views?.toolbarTitleView?.setTextColor(mCustomThemeWrapper.primaryTextColor)
     }
 }
