@@ -19,7 +19,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.matrix.android.sdk.api.Matrix;
 import org.matrix.android.sdk.api.MatrixConfiguration;
-import org.matrix.android.sdk.api.SyncConfig;
 import org.matrix.android.sdk.api.crypto.MXCryptoConfig;
 import org.matrix.android.sdk.api.session.Session;
 
@@ -33,11 +32,8 @@ import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
-import ml.docilealligator.SessionHolder;
 import ml.docilealligator.infinityforreddit.activities.LockScreenActivity;
 import ml.docilealligator.infinityforreddit.broadcastreceivers.NetworkWifiStatusReceiver;
 import ml.docilealligator.infinityforreddit.broadcastreceivers.WallpaperChangeReceiver;
@@ -62,7 +58,6 @@ public class Infinity extends Application implements LifecycleObserver {
     private long appLockTimeout;
     private boolean canStartLockScreenActivity = false;
     private boolean isSecureMode;
-    private static Matrix matrix;
     @Inject
     @Named("default")
     SharedPreferences mSharedPreferences;
@@ -79,19 +74,19 @@ public class Infinity extends Application implements LifecycleObserver {
 
         mAppComponent.inject(this);
 
-        matrix = new Matrix(this, getMatrixConfiguration());
-        Session lastSession = matrix.authenticationService().getLastAuthenticatedSession();
-        if (lastSession != null) {
-            SessionHolder.getInstance().setCurrentSession(lastSession);
-            // Don't forget to open the session and start syncing.
-
-            lastSession.open();
-            lastSession.syncService().startSync(true);
-        }
-
         appLock = mSecuritySharedPreferences.getBoolean(SharedPreferencesUtils.APP_LOCK, false);
         appLockTimeout = Long.parseLong(mSecuritySharedPreferences.getString(SharedPreferencesUtils.APP_LOCK_TIMEOUT, "600000"));
         isSecureMode = mSecuritySharedPreferences.getBoolean(SharedPreferencesUtils.SECURE_MODE, false);
+
+        Matrix.Companion.initialize(this, getMatrixConfiguration());
+
+        Matrix matrix = Matrix.Companion.getInstance(this);
+        Session lastSession = matrix.authenticationService().getLastAuthenticatedSession();
+        if (lastSession != null) {
+            SessionHolder.INSTANCE.setCurrentSession(lastSession);
+            lastSession.open();
+            lastSession.startSync(true);
+        }
 
         try {
             if (mSharedPreferences.getString(SharedPreferencesUtils.FONT_FAMILY_KEY, FontFamily.Default.name()).equals(FontFamily.Custom.name())) {
@@ -212,39 +207,25 @@ public class Infinity extends Application implements LifecycleObserver {
         appLockTimeout = changeAppLockEvent.appLockTimeout;
     }
 
-    public MatrixConfiguration getMatrixConfiguration() {
-        List<String> integrationsWidgetUrls = Arrays.asList(
-                "https://scalar.vector.im/_matrix/integrations/v1",
-                "https://scalar.vector.im/api",
-                "https://scalar-staging.vector.im/_matrix/integrations/v1",
-                "https://scalar-staging.vector.im/api",
-                "https://scalar-staging.riot.im/scalar/api"
-        );
-
-        MatrixConfiguration configuration = new MatrixConfiguration(
+    public static MatrixConfiguration getMatrixConfiguration(){
+        return new MatrixConfiguration(
                 "Default-application-flavor",
                 new MXCryptoConfig(),
                 "https://scalar.vector.im/",
                 "https://scalar.vector.im/api",
-                integrationsWidgetUrls,
+                Arrays.asList(
+                        "https://scalar.vector.im/_matrix/integrations/v1",
+                        "https://scalar.vector.im/api",
+                        "https://scalar-staging.vector.im/_matrix/integrations/v1",
+                        "https://scalar-staging.vector.im/api",
+                        "https://scalar-staging.riot.im/scalar/api"
+                ),
                 null,
                 null,
                 ConnectionSpec.RESTRICTED_TLS,
                 false,
                 null,
-                new RoomDisplayNameFallbackProviderImpl(),
-                true,
-                new ArrayList<>(),
-                new SyncConfig(),
-                new ArrayList<>(),
-                null
-        );
-        return configuration;
+                new RoomDisplayNameFallbackProviderImpl()
+                );
     }
-
-    public static Matrix getMatrix(){
-        return matrix;
-    }
-
-
 }

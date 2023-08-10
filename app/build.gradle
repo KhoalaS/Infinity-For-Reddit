@@ -1,6 +1,6 @@
-plugins {
-    id 'com.android.application'
-}
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
 
 android {
     compileSdk 33
@@ -49,6 +49,11 @@ android {
         }
     }
 
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+
+
     buildFeatures {
         viewBinding true
     }
@@ -93,6 +98,17 @@ dependencies {
 /** Third-party **/
     implementation 'com.giphy.sdk:ui:2.3.6'
     implementation 'org.matrix.android:matrix-android-sdk2:1.5.30'
+
+
+/** Third-party **/
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.0'
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'org.matrix.android:matrix-android-sdk2:1.3.10'
+    implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
+    implementation 'jp.wasabeef:picasso-transformations:2.2.1'
+    implementation 'com.github.stfalcon:chatkit:0.3.3'
+
 
 
 /**** Backend logic ****/

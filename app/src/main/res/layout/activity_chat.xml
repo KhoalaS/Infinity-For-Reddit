@@ -31,9 +31,11 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/activity_chat_overview_pager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+    <androidx.fragment.app.FragmentContainerView
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/chatFragmentContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:context=".activities.ChatOverviewActivity" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
