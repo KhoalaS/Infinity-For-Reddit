@@ -14,7 +14,9 @@ import com.stfalcon.chatkit.commons.models.IMessage
 import com.stfalcon.chatkit.messages.MessageInput
 import com.stfalcon.chatkit.messages.MessagesListAdapter
 import kotlinx.coroutines.launch
+import ml.docilealligator.infinityforreddit.Infinity
 import ml.docilealligator.infinityforreddit.SessionHolder
+import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper
 import ml.docilealligator.infinityforreddit.databinding.FragmentRoomDetailBinding
 import ml.docilealligator.infinityforreddit.utils.AvatarRenderer
 import ml.docilealligator.infinityforreddit.utils.MatrixItemColorProvider
@@ -25,8 +27,12 @@ import org.matrix.android.sdk.api.session.room.Room
 import org.matrix.android.sdk.api.session.room.read.ReadService
 import org.matrix.android.sdk.api.session.room.timeline.*
 import org.matrix.android.sdk.api.util.toMatrixItem
+import javax.inject.Inject
 
 class RoomDetailFragment : Fragment(), Timeline.Listener, ToolbarConfigurable {
+
+    @Inject
+    lateinit var mCustomThemeWrapper: CustomThemeWrapper
 
     companion object {
 
@@ -66,6 +72,8 @@ class RoomDetailFragment : Fragment(), Timeline.Listener, ToolbarConfigurable {
         savedInstanceState: Bundle?
     ): View? {
         _views = FragmentRoomDetailBinding.inflate(inflater, container, false)
+        (requireActivity().application as Infinity).appComponent.inject(this)
+        applyCustomTheme()
         return views.root
     }
 
@@ -154,5 +162,9 @@ class RoomDetailFragment : Fragment(), Timeline.Listener, ToolbarConfigurable {
         // It can happens when sync returns, paginating, and updating (local echo, decryption finished...)
         // You probably want to process with DiffUtil before dispatching to your recyclerview
         timelineEventListProcessor.onNewSnapshot(snapshot)
+    }
+
+    private fun applyCustomTheme() {
+        _views?.toolbarTitleView?.setTextColor(mCustomThemeWrapper.primaryTextColor)
     }
 }

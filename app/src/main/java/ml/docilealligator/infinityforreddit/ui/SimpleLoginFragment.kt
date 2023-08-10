@@ -15,7 +15,6 @@ import ml.docilealligator.infinityforreddit.SessionHolder
 import ml.docilealligator.infinityforreddit.databinding.FragmentLoginBinding
 import org.matrix.android.sdk.api.Matrix
 import org.matrix.android.sdk.api.auth.data.HomeServerConnectionConfig
-import org.matrix.android.sdk.api.auth.data.LoginFlowResult
 
 class SimpleLoginFragment : Fragment() {
     private var _views: FragmentLoginBinding? = null
@@ -60,6 +59,9 @@ class SimpleLoginFragment : Fragment() {
         // Here we use the direct authentication, but you get LoginWizard and RegistrationWizard for more advanced feature
         //
         viewLifecycleOwner.lifecycleScope.launch {
+            if(accessToken.isBlank()){
+                return@launch
+            }
             try {
                 val result = Matrix.getInstance(requireContext()).authenticationService().getLoginFlow(homeServerConnectionConfig);
                 Toast.makeText(
@@ -72,7 +74,6 @@ class SimpleLoginFragment : Fragment() {
                 data["token"] = accessToken
                 data["initial_device_display_name"] = "Reddit Matrix Android"
                 data["type"] = "com.reddit.token"
-
                 val session = Matrix.getInstance(requireContext()).authenticationService().getLoginWizard()
                     .loginCustom(data);
                 Toast.makeText(
@@ -81,12 +82,15 @@ class SimpleLoginFragment : Fragment() {
                     Toast.LENGTH_SHORT
                 ).show()
                 SessionHolder.currentSession = session
-                //session.open()
+                if(session.isOpenable){
+                    session.open()
+                }
                 session.startSync(true)
                 displayRoomList()
 
             } catch (failure: Throwable) {
                 Toast.makeText(requireContext(), "Failure: $failure", Toast.LENGTH_SHORT).show()
+                displayRoomList()
             }
         }
     }
