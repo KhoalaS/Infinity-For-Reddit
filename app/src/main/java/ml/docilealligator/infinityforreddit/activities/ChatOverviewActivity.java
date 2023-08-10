@@ -1,52 +1,43 @@
 package ml.docilealligator.infinityforreddit.activities;
 
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.appbar.AppBarLayout;
 
-import org.matrix.android.sdk.api.Matrix;
-import org.matrix.android.sdk.api.auth.data.HomeServerConnectionConfig;
-import org.matrix.android.sdk.api.auth.data.LoginFlowResult;
 import org.matrix.android.sdk.api.session.Session;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import kotlin.coroutines.Continuation;
-import kotlin.coroutines.CoroutineContext;
-import kotlin.coroutines.EmptyCoroutineContext;
 import ml.docilealligator.infinityforreddit.Infinity;
 import ml.docilealligator.infinityforreddit.R;
-import ml.docilealligator.infinityforreddit.SessionHolder;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.customviews.slidr.Slidr;
+import ml.docilealligator.infinityforreddit.ui.SimpleLoginFragment;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 
 
 public class ChatOverviewActivity extends BaseActivity {
-
     @Inject
     @Named("default")
     SharedPreferences mSharedPreferences;
+
     @Inject
     @Named("current_account")
     SharedPreferences mCurrentAccountSharedPreferences;
@@ -58,6 +49,12 @@ public class ChatOverviewActivity extends BaseActivity {
     AppBarLayout appBarLayout;
     @BindView(R.id.toolbar_chat_overview_activity)
     Toolbar toolbar;
+    @BindView(R.id.activity_chat_overview_pager)
+    ViewPager2 viewPager;
+
+    private FragmentManager fragmentManager;
+    DemoCollectionAdapter demoCollectionAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,65 +95,15 @@ public class ChatOverviewActivity extends BaseActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setToolbarGoToTop(toolbar);
-        HomeServerConnectionConfig homeServerConnectionConfig;
 
-        try{
-            homeServerConnectionConfig = new HomeServerConnectionConfig
-                    .Builder()
-                    .withHomeServerUri(Uri.parse("https://reddit.matrixspace.com/"))
-                    .build();
-        } catch (Exception e) {
-            Toast.makeText(this, "Home server is not valid", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        Matrix.Companion.getInstance(this).authenticationService().getLoginFlow(homeServerConnectionConfig, new Continuation<>() {
-            @NonNull
-            @Override
-            public CoroutineContext getContext() {
-                return EmptyCoroutineContext.INSTANCE;
-            }
-
-            @Override
-            public void resumeWith(@NonNull Object o) {
-                login();
-            }
-        });
-    }
-
-    public void login(){
         String accessToken = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCESS_TOKEN, "");
-        Map<String, Object> data = new HashMap<>();
-        data.put("token", accessToken);
-        data.put("initial_device_display_name", "Reddit Matrix Android");
-        data.put("type", "com.reddit.token");
-
-        try {
-            Matrix.Companion.getInstance(this).authenticationService().getLoginWizard().loginCustom(data, new Continuation<Session>() {
-                @NonNull
-                @Override
-                public CoroutineContext getContext() {
-                    return EmptyCoroutineContext.INSTANCE;
-                }
-
-                @Override
-                public void resumeWith(@NonNull Object o) {
-                    Session session = (Session) o;
-                    SessionHolder.INSTANCE.setCurrentSession(session);
-                    session.open();
-                    session.startSync(true);
-                    displayRoomList();
-                }
-            });
-        } catch (Exception e){
-            Toast.makeText(this, String.format("Failure: %s", e.getCause()), Toast.LENGTH_SHORT).show();
-        }
+        fragmentManager = getSupportFragmentManager();
+        demoCollectionAdapter = new DemoCollectionAdapter(this);
+        viewPager.setAdapter(demoCollectionAdapter);
+        viewPager.setBackgroundColor(mCustomThemeWrapper.getBackgroundColor());
     }
 
-    public void displayRoomList(){
-        FragmentManager fragmentManager = getSupportFragmentManager();
 
-    }
     @Override
     public SharedPreferences getDefaultSharedPreferences() {
         return mSharedPreferences;
@@ -195,4 +142,29 @@ public class ChatOverviewActivity extends BaseActivity {
             mSliderPanel.lock();
         }
     }
+
+    public class DemoCollectionAdapter extends FragmentStateAdapter {
+        public DemoCollectionAdapter(FragmentActivity fragment) {
+            super(fragment);
+        }
+
+        @NonNull
+        @Override
+        public Fragment createFragment(int position) {
+            // Return a NEW fragment instance in createFragment(int)
+            // create a different Fragment if in Request position
+            // fragment still needs impl
+            Fragment fragment = new SimpleLoginFragment();
+            //Bundle args = new Bundle();
+            //args.putInt(DemoObjectFragment.ARG_OBJECT, position);
+            //fragment.setArguments(args);
+            return fragment;
+        }
+
+        @Override
+        public int getItemCount() {
+            return 1;
+        }
+    }
+
 }
