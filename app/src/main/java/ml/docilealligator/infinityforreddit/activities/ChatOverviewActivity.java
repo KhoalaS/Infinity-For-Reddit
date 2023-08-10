@@ -46,6 +46,7 @@ import org.matrix.android.sdk.api.session.Session;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -58,6 +59,7 @@ import butterknife.ButterKnife;
 import kotlin.coroutines.Continuation;
 import kotlin.coroutines.CoroutineContext;
 import kotlin.coroutines.EmptyCoroutineContext;
+import ml.docilealligator.SessionHolder;
 import ml.docilealligator.infinityforreddit.Infinity;
 import ml.docilealligator.infinityforreddit.R;
 import ml.docilealligator.infinityforreddit.RedditDataRoomDatabase;
@@ -83,6 +85,10 @@ public class ChatOverviewActivity extends BaseActivity {
     @Inject
     @Named("default")
     SharedPreferences mSharedPreferences;
+
+    @Inject
+    @Named("current_account")
+    SharedPreferences mCurrentAccountSharedPreferences;
     @Inject
     CustomThemeWrapper mCustomThemeWrapper;
 
@@ -138,6 +144,8 @@ public class ChatOverviewActivity extends BaseActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         setToolbarGoToTop(toolbar);
 
+        String accessToken = mCurrentAccountSharedPreferences.getString(SharedPreferencesUtils.ACCESS_TOKEN, "");
+
         HomeServerConnectionConfig homeServerConnectionConfig;
         try{
             homeServerConnectionConfig = new HomeServerConnectionConfig
@@ -159,17 +167,39 @@ public class ChatOverviewActivity extends BaseActivity {
                     }
                 }
             });
-            int x = 0;
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("token", accessToken);
+            data.put("initial_device_display_name", "Reddit Matrix Android");
+            data.put("type", "com.reddit.token");
+
+
+            Infinity.getMatrix().authenticationService().getLoginWizard().loginCustom(data, new Continuation<Session>() {
+                @NonNull
+                @Override
+                public CoroutineContext getContext() {
+                    return EmptyCoroutineContext.INSTANCE;
+                }
+
+                @Override
+                public void resumeWith(@NonNull Object o) {
+                    Session session = (Session) o;
+                    SessionHolder.getInstance().setCurrentSession(session);
+                    session.open();
+                    session.syncService().startSync(true);
+                    initializeFragment();
+                }
+            });
         }catch (Exception e){
             Toast.makeText(this, "Home server is not valid", Toast.LENGTH_SHORT).show();
         }
+    }
 
+    public void initializeFragment(){
         fragmentManager = getSupportFragmentManager();
         demoCollectionAdapter = new DemoCollectionAdapter(this);
         viewPager.setAdapter(demoCollectionAdapter);
         viewPager.setBackgroundColor(mCustomThemeWrapper.getBackgroundColor());
-
-
     }
 
     @Override
@@ -247,6 +277,8 @@ public class ChatOverviewActivity extends BaseActivity {
         @Inject
         RedditDataRoomDatabase mRedditDataRoomDatabase;
 
+        Session session = SessionHolder.getInstance().getCurrentSession();
+
         private BaseActivity activity;
 
         public static final String ARG_OBJECT = "object";
@@ -277,6 +309,7 @@ public class ChatOverviewActivity extends BaseActivity {
         @Override
         public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
             ((Infinity) activity.getApplication()).getAppComponent().inject(this);
+
             Bundle args = getArguments();
             int position = args.getInt(ARG_OBJECT);
             layoutManager = new LinearLayoutManager(this.getActivity());

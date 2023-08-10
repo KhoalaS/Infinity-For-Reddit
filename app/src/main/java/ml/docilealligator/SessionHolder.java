@@ -12,4 +12,8 @@ public class SessionHolder {
     public void setCurrentSession(Session session){
         currentSession = session;
     }
+
+    public Session getCurrentSession(){
+        return currentSession;
+    }
 }
