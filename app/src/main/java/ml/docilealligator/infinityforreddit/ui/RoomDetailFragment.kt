@@ -1,10 +1,16 @@
 package ml.docilealligator.infinityforreddit.ui
 
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -12,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.stfalcon.chatkit.commons.ImageLoader
 import com.stfalcon.chatkit.commons.models.IMessage
 import com.stfalcon.chatkit.messages.MessageInput
+import com.stfalcon.chatkit.messages.MessageInput.AttachmentsListener
 import com.stfalcon.chatkit.messages.MessagesListAdapter
 import kotlinx.coroutines.launch
 import ml.docilealligator.infinityforreddit.Infinity
@@ -49,8 +56,9 @@ class RoomDetailFragment : Fragment(), Timeline.Listener, ToolbarConfigurable {
     }
 
     private var _views: FragmentRoomDetailBinding? = null
+    private var getImage: ActivityResultLauncher<String>? = null
     private val views get() = _views!!
-
+    
     private val session = SessionHolder.currentSession!!
     private var timeline: Timeline? = null
     private var room: Room? = null
@@ -66,6 +74,12 @@ class RoomDetailFragment : Fragment(), Timeline.Listener, ToolbarConfigurable {
     private val adapter = MessagesListAdapter<IMessage>(session.myUserId, imageLoader)
     private val timelineEventListProcessor = TimelineEventListProcessor(adapter)
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        getImage = registerForActivityResult(ActivityResultContracts.GetContent(), { uri: Uri? ->
+            Log.d("ID", uri.toString())
+        })
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -95,6 +109,12 @@ class RoomDetailFragment : Fragment(), Timeline.Listener, ToolbarConfigurable {
 
             override fun onStopTyping() {
                 room?.userStopsTyping()
+            }
+        })
+
+        views.textComposer.setAttachmentsListener(object: MessageInput.AttachmentsListener {
+            override fun onAddAttachments() {
+                getImage?.launch("image/*")
             }
         })
 
@@ -166,5 +186,9 @@ class RoomDetailFragment : Fragment(), Timeline.Listener, ToolbarConfigurable {
 
     private fun applyCustomTheme() {
         _views?.toolbarTitleView?.setTextColor(mCustomThemeWrapper.primaryTextColor)
+    }
+
+    private fun getImagePicker(){
+
     }
 }
