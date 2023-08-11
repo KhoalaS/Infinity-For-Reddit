@@ -19,7 +19,11 @@ The releases are automated.
 
 I was originally looking into using the Sendbird SDK for chats, but recently Reddit changed their chat backend. They are now using [Matrix](https://github.com/matrix-org/matrix-android-sdk2).
 
--   [ ] Chat
+-   [x] Chat
+    - [x] basic messaging 
+    - [ ] render all types of messages
+    - [ ] enable sending images and emotes
+    - [ ] implement chat requests
 -   [x] Inline Subreddit Emotes, Gifs and Images in Comments
 -   [x] use GQL API for Home posts
 -   [x] use GQL API for Subreddit/User/Search posts
