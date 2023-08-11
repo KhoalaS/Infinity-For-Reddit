@@ -10,15 +10,21 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import ml.docilealligator.infinityforreddit.Infinity
 import ml.docilealligator.infinityforreddit.R
 import ml.docilealligator.infinityforreddit.SessionHolder
+import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper
 import ml.docilealligator.infinityforreddit.databinding.FragmentLoginBinding
 import org.matrix.android.sdk.api.Matrix
 import org.matrix.android.sdk.api.auth.data.HomeServerConnectionConfig
+import javax.inject.Inject
 
 class SimpleLoginFragment : Fragment() {
     private var _views: FragmentLoginBinding? = null
     private val views get() = _views!!
+
+    @Inject
+    lateinit var mCustomThemeWrapper: CustomThemeWrapper
 
     var accessToken = ""
 
@@ -27,6 +33,7 @@ class SimpleLoginFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        (requireActivity().application as Infinity).appComponent.inject(this)
         accessToken = requireArguments().getString("access_token").toString();
         _views = FragmentLoginBinding.inflate(inflater, container, false)
         return views.root
@@ -99,5 +106,11 @@ class SimpleLoginFragment : Fragment() {
         val fragment = RoomListFragment()
         requireActivity().supportFragmentManager.beginTransaction()
             .replace(R.id.chatFragmentContainer, fragment).commit()
+    }
+
+    private fun applyCustomTheme() {
+        _views?.container?.setBackgroundColor(mCustomThemeWrapper.backgroundColor)
+        _views?.textView?.setTextColor(mCustomThemeWrapper.primaryTextColor)
+        _views?.loading?.setBackgroundColor(mCustomThemeWrapper.colorPrimary)
     }
 }

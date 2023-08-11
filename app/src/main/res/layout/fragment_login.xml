@@ -5,8 +5,7 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#9EA6A6"
-    tools:context=".ui.MainActivity">
+    tools:context=".activities.ChatOverviewActivity">
 
     <ProgressBar
         android:id="@+id/loading"

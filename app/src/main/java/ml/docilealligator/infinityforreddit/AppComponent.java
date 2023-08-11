@@ -316,6 +316,7 @@ public interface AppComponent {
     void inject(RoomListFragment roomListFragment);
 
     void inject(RoomDetailFragment roomDetailFragment);
+    void inject(SimpleLoginFragment simpleLoginFragment);
 
     @Component.Factory
     interface Factory {
