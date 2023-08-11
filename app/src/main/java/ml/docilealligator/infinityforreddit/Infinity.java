@@ -2,11 +2,13 @@ package ml.docilealligator.infinityforreddit;
 
 import android.app.Activity;
 import android.app.Application;
+import android.app.WallpaperManager;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -177,6 +179,17 @@ public class Infinity extends Application implements LifecycleObserver {
         mNetworkWifiStatusReceiver =
                 new NetworkWifiStatusReceiver(() -> EventBus.getDefault().post(new ChangeNetworkStatusEvent(Utils.getConnectedNetwork(getApplicationContext()))));
         registerReceiver(mNetworkWifiStatusReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+
+        WallpaperChangeReceiver wallpaperChangeReceiver = new WallpaperChangeReceiver(mSharedPreferences);
+
+        int currentWallpaperId = -1;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            currentWallpaperId = WallpaperManager.getInstance(this).getWallpaperId(WallpaperManager.FLAG_SYSTEM);
+        }
+        int lastWallpaperId = mSharedPreferences.getInt(SharedPreferencesUtils.WALLPAPER_ID, -1);
+        if(lastWallpaperId != currentWallpaperId){
+            wallpaperChangeReceiver.onReceive(this, null);
+        }
 
         registerReceiver(new WallpaperChangeReceiver(mSharedPreferences), new IntentFilter(Intent.ACTION_WALLPAPER_CHANGED));
     }
