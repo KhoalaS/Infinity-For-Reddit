@@ -219,7 +219,7 @@ public class PostVideoActivity extends BaseActivity implements FlairBottomSheetF
         player = new ExoPlayer.Builder(this).build();
         videoPlayerView.setPlayer(player);
         dataSourceFactory = new DefaultDataSourceFactory(this,
-                Util.getUserAgent(this, "Infinity"));
+                Util.getUserAgent(this, "Reddit"));
         if (mSharedPreferences.getBoolean(SharedPreferencesUtils.LOOP_VIDEO, true)) {
             player.setRepeatMode(Player.REPEAT_MODE_ALL);
         } else {
