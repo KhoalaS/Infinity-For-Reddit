@@ -1,10 +1,8 @@
 package ml.docilealligator.infinityforreddit.ui
 
 
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -15,13 +13,14 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.squareup.picasso.Picasso
 import com.stfalcon.chatkit.commons.ImageLoader
 import com.stfalcon.chatkit.commons.models.IMessage
 import com.stfalcon.chatkit.messages.MessageInput
-import com.stfalcon.chatkit.messages.MessageInput.AttachmentsListener
 import com.stfalcon.chatkit.messages.MessagesListAdapter
 import kotlinx.coroutines.launch
 import ml.docilealligator.infinityforreddit.Infinity
+import ml.docilealligator.infinityforreddit.R
 import ml.docilealligator.infinityforreddit.SessionHolder
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper
 import ml.docilealligator.infinityforreddit.databinding.FragmentRoomDetailBinding
@@ -32,9 +31,12 @@ import ml.docilealligator.infinityforreddit.utils.TimelineEventListProcessor
 import org.matrix.android.sdk.api.extensions.orTrue
 import org.matrix.android.sdk.api.session.room.Room
 import org.matrix.android.sdk.api.session.room.read.ReadService
-import org.matrix.android.sdk.api.session.room.timeline.*
+import org.matrix.android.sdk.api.session.room.timeline.Timeline
+import org.matrix.android.sdk.api.session.room.timeline.TimelineEvent
+import org.matrix.android.sdk.api.session.room.timeline.TimelineSettings
 import org.matrix.android.sdk.api.util.toMatrixItem
 import javax.inject.Inject
+
 
 class RoomDetailFragment : Fragment(), Timeline.Listener, ToolbarConfigurable {
 
@@ -67,9 +69,14 @@ class RoomDetailFragment : Fragment(), Timeline.Listener, ToolbarConfigurable {
         AvatarRenderer(MatrixItemColorProvider(requireContext()))
     }
 
-    private val imageLoader = ImageLoader { imageView, url, _ ->
-        avatarRenderer.render(url, imageView)
-    }
+    var imageLoader: ImageLoader =
+        ImageLoader { imageView, url, _ ->
+            val resolvedUrl = resolvedUrl(url)
+            Picasso.get()
+                .load(resolvedUrl)
+                .placeholder(R.drawable.ic_image_24dp)
+                .into(imageView)
+        }
 
     private val adapter = MessagesListAdapter<IMessage>(session.myUserId, imageLoader)
     private val timelineEventListProcessor = TimelineEventListProcessor(adapter)
@@ -190,5 +197,11 @@ class RoomDetailFragment : Fragment(), Timeline.Listener, ToolbarConfigurable {
 
     private fun getImagePicker(){
 
+    }
+
+    private fun resolvedUrl(url: String?): String? {
+        // Take care of using contentUrlResolver to use with mxc://
+        return SessionHolder.currentSession?.contentUrlResolver()
+            ?.resolveFullSize(url);
     }
 }

@@ -2,13 +2,15 @@ package ml.docilealligator.infinityforreddit.data
 
 
 import com.stfalcon.chatkit.commons.models.IMessage
-import java.util.*
+import com.stfalcon.chatkit.commons.models.MessageContentType
 import org.matrix.android.sdk.api.session.events.model.EventType
 import org.matrix.android.sdk.api.session.events.model.toModel
 import org.matrix.android.sdk.api.session.room.model.message.MessageContent
 import org.matrix.android.sdk.api.session.room.timeline.TimelineEvent
+import java.util.Date
 
-data class TimelineEventMessageWrapper(private val timelineEvent: TimelineEvent) : IMessage {
+
+data class TimelineEventMessageWrapper(private val timelineEvent: TimelineEvent) : IMessage, MessageContentType.Image {
 
     override fun getId() = timelineEvent.localId.toString()
 
@@ -30,4 +32,7 @@ data class TimelineEventMessageWrapper(private val timelineEvent: TimelineEvent)
     override fun getUser() = TimelineEventSenderWrapper(timelineEvent.senderInfo)
 
     override fun getCreatedAt() = Date(timelineEvent.root.originServerTs ?: 0)
+    override fun getImageUrl(): String? {
+        return timelineEvent.root.getClearContent()?.get("url")?.toString()
+    }
 }
