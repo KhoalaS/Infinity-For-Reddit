@@ -48,6 +48,7 @@ import ml.docilealligator.infinityforreddit.FetchMyInfo;
 import ml.docilealligator.infinityforreddit.Infinity;
 import ml.docilealligator.infinityforreddit.R;
 import ml.docilealligator.infinityforreddit.RedditDataRoomDatabase;
+import ml.docilealligator.infinityforreddit.SessionHolder;
 import ml.docilealligator.infinityforreddit.apis.RedditAccountsAPI;
 import ml.docilealligator.infinityforreddit.asynctasks.ParseAndInsertNewAccount;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
@@ -207,6 +208,8 @@ public class LoginActivity extends BaseActivity {
                                     .putString(SharedPreferencesUtils.SESSION_COOKIE, redditSession)
                                     .putString(SharedPreferencesUtils.SESSION_EXPIRY, sessionExpiryTimestamp)
                                     .apply();
+
+                            SessionHolder.INSTANCE.setCurrentSession(null);
 
                             Map<String, String> accessTokenHeaders = APIUtils.getHttpBasicAuthHeader();
                             accessTokenHeaders.put("cookie", redditSession);

@@ -17,6 +17,8 @@ import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper
 import ml.docilealligator.infinityforreddit.databinding.FragmentLoginBinding
 import org.matrix.android.sdk.api.Matrix
 import org.matrix.android.sdk.api.auth.data.HomeServerConnectionConfig
+import timber.log.Timber
+import java.lang.AssertionError
 import javax.inject.Inject
 
 class SimpleLoginFragment : Fragment() {
@@ -32,7 +34,7 @@ class SimpleLoginFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         (requireActivity().application as Infinity).appComponent.inject(this)
         accessToken = requireArguments().getString("access_token").toString();
         _views = FragmentLoginBinding.inflate(inflater, container, false)
@@ -90,7 +92,11 @@ class SimpleLoginFragment : Fragment() {
                 ).show()
                 SessionHolder.currentSession = session
                 if(session.isOpenable){
-                    session.open()
+                    try {
+                        session.open()
+                    } catch (e : AssertionError){
+                        Timber.tag("MATRIX").e("Session already open")
+                    }
                 }
                 session.startSync(true)
                 displayRoomList()

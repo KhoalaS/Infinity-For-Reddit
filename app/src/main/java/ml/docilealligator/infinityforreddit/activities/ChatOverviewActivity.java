@@ -84,9 +84,6 @@ public class ChatOverviewActivity extends BaseActivity {
             mSliderPanel = Slidr.attach(this);
         }
         applyCustomTheme();
-
-
-        lockSwipeRightToGoBack();
     }
 
 

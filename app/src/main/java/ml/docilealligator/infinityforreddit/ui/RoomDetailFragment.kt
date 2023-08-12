@@ -1,14 +1,20 @@
 package ml.docilealligator.infinityforreddit.ui
 
 
+import android.app.Activity
+import android.content.Intent
+import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.database.getLongOrNull
+import androidx.core.database.getStringOrNull
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -25,10 +31,12 @@ import ml.docilealligator.infinityforreddit.SessionHolder
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper
 import ml.docilealligator.infinityforreddit.databinding.FragmentRoomDetailBinding
 import ml.docilealligator.infinityforreddit.utils.AvatarRenderer
+import ml.docilealligator.infinityforreddit.utils.ImageUtils
 import ml.docilealligator.infinityforreddit.utils.MatrixItemColorProvider
 import ml.docilealligator.infinityforreddit.utils.RecyclerScrollMoreListener
 import ml.docilealligator.infinityforreddit.utils.TimelineEventListProcessor
 import org.matrix.android.sdk.api.extensions.orTrue
+import org.matrix.android.sdk.api.session.content.ContentAttachmentData
 import org.matrix.android.sdk.api.session.room.Room
 import org.matrix.android.sdk.api.session.room.read.ReadService
 import org.matrix.android.sdk.api.session.room.timeline.Timeline
@@ -69,7 +77,7 @@ class RoomDetailFragment : Fragment(), Timeline.Listener, ToolbarConfigurable {
         AvatarRenderer(MatrixItemColorProvider(requireContext()))
     }
 
-    var imageLoader: ImageLoader =
+    private var imageLoader: ImageLoader =
         ImageLoader { imageView, url, _ ->
             val resolvedUrl = resolvedUrl(url)
             Picasso.get()
@@ -83,9 +91,13 @@ class RoomDetailFragment : Fragment(), Timeline.Listener, ToolbarConfigurable {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        getImage = registerForActivityResult(ActivityResultContracts.GetContent(), { uri: Uri? ->
-            Log.d("ID", uri.toString())
-        })
+        getImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            if(uri != null){
+                getSelectedImage(uri)?.let {
+                    room?.sendMedia(it, true, emptySet())
+                }
+            }
+        }
     }
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -119,11 +131,9 @@ class RoomDetailFragment : Fragment(), Timeline.Listener, ToolbarConfigurable {
             }
         })
 
-        views.textComposer.setAttachmentsListener(object: MessageInput.AttachmentsListener {
-            override fun onAddAttachments() {
-                getImage?.launch("image/*")
-            }
-        })
+        views.textComposer.setAttachmentsListener {
+            getImage?.launch("image/*")
+        }
 
         views.timelineEventList.setAdapter(adapter)
         views.timelineEventList.itemAnimator = null
@@ -195,13 +205,47 @@ class RoomDetailFragment : Fragment(), Timeline.Listener, ToolbarConfigurable {
         _views?.toolbarTitleView?.setTextColor(mCustomThemeWrapper.primaryTextColor)
     }
 
-    private fun getImagePicker(){
-
-    }
-
     private fun resolvedUrl(url: String?): String? {
         // Take care of using contentUrlResolver to use with mxc://
         return SessionHolder.currentSession?.contentUrlResolver()
             ?.resolveFullSize(url);
     }
+
+    fun Cursor.getColumnIndexOrNull(column: String): Int? {
+        return getColumnIndex(column).takeIf { it != -1 }
+    }
+
+    private fun getSelectedImage(uri: Uri): ContentAttachmentData? {
+        val projection = arrayOf(
+            MediaStore.Images.Media.DISPLAY_NAME,
+            MediaStore.Images.Media.SIZE
+        )
+        return requireContext().contentResolver.query(uri, projection, null, null, null)?.use {
+                cursor ->
+            val nameColumn = cursor.getColumnIndexOrNull(MediaStore.Images.Media.DISPLAY_NAME) ?: return@use null
+            val sizeColumn = cursor.getColumnIndexOrNull(MediaStore.Images.Media.SIZE) ?: return@use null
+
+            if (cursor.moveToNext()) {
+                val name = cursor.getStringOrNull(nameColumn)
+                val size = cursor.getLongOrNull(sizeColumn) ?: 0
+
+                val bitmap = ImageUtils.getBitmap(requireContext(), uri)
+                val orientation = ImageUtils.getOrientation(requireContext(), uri)
+
+                ContentAttachmentData(
+                    size = size,
+                    height = bitmap?.height?.toLong() ?: 0,
+                    width = bitmap?.width?.toLong() ?: 0,
+                    exifOrientation = orientation,
+                    name = name,
+                    queryUri = uri,
+                    mimeType = requireContext().contentResolver.getType(uri),
+                    type = ContentAttachmentData.Type.IMAGE,
+                )
+            } else {
+                null
+            }
+        }
+    }
+
 }
