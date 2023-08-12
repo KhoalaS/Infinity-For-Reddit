@@ -5,6 +5,7 @@ import android.os.Handler;
 
 import java.util.concurrent.Executor;
 
+import ml.docilealligator.infinityforreddit.SessionHolder;
 import ml.docilealligator.infinityforreddit.account.Account;
 import ml.docilealligator.infinityforreddit.RedditDataRoomDatabase;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
@@ -18,6 +19,7 @@ public class SwitchAccount {
             redditDataRoomDatabase.accountDao().markAllAccountsNonCurrent();
             redditDataRoomDatabase.accountDao().markAccountCurrent(newAccountName);
             Account account = redditDataRoomDatabase.accountDao().getCurrentAccount();
+            SessionHolder.INSTANCE.setCurrentSession(null);
             currentAccountSharedPreferences.edit()
                     .putString(SharedPreferencesUtils.SESSION_COOKIE, account.getSessionCookie())
                     .putString(SharedPreferencesUtils.SESSION_EXPIRY, account.getSessionExpiry())

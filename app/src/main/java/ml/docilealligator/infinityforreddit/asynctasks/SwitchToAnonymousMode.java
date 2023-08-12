@@ -6,6 +6,7 @@ import android.os.Handler;
 import java.util.concurrent.Executor;
 
 import ml.docilealligator.infinityforreddit.RedditDataRoomDatabase;
+import ml.docilealligator.infinityforreddit.SessionHolder;
 import ml.docilealligator.infinityforreddit.account.AccountDao;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 
@@ -14,6 +15,7 @@ public class SwitchToAnonymousMode {
                                              Executor executor, Handler handler, boolean removeCurrentAccount,
                                              SwitchToAnonymousAccountAsyncTaskListener switchToAnonymousAccountAsyncTaskListener) {
         executor.execute(() -> {
+            SessionHolder.INSTANCE.setCurrentSession(null);
             AccountDao accountDao = redditDataRoomDatabase.accountDao();
             if (removeCurrentAccount) {
                 accountDao.deleteCurrentAccount();
