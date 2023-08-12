@@ -38,6 +38,7 @@ class SimpleLoginFragment : Fragment() {
         (requireActivity().application as Infinity).appComponent.inject(this)
         accessToken = requireArguments().getString("access_token").toString();
         _views = FragmentLoginBinding.inflate(inflater, container, false)
+        applyCustomTheme()
         return views.root
     }
 
@@ -99,6 +100,7 @@ class SimpleLoginFragment : Fragment() {
                     }
                 }
                 session.startSync(true)
+
                 displayRoomList()
 
             } catch (failure: Throwable) {
