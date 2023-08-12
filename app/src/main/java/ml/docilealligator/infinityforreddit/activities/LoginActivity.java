@@ -36,6 +36,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
@@ -176,8 +177,11 @@ public class LoginActivity extends BaseActivity {
             String hmacBody = XHmac.getSignedHexString(msg);
             loginHeaders.put("x-hmac-signed-body",formatting(hmacBody, seconds));
 
+            String dummyDeviceID = UUID.randomUUID().toString();
+            loginHeaders.put("client-vendor-id", dummyDeviceID);
+
             String result = String.format(locale, "Epoch:%d|User-Agent:%s|Client-Vendor-ID:%s",
-                    Arrays.copyOf(new Object[] { Long.valueOf(seconds), APIUtils.USER_AGENT, APIUtils.CLIENT_VENDOR_ID }, 3));
+                    Arrays.copyOf(new Object[] { Long.valueOf(seconds), APIUtils.USER_AGENT, dummyDeviceID}, 3));
             String hmacResult = XHmac.getSignedHexString(result);
             loginHeaders.put("x-hmac-signed-result",formatting(hmacResult, seconds));
 

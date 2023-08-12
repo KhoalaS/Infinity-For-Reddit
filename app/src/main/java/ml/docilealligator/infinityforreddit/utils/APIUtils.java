@@ -3,6 +3,7 @@ package ml.docilealligator.infinityforreddit.utils;
 import android.util.Base64;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import okhttp3.MediaType;
@@ -120,14 +121,15 @@ public class APIUtils {
     public static final String */
 
     public static Map<String, String> getHttpBasicAuthHeader() {
+        double randomRate = 25 + Math.random()*5;
         Map<String, String> params = new HashMap<>();
         String credentials = String.format("%s:%s", APIUtils.CLIENT_ID, "");
         String auth = "Basic " + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
         params.put(APIUtils.AUTHORIZATION_KEY, auth);
-        params.put("client-vendor-id", APIUtils.CLIENT_VENDOR_ID);
+        //params.put("client-vendor-id", APIUtils.CLIENT_VENDOR_ID);
         params.put(APIUtils.USER_AGENT_KEY, APIUtils.USER_AGENT);
         params.put("x-reddit-compression", "1");
-        params.put("x-reddit-qos", "down-rate-mbps=25.586");
+        params.put("x-reddit-qos", "down-rate-mbps=" + String.format(Locale.US,"%,.3f", randomRate));
         params.put("x-reddit-retry", "algo=no-retries");
         params.put("x-reddit-media-codecs",
                  "available-codecs=video/avc, video/hevc, video/x-vnd.on2.vp9");
@@ -135,13 +137,14 @@ public class APIUtils {
     }
 
     public static Map<String, String> getOAuthHeader(String accessToken) {
+        double randomRate = 25 + Math.random()*5;
         Map<String, String> params = new HashMap<>();
         params.put(APIUtils.AUTHORIZATION_KEY, APIUtils.AUTHORIZATION_BASE + accessToken);
         params.put(APIUtils.USER_AGENT_KEY, APIUtils.USER_AGENT);
-        params.put("client-vendor-id", APIUtils.CLIENT_VENDOR_ID);
-        params.put("x-reddit-device-id", APIUtils.CLIENT_VENDOR_ID);
+        //params.put("client-vendor-id", APIUtils.CLIENT_VENDOR_ID);
+        //params.put("x-reddit-device-id", APIUtils.CLIENT_VENDOR_ID);
         params.put("x-reddit-compression", "1");
-        params.put("x-reddit-qos", "down-rate-mbps=25.586");
+        params.put("x-reddit-qos", "down-rate-mbps=" + String.format(Locale.US,"%,.3f", randomRate));
         params.put("x-reddit-retry", "algo=no-retries");
         params.put("x-reddit-media-codecs",
                 "available-codecs=video/avc, video/hevc, video/x-vnd.on2.vp9");
