@@ -276,8 +276,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             afterKey = loadParams.getKey();
         }
         if(gqlAPI != null){
-            JSONObject data = createHomePostsVars(sortType.getType(), sortType.getTime(), afterKey);
-            RequestBody body = RequestBody.create(data.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
+            RequestBody body = createHomePostsVars(sortType.getType(), sortType.getTime(), afterKey);
             bestPost = gqlAPI.getBestPostsListenableFuture(APIUtils.getOAuthHeader(accessToken), body);
             pageFuture = Futures.transform(bestPost, this::transformDataGQL, executor);
         }else{
@@ -294,8 +293,8 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
                 IOException.class, LoadResult.Error::new, executor);
     }
 
-    private JSONObject createSearchPostsVars(String query, SortType.Type sortType, SortType.Time sortTime, String originPageType, String subredditOrUserName, String lastItem){
-/*
+    private RequestBody createSearchPostsVars(String query, SortType.Type sortType, SortType.Time sortTime, String originPageType, String subredditOrUserName, String lastItem){
+        /*
         {
             "id": "78271215900a",
                 "variables": {
@@ -326,7 +325,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
  */
         JSONObject data = new JSONObject();
         try{
-            data.put("id", "78271215900a");
+            data.put("operationName", "SearchPosts");
             JSONObject variables = new JSONObject();
             variables.put("query", query);
             variables.put("productSurface", "android");
@@ -367,17 +366,31 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             variables.put("includeAwards", true);
 
             data.put("variables", variables);
+            data.put("extensions", createExtensionsObject("0d65275f79845617802538c6c85fcacec73743590743158f69083e4a69ab68ea"));
         }catch (JSONException e){
 
         }
 
-        return data;
-        }
+        return RequestBody.create(data.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
+    }
 
-    private JSONObject createHomePostsVars(SortType.Type sortType, SortType.Time sortTime, String lastItem){
+    private JSONObject createExtensionsObject(String sha256Hash){
+        JSONObject data = new JSONObject();
+        JSONObject persistedQuery = new JSONObject();
+        try{
+            persistedQuery.put("version", 1);
+            persistedQuery.put("sha256Hash", sha256Hash);
+            data.put("persistedQuery", persistedQuery);
+        }catch (JSONException e){
+
+        }
+        return data;
+    }
+
+    private RequestBody createHomePostsVars(SortType.Type sortType, SortType.Time sortTime, String lastItem){
         JSONObject data = new JSONObject();
         try{
-            data.put("id", "769ee26e130d");
+            data.put("operationName", "HomeElements");
 
             JSONObject variables = new JSONObject();
 
@@ -412,16 +425,17 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
                 variables.put("range", sortTime.value.toUpperCase(Locale.ROOT));
             }
             data.put("variables", variables);
+            data.put("extensions", createExtensionsObject("fc940c3f6cabd1700b9f38fabbd2eb341a568061c3c106b9185046f162883472"));
         }catch (JSONException e){
 
         }
-        return data;
+        return RequestBody.create(data.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
     }
 
-    private JSONObject createSubredditPostsVars(String subredditName, SortType.Type sortType, SortType.Time sortTime, String lastItem){
+    private RequestBody createSubredditPostsVars(String subredditName, SortType.Type sortType, SortType.Time sortTime, String lastItem){
         JSONObject data = new JSONObject();
         try{
-            data.put("id", "d895cab68cf7");
+            data.put("operationName", "SubredditFeedElements");
 
             JSONObject variables = new JSONObject();
             variables.put("subredditName", subredditName);
@@ -443,13 +457,14 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             variables.put("includePostStats", true);
 
             data.put("variables", variables);
+            data.put("extensions", createExtensionsObject("dc87cffd470f0aacdd3863592f29c8e38e6492ca7f7d8388c6e54fc0e6802e10"));
         }catch (JSONException e){
 
         }
-        return data;
+        return RequestBody.create(data.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
     }
 
-    private JSONObject createUserPostsVariables(String username, SortType.Type sortType, String lastItem){
+    private RequestBody createUserPostsVariables(String username, SortType.Type sortType, String lastItem){
         /*
         {
 	"id": "908cb14d33d1",
@@ -466,7 +481,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
         JSONObject data = new JSONObject();
 
         try {
-            data.put("id", "908cb14d33d1");
+            data.put("operationName", "UserSubmittedPostSets");
 
             JSONObject variables = new JSONObject();
             variables.put("username", username);
@@ -482,10 +497,11 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
 
 
             data.put("variables", variables);
+            data.put("extensions", createExtensionsObject("6b5c7d946482883e03bc0c433d94408d24a06faf3c8ba27ea7e07fa1fe22fca7"));
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
-        return data;
+        return RequestBody.create(data.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
     }
 
     private ListenableFuture<LoadResult<String, Post>> loadSubredditPosts(@NonNull LoadParams<String> loadParams, RedditAPI redditAPI, GqlAPI gqlAPI ) {
@@ -497,8 +513,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             if( fallback ){
                 subredditPost = redditAPI.getSubredditBestPostsOauthListenableFuture(subredditOrUserName, sortType.getType(), sortType.getTime(), loadParams.getKey(), APIUtils.getOAuthHeader(accessToken));
             } else{
-                JSONObject data = createSubredditPostsVars(subredditOrUserName, sortType.getType(), sortType.getTime(), loadParams.getKey());
-                RequestBody body = RequestBody.create(data.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
+                RequestBody body = createSubredditPostsVars(subredditOrUserName, sortType.getType(), sortType.getTime(), loadParams.getKey());
                 subredditPost = gqlAPI.getSubredditBestPostsOauthListenableFuture(APIUtils.getOAuthHeader(accessToken), body);
             }
         }
@@ -528,8 +543,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             pageFuture = Futures.transform(userPosts, this::transformData, executor);
         } else {
             if(gql != null && userWhere.equals(USER_WHERE_SUBMITTED)){
-                JSONObject data = createUserPostsVariables(subredditOrUserName, sortType.getType(), loadParams.getKey());
-                RequestBody body = RequestBody.create(data.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
+                RequestBody body = createUserPostsVariables(subredditOrUserName, sortType.getType(), loadParams.getKey());
                 userPosts = gql.getUserPostsOauthListenableFuture(APIUtils.getOAuthHeader(accessToken), body);
                 pageFuture = Futures.transform(userPosts, this::transformDataGQL, executor);
             }else{
@@ -559,8 +573,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
                         trendingSource);
             } else {
                 //searchPosts = api.searchPostsOauthListenableFuture(query, loadParams.getKey(), sortType.getType(),sortType.getTime(), trendingSource, APIUtils.getOAuthHeader(accessToken));
-                JSONObject data = createSearchPostsVars(query, sortType.getType(), sortType.getTime(), "home", null, loadParams.getKey());
-                RequestBody body = RequestBody.create(data.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
+                RequestBody body = createSearchPostsVars(query, sortType.getType(), sortType.getTime(), "home", null, loadParams.getKey());
                 searchPosts = gql.searchPostsOauthListenableFuture(APIUtils.getOAuthHeader(accessToken), body);
                 gqlEnabled = true;
             }
@@ -572,8 +585,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
                 if(subredditOrUserName.startsWith("u_")){
                     searchPosts = api.searchPostsInSpecificSubredditOauthListenableFuture(subredditOrUserName, query, sortType.getType(), sortType.getTime(), loadParams.getKey(), APIUtils.getOAuthHeader(accessToken));
                 }else{
-                    JSONObject data = createSearchPostsVars(query, sortType.getType(), sortType.getTime(), "community", subredditOrUserName, loadParams.getKey());
-                    RequestBody body = RequestBody.create(data.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
+                    RequestBody body = createSearchPostsVars(query, sortType.getType(), sortType.getTime(), "community", subredditOrUserName, loadParams.getKey());
                     searchPosts = gql.searchPostsOauthListenableFuture(APIUtils.getOAuthHeader(accessToken), body);
                     gqlEnabled = true;
                 }

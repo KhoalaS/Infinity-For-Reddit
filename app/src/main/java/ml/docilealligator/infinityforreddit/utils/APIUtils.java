@@ -26,18 +26,15 @@ public class APIUtils {
     public static final String STRAPI_BASE_URI = "https://strapi.reddit.com";
     public static final String STREAMABLE_API_BASE_URI = "https://api.streamable.com";
     public static final String LOGIN_BASE_URL = "https://accounts.reddit.com";
-    public static final String GQL_BASE_URL = "https://gql.reddit.com";
-
-    public static final String CLIENT_VENDOR_ID = "1b7c1823-bea0-40c8-8a6f-1dc8c0c336ee";
+    public static final String GQL_BASE_URL = "https://gql-fed.reddit.com";
 
     public static final String CLIENT_ID_KEY = "client_id";
     public static final String CLIENT_SECRET_KEY = "client_secret";
     public static final String CLIENT_ID = "ohXpoqrZYub1kg";
     public static final String IMGUR_CLIENT_ID = "Client-ID cc671794e0ab397";
-    public static final String REDGIFS_CLIENT_ID = "1828d0bcc93-15ac-bde6-0005-d2ecbe8daab3";
-    public static final String REDGIFS_CLIENT_SECRET = "TJBlw7jRXW65NAGgFBtgZHu97WlzRXHYybK81sZ9dLM=";
+    public static final String REDGIFS_CLIENT_ID = "";
+    public static final String REDGIFS_CLIENT_SECRET = "=";
     public static final String GIPHY_SDK_KEY = "s3ybk2jbEg4BmxQqvqgXoGs3A0UHUH8y";
-
     public static final String ACCESS_TOKEN_KEY = "access_token";
     public static final String SIGNING_KEY = "8c7abaa5f905f70400c81bf3a1a101e75f7210104b1991f0cd5240aa80c4d99d";
     public static final String EXPIRY_TS_KEY = "expiry_ts";
