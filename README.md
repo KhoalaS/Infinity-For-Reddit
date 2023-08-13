@@ -3,11 +3,7 @@
   
 </h1>
 
-# DUE TO A REPORTED BAN POSSIBLY ASSOCIATED WITH USAGE OF THE APP, DON'T USE THIS APP IF YOU REALLY CARE ABOUT YOUR REDDIT ACCOUNTS. THE NEXT VERSION WILL AIM TO MAKE DETECTION MORE DIFFICULT.
-
-## Changes
-
-This Fork enables a user to login via the official Reddit Accounts endpoint (no 3P authorize). The App will make requests that look like they are coming from the official Reddit App.
+# There have been multiple reports of Reddit banning users of the app. Be aware that Reddit started to take action against clients like this.
 
 ## ⚠️ Warning
 
@@ -17,9 +13,12 @@ I implore everyone who uses this fork and similar projects to look at the commit
 
 The releases are automated.
 
-## TODO (First Party Features)
 
-I was originally looking into using the Sendbird SDK for chats, but recently Reddit changed their chat backend. They are now using [Matrix](https://github.com/matrix-org/matrix-android-sdk2).
+## Changes
+
+This Fork enables a user to login via the official Reddit Accounts endpoint (no 3P authorize). The App will make requests that look like they are coming from the official Reddit App.
+
+## TODO (First Party Features)
 
 -   [x] Chat
     - [x] basic messaging 
