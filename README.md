@@ -3,6 +3,8 @@
   
 </h1>
 
+# DUE TO A REPORTED BAN POSSIBLY ASSOCIATED WITH USAGE OF THE APP, DON'T USE THIS APP IF YOU REALLY CARE ABOUT YOUR REDDIT ACCOUNTS. THE NEXT VERSION WILL AIM TO MAKE DETECTION MORE DIFFICULT.
+
 ## Changes
 
 This Fork enables a user to login via the official Reddit Accounts endpoint (no 3P authorize). The App will make requests that look like they are coming from the official Reddit App.
