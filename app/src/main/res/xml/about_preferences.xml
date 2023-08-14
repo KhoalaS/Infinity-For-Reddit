@@ -28,18 +28,15 @@
 
     <ml.docilealligator.infinityforreddit.customviews.CustomFontPreference
         android:key="email"
-        app:title="@string/settings_email_title"
-        app:summary="@string/settings_email_summary" />
+        app:title="@string/settings_email_title" />
 
     <ml.docilealligator.infinityforreddit.customviews.CustomFontPreference
         android:key="reddit_account"
-        app:title="@string/settings_reddit_account_title"
-        app:summary="@string/settings_reddit_account_summary" />
+        app:title="@string/settings_reddit_account_title" />
 
     <ml.docilealligator.infinityforreddit.customviews.CustomFontPreference
         android:key="subreddit"
-        app:title="@string/settings_subreddit_title"
-        app:summary="@string/settings_subreddit_summary" />
+        app:title="@string/settings_subreddit_title" />
 
     <ml.docilealligator.infinityforreddit.customviews.CustomFontPreference
         android:key="share"
