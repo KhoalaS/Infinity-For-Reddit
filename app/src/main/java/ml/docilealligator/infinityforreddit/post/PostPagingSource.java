@@ -518,7 +518,7 @@ public class PostPagingSource extends ListenableFuturePagingSource<String, Post>
             }
         }
         ListenableFuture<LoadResult<String, Post>> pageFuture;
-        if(fallback){
+        if(fallback || accessToken == null){
             pageFuture = Futures.transform(subredditPost, this::transformData, executor);
         }else{
             pageFuture = Futures.transform(subredditPost, this::transformDataGQL, executor);
