@@ -5,6 +5,8 @@
 
 # There have been multiple reports of Reddit banning users of the app. Be aware that Reddit started to take action against clients like this.
 
+If you still want to use the app, log out of all accounts to wipe the session cookies associated with older versions and login again.
+
 ## ⚠️ Warning
 
 Asking users to input their credentials directly in the app is a big **security risk**. As a user you are also **violating the Reddit User Agreement**.
