@@ -5,7 +5,7 @@
 
 # There have been multiple reports of Reddit banning users of the app. Be aware that Reddit started to take action against clients like this.
 
-If you still want to use the app, log out of all accounts to wipe the session cookies associated with older versions and login again.
+# If you still want to use the app, log out of all accounts to wipe the session cookies associated with older versions and login again.
 
 ## ⚠️ Warning
 
