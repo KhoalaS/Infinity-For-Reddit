@@ -52,9 +52,24 @@ abstract class NetworkModule {
     }
 
     @Provides
+    @Named("anonymous")
+    @Singleton
+    static OkHttpClient provideAnonymousAuthOkHttpClient(@Named("base") OkHttpClient httpClient,
+                                            @Named("base") Retrofit retrofit,
+                                            @Named("anonymous_account") SharedPreferences anonymousAccountSharedPreferences) {
+        return httpClient.newBuilder()
+                .addInterceptor(new AnonymousAccessTokenInterceptor(retrofit, anonymousAccountSharedPreferences))
+                .build();
+    }
+
+    @Provides
     @Named("no_oauth")
-    static Retrofit provideRetrofit(@Named("base") Retrofit retrofit) {
-        return retrofit;
+    static Retrofit provideRetrofit(@Named("base") Retrofit retrofit,
+                                    @Named("anonymous") OkHttpClient okHttpClient) {
+        return retrofit.newBuilder()
+                .baseUrl(APIUtils.OAUTH_API_BASE_URI)
+                .client(okHttpClient)
+                .build();
     }
 
     @Provides

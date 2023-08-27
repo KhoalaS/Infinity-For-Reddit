@@ -35,6 +35,7 @@ import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 import ml.docilealligator.infinityforreddit.activities.LockScreenActivity;
 import ml.docilealligator.infinityforreddit.broadcastreceivers.NetworkWifiStatusReceiver;
@@ -65,6 +66,9 @@ public class Infinity extends Application implements LifecycleObserver {
     @Named("default")
     SharedPreferences mSharedPreferences;
     @Inject
+    @Named("anonymous_account")
+    SharedPreferences mAnonymousAccountSharedPreferences;
+    @Inject
     @Named("security")
     SharedPreferences mSecuritySharedPreferences;
 
@@ -89,6 +93,10 @@ public class Infinity extends Application implements LifecycleObserver {
             SessionHolder.INSTANCE.setCurrentSession(lastSession);
             lastSession.open();
             lastSession.startSync(true);
+        }
+
+        if (!mAnonymousAccountSharedPreferences.contains(SharedPreferencesUtils.DEVICE_ID)) {
+            mAnonymousAccountSharedPreferences.edit().putString(SharedPreferencesUtils.DEVICE_ID, UUID.randomUUID().toString().toLowerCase()).apply();
         }
 
         try {

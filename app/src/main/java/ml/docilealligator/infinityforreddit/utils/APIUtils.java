@@ -48,6 +48,9 @@ public class APIUtils {
 
     public static final String GRANT_TYPE_KEY = "grant_type";
     public static final String GRANT_TYPE_CLIENT_CREDENTIALS = "client_credentials";
+    public static final String GRANT_TYPE_INSTALLED_CLIENT = "https://oauth.reddit.com/grants/installed_client";
+
+    public static final String DEVICE_ID_KEY = "device_id";
 
     public static final String DIR_KEY = "dir";
     public static final String ID_KEY = "id";

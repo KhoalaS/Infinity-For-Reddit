@@ -118,6 +118,12 @@ abstract class AppModule {
     }
 
     @Provides
+    @Named("anonymous_account")
+    static SharedPreferences provideAnonymousAccountSharedPreferences(Application application) {
+        return application.getSharedPreferences(SharedPreferencesUtils.ANONYMOUS_ACCOUNT_SHARED_PREFERENCES_FILE, Context.MODE_PRIVATE);
+    }
+
+    @Provides
     @Named("navigation_drawer")
     static SharedPreferences provideNavigationDrawerSharedPreferences(Application application) {
         return application.getSharedPreferences(SharedPreferencesUtils.NAVIGATION_DRAWER_SHARED_PREFERENCES_FILE, Context.MODE_PRIVATE);

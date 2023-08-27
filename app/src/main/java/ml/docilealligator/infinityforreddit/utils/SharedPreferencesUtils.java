@@ -349,6 +349,8 @@ public class SharedPreferencesUtils {
     public static final String SESSION_EXPIRY = "session_expiry";
     public static final String REDDIT_SESSION = "reddit_session";
 
+    public static final String ANONYMOUS_ACCOUNT_SHARED_PREFERENCES_FILE = "ml.docilealligator.infinityforreddit.anonymous_account";
+    public static final String DEVICE_ID = "device_id";
 
     public static final String NAVIGATION_DRAWER_SHARED_PREFERENCES_FILE = "ml.docilealligator.infinityforreddit.navigation_drawer";
     public static final String COLLAPSE_ACCOUNT_SECTION = "collapse_account_section";
