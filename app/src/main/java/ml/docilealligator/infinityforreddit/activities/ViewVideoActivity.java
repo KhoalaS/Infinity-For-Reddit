@@ -541,7 +541,7 @@ public class ViewVideoActivity extends AppCompatActivity implements CustomFontRe
                 loadStreamableVideo(shortCode, savedInstanceState);
             } else {
                 dataSourceFactory = new CacheDataSource.Factory().setCache(mSimpleCache)
-                        .setUpstreamDataSourceFactory(new DefaultHttpDataSource.Factory().setAllowCrossProtocolRedirects(true).setUserAgent(APIUtils.VIDEO_USER_AGENT));
+                        .setUpstreamDataSourceFactory(new DefaultHttpDataSource.Factory().setAllowCrossProtocolRedirects(true).setUserAgent(APIUtils.USER_AGENT));
                 player.prepare();
                 player.setMediaSource(new ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(mVideoUri)));
                 preparePlayer(savedInstanceState);
