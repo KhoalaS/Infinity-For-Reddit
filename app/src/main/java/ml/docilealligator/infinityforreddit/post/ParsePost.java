@@ -610,7 +610,7 @@ public class ParsePost {
                 //Video post
                 JSONObject redditVideoObject = data.getJSONObject(JSONUtils.MEDIA_KEY).getJSONObject(JSONUtils.REDDIT_VIDEO_KEY);
                 int postType = Post.VIDEO_TYPE;
-                String videoUrl = Html.fromHtml(redditVideoObject.getString(JSONUtils.HLS_URL_KEY)).toString();
+                String videoUrl = Html.fromHtml(redditVideoObject.getString(JSONUtils.DASH_URL_KEY)).toString();
                 String videoDownloadUrl = redditVideoObject.getString(JSONUtils.FALLBACK_URL_KEY);
 
                 post = new Post(id, fullName, subredditName, subredditNamePrefixed, author, authorFlair,
@@ -624,37 +624,19 @@ public class ParsePost {
             } else if (data.has(JSONUtils.PREVIEW_KEY)) {
                 if (data.getJSONObject(JSONUtils.PREVIEW_KEY).has(JSONUtils.REDDIT_VIDEO_PREVIEW_KEY)) {
                     int postType = Post.VIDEO_TYPE;
-                    String authority = uri.getAuthority();
                     // The hls stream inside REDDIT_VIDEO_PREVIEW_KEY can sometimes lack an audio track
-                    if (authority.contains("imgur.com") && (path.endsWith(".gifv") || path.endsWith(".mp4"))) {
-                        if (path.endsWith(".gifv")) {
-                            url = url.substring(0, url.length() - 5) + ".mp4";
-                        }
+                    String videoUrl = Html.fromHtml(data.getJSONObject(JSONUtils.PREVIEW_KEY)
+                            .getJSONObject(JSONUtils.REDDIT_VIDEO_PREVIEW_KEY).getString(JSONUtils.DASH_URL_KEY)).toString();
+                    String videoDownloadUrl = data.getJSONObject(JSONUtils.PREVIEW_KEY)
+                            .getJSONObject(JSONUtils.REDDIT_VIDEO_PREVIEW_KEY).getString(JSONUtils.FALLBACK_URL_KEY);
 
-                        post = new Post(id, fullName, subredditName, subredditNamePrefixed, author, authorFlair,
-                                authorFlairHTML, postTimeMillis, title, permalink, score, postType, voteType,
-                                nComments, upvoteRatio, flair, awards, nAwards, hidden, spoiler, nsfw, stickied,
-                                archived, locked, saved, isCrosspost, distinguished, suggestedSort);
-                        post.setPreviews(previews);
-                        post.setVideoUrl(url);
-                        post.setVideoDownloadUrl(url);
-                        post.setIsImgur(true);
-                    } else {
-                        //Gif video post (HLS)
-
-                        String videoUrl = Html.fromHtml(data.getJSONObject(JSONUtils.PREVIEW_KEY)
-                                .getJSONObject(JSONUtils.REDDIT_VIDEO_PREVIEW_KEY).getString(JSONUtils.HLS_URL_KEY)).toString();
-                        String videoDownloadUrl = data.getJSONObject(JSONUtils.PREVIEW_KEY)
-                                .getJSONObject(JSONUtils.REDDIT_VIDEO_PREVIEW_KEY).getString(JSONUtils.FALLBACK_URL_KEY);
-
-                        post = new Post(id, fullName, subredditName, subredditNamePrefixed, author, authorFlair,
-                                authorFlairHTML, postTimeMillis, title, permalink, score, postType, voteType,
-                                nComments, upvoteRatio, flair, awards, nAwards, hidden, spoiler, nsfw, stickied,
-                                archived, locked, saved, isCrosspost, distinguished, suggestedSort);
-                        post.setPreviews(previews);
-                        post.setVideoUrl(videoUrl);
-                        post.setVideoDownloadUrl(videoDownloadUrl);
-                    }
+                    post = new Post(id, fullName, subredditName, subredditNamePrefixed, author, authorFlair,
+                            authorFlairHTML, postTimeMillis, title, permalink, score, postType, voteType,
+                            nComments, upvoteRatio, flair, awards, nAwards, hidden, spoiler, nsfw, stickied,
+                            archived, locked, saved, isCrosspost, distinguished, suggestedSort);
+                    post.setPreviews(previews);
+                    post.setVideoUrl(videoUrl);
+                    post.setVideoDownloadUrl(videoDownloadUrl);
                 } else {
                     if (path.endsWith(".jpg") || path.endsWith(".png") || path.endsWith(".jpeg")) {
                         //Image post
@@ -850,9 +832,9 @@ public class ParsePost {
                         if (gfycatId.contains("-")) {
                             gfycatId = gfycatId.substring(0, gfycatId.indexOf('-'));
                         }
-                        post.setIsRedgifs(true);
-                        post.setVideoUrl(url);
-                        post.setGfycatId(gfycatId.toLowerCase());
+                        //post.setIsRedgifs(true);
+                        //post.setVideoUrl(url);
+                        //post.setGfycatId(gfycatId.toLowerCase());
                     } else if (authority.equals("streamable.com")) {
                         String shortCode = url.substring(url.lastIndexOf("/") + 1);
                         post.setPostType(Post.VIDEO_TYPE);
