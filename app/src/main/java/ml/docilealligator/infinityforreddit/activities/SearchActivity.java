@@ -51,6 +51,7 @@ import ml.docilealligator.infinityforreddit.apis.RedditAPI;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.customviews.slidr.Slidr;
 import ml.docilealligator.infinityforreddit.events.SwitchAccountEvent;
+import ml.docilealligator.infinityforreddit.recentsearchquery.DeleteRecentSearchQuery;
 import ml.docilealligator.infinityforreddit.recentsearchquery.RecentSearchQuery;
 import ml.docilealligator.infinityforreddit.recentsearchquery.RecentSearchQueryViewModel;
 import ml.docilealligator.infinityforreddit.subreddit.ParseSubredditData;
@@ -124,6 +125,9 @@ public class SearchActivity extends BaseActivity {
     @Inject
     @Named("nsfw_and_spoiler")
     SharedPreferences mNsfwAndSpoilerSharedPreferences;
+    @Inject
+    @Named("anonymous_account")
+    SharedPreferences mAnonymousAccountSharedPreferences;
     @Inject
     CustomThemeWrapper mCustomThemeWrapper;
     @Inject
@@ -220,6 +224,11 @@ public class SearchActivity extends BaseActivity {
                     if (subredditAutocompleteCall != null) {
                         subredditAutocompleteCall.cancel();
                     }
+
+                    if (mAccessToken == null) {
+                        mAccessToken = mAnonymousAccountSharedPreferences.getString(SharedPreferencesUtils.ACCESS_TOKEN, null);
+                    }
+                    if (mAccessToken == null) return;
 
                     subredditAutocompleteCall = mOauthRetrofit.create(RedditAPI.class).subredditAutocomplete(APIUtils.getOAuthHeader(mAccessToken),
                             s.toString(), nsfw);
@@ -321,12 +330,11 @@ public class SearchActivity extends BaseActivity {
     }
 
     private void bindView() {
-        if (mAccountName != null) {
-            adapter = new SearchActivityRecyclerViewAdapter(this, mCustomThemeWrapper, new SearchActivityRecyclerViewAdapter.ItemOnClickListener() {
-                @Override
-                public void onClick(String query) {
-                    search(query);
-                }
+        adapter = new SearchActivityRecyclerViewAdapter(this, mCustomThemeWrapper, new SearchActivityRecyclerViewAdapter.ItemOnClickListener() {
+            @Override
+            public void onClick(String query) {
+                search(query);
+            }
 
                 @Override
                 public void onDelete(RecentSearchQuery recentSearchQuery) {
@@ -337,10 +345,10 @@ public class SearchActivity extends BaseActivity {
             recyclerView.setNestedScrollingEnabled(false);
             recyclerView.setAdapter(adapter);
 
-            if (mSharedPreferences.getBoolean(SharedPreferencesUtils.ENABLE_SEARCH_HISTORY, true)) {
-                mRecentSearchQueryViewModel = new ViewModelProvider(this,
-                        new RecentSearchQueryViewModel.Factory(mRedditDataRoomDatabase, mAccountName))
-                        .get(RecentSearchQueryViewModel.class);
+        if (mSharedPreferences.getBoolean(SharedPreferencesUtils.ENABLE_SEARCH_HISTORY, true)) {
+            mRecentSearchQueryViewModel = new ViewModelProvider(this,
+                    new RecentSearchQueryViewModel.Factory(mRedditDataRoomDatabase, mAccountName))
+                    .get(RecentSearchQueryViewModel.class);
 
                 mRecentSearchQueryViewModel.getAllRecentSearchQueries().observe(this, recentSearchQueries -> {
                     if (recentSearchQueries != null && !recentSearchQueries.isEmpty()) {
