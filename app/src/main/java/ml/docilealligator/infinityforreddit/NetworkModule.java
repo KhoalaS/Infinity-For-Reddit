@@ -55,8 +55,8 @@ abstract class NetworkModule {
     @Named("anonymous")
     @Singleton
     static OkHttpClient provideAnonymousAuthOkHttpClient(@Named("base") OkHttpClient httpClient,
-                                            @Named("base") Retrofit retrofit,
-                                            @Named("anonymous_account") SharedPreferences anonymousAccountSharedPreferences) {
+                                                         @Named("login") Retrofit retrofit,
+                                                         @Named("anonymous_account") SharedPreferences anonymousAccountSharedPreferences) {
         return httpClient.newBuilder()
                 .addInterceptor(new AnonymousAccessTokenInterceptor(retrofit, anonymousAccountSharedPreferences))
                 .build();

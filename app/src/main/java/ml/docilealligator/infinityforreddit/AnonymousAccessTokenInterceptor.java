@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import ml.docilealligator.infinityforreddit.apis.RedditAPI;
+import ml.docilealligator.infinityforreddit.apis.RedditAccountsAPI;
 import ml.docilealligator.infinityforreddit.utils.APIUtils;
 import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import okhttp3.Headers;
@@ -73,13 +74,9 @@ public class AnonymousAccessTokenInterceptor implements Interceptor {
     }
 
     private String refreshAccessToken() {
-        RedditAPI api = mRetrofit.create(RedditAPI.class);
+        RedditAccountsAPI api = mRetrofit.create(RedditAccountsAPI.class);
 
-        Map<String, String> accessTokenFields = new HashMap<>();
-        accessTokenFields.put(APIUtils.GRANT_TYPE_KEY, APIUtils.GRANT_TYPE_INSTALLED_CLIENT);
-        accessTokenFields.put(APIUtils.DEVICE_ID_KEY, mAnonymousAccountSharedPreferences.getString(SharedPreferencesUtils.DEVICE_ID, ""));
-
-        Call<String> accessTokenCall = api.getAccessToken(APIUtils.getHttpBasicAuthHeader(), accessTokenFields);
+        Call<String> accessTokenCall = api.getAccessToken(APIUtils.getHttpBasicAuthHeader(), APIUtils.SCOPE);
         try {
             retrofit2.Response<String> response = accessTokenCall.execute();
             if (response.isSuccessful() && response.body() != null) {
