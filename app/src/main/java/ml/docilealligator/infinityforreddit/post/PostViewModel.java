@@ -404,7 +404,7 @@ public class PostViewModel extends ViewModel {
                         postFeedScrolledPositionSharedPreferences, postHistorySharedPreferences, name,
                         postType, sortType, postFilter, readPostList);
             } else if (postType == PostPagingSource.TYPE_ANONYMOUS_FRONT_PAGE) {
-                return (T) new PostViewModel(executor, retrofit, null ,null, null, sharedPreferences,
+                return (T) new PostViewModel(executor, retrofit,null , accessToken, null, sharedPreferences,
                         null, null, name, postType, sortType,
                         postFilter, null);
             } else {

@@ -221,6 +221,9 @@ public class PostFragment extends Fragment implements FragmentCommunicator {
     @Named("post_feed_scrolled_position_cache")
     SharedPreferences mPostFeedScrolledPositionSharedPreferences;
     @Inject
+    @Named("anonymous_account")
+    SharedPreferences mAnonymousAccountSharedPreferences;
+    @Inject
     CustomThemeWrapper mCustomThemeWrapper;
     @Inject
     ExoCreator mExoCreator;
@@ -1246,24 +1249,29 @@ public class PostFragment extends Fragment implements FragmentCommunicator {
 
     private void initializeAndBindPostViewModelForAnonymous(String concatenatedSubredditNames) {
         //For anonymous user
+        String l_accessToken = null;
+        if (accessToken == null){
+            l_accessToken = mAnonymousAccountSharedPreferences.getString(SharedPreferencesUtils.ACCESS_TOKEN, null);
+        }
+
         if (postType == PostPagingSource.TYPE_SEARCH) {
             mPostViewModel = new ViewModelProvider((ViewModelStoreOwner) PostFragment.this, (ViewModelProvider.Factory) new PostViewModel.Factory(mExecutor,
-                    mRetrofit, null, null, accountName, mSharedPreferences,
+                    mRetrofit, l_accessToken == null ? null : mGqlRetrofit, l_accessToken, accountName, mSharedPreferences,
                     mPostFeedScrolledPositionSharedPreferences, null, subredditName, query, trendingSource,
                     postType, sortType, postFilter, readPosts)).get(PostViewModel.class);
         } else if (postType == PostPagingSource.TYPE_SUBREDDIT) {
             mPostViewModel = new ViewModelProvider((ViewModelStoreOwner) this, (ViewModelProvider.Factory) new PostViewModel.Factory(mExecutor,
-                    mRetrofit, null, null, accountName, mSharedPreferences,
+                    mRetrofit, l_accessToken == null ? null : mGqlRetrofit, l_accessToken, accountName, mSharedPreferences,
                     mPostFeedScrolledPositionSharedPreferences, null, subredditName, postType, sortType,
                     postFilter, readPosts)).get(PostViewModel.class);
         } else if (postType == PostPagingSource.TYPE_MULTI_REDDIT) {
             mPostViewModel = new ViewModelProvider((ViewModelStoreOwner) PostFragment.this, (ViewModelProvider.Factory) new PostViewModel.Factory(mExecutor,
-                    mRetrofit, null, null, accountName, mSharedPreferences,
+                    mRetrofit, l_accessToken == null ? null : mGqlRetrofit, l_accessToken, accountName, mSharedPreferences,
                     mPostFeedScrolledPositionSharedPreferences, null, multiRedditPath,
                     postType, sortType, postFilter, readPosts)).get(PostViewModel.class);
         } else if (postType == PostPagingSource.TYPE_USER) {
             mPostViewModel = new ViewModelProvider((ViewModelStoreOwner) PostFragment.this, (ViewModelProvider.Factory) new PostViewModel.Factory(mExecutor,
-                    mRetrofit, null, null, accountName, mSharedPreferences,
+                    mRetrofit, l_accessToken == null ? null : mGqlRetrofit, l_accessToken, accountName, mSharedPreferences,
                     mPostFeedScrolledPositionSharedPreferences, null, username, postType, sortType, postFilter,
                     where, readPosts)).get(PostViewModel.class);
         } else {
