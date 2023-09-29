@@ -141,7 +141,7 @@ public final class Utils {
 
                     if(mime_type.equals("image/gif")){
                         emote_url = s_key.getString("gif");
-                    }else if(type.equals("sticker")){
+                    }else if(type.equals("emoji")){
                         emote_url = s_key.getString("u");
                     }else{
                         continue;
