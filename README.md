@@ -25,14 +25,14 @@ This Fork enables a user to login via the official Reddit Accounts endpoint (no 
 -   [x] Chat
     - [x] basic messaging 
     - [ ] render all types of messages
-    - [ ] enable sending images and emotes
+    - [x] enable sending images and emotes
     - [ ] implement chat requests
 -   [x] Inline Subreddit Emotes, Gifs and Images in Comments
 -   [x] use GQL API for Home posts
 -   [x] use GQL API for Subreddit/User/Search posts
     -   [x] use the 1P Reddit DASH streams for external videos, i.e. REDGifs will load without a REDGifs API-Key.
     -   [x] fix video downloads missing audio
--   [ ] update to new federated GQL API
+-   [x] update to new federated GQL API
 -   [x] Giphy SDK
     -   [x] integrate SDK
     -   [x] use comment endpoint to post with RichtextJSON
