@@ -38,10 +38,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v5.10.0  # Replace with your desired tag name
-          release_name: Release v5.10.0  # Replace with your desired release name
+          tag_name: v5.11.0  # Replace with your desired tag name
+          release_name: Release v5.11.0  # Replace with your desired release name
           body: |
             Infinity for Reddit automated Build.
+            - Images/Gifs/Stickers in comments can now be opened in fullscreen
 
       - name: Sign APK
         env:
