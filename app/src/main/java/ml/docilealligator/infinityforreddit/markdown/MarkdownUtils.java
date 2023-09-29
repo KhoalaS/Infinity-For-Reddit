@@ -59,6 +59,7 @@ public class MarkdownUtils {
                         plugin.placeholderProvider(drawable -> ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_image_24dp, context.getTheme()));
                     }
                 }))
+                .usePlugin(ClickImagePlugin.create(context))
                 .build();
     }
 
