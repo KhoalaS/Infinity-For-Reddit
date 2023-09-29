@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Random;
+import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -61,6 +62,12 @@ public class DownloadMediaService extends Service {
     public static final int EXTRA_MEDIA_TYPE_IMAGE = 0;
     public static final int EXTRA_MEDIA_TYPE_GIF = 1;
     public static final int EXTRA_MEDIA_TYPE_VIDEO = 2;
+
+    public static final int EXTRA_MEDIA_TYPE_WEBP = 3;
+
+    public static Pattern gifPattern = Pattern.compile("https:\\/\\/external-preview.redd.it/[^.]*\\.gif\\?[\\S]*");
+    public static Pattern webpPattern = Pattern.compile("https:\\/\\/preview.redd.it/[^.]*\\.jpeg\\?[\\S]*auto=webp[\\S]*");
+
 
     private static final int NO_ERROR = -1;
     private static final int ERROR_CANNOT_GET_DESTINATION_DIRECTORY = 0;
@@ -226,6 +233,7 @@ public class DownloadMediaService extends Service {
 
             try {
                 if (response != null && response.body() != null) {
+
                     Uri destinationFileUri = writeResponseBodyToDisk(response.body(), isDefaultDestination, destinationFileUriString,
                             fileName, mediaType);
                     downloadFinished(mediaType, randomNotificationIdOffset,
@@ -265,9 +273,17 @@ public class DownloadMediaService extends Service {
 
                     outputStream.flush();
                 } else {
+                    String mimeType = mediaType == EXTRA_MEDIA_TYPE_VIDEO ? "video/*" : "image/*";
+
+                    if(gifPattern.matcher(destinationFileName).find()){
+                        mimeType = "image/gif";
+                    }else if(webpPattern.matcher(destinationFileName).find()){
+                        mimeType = "image/webp";
+                    }
+
                     ContentValues contentValues = new ContentValues();
                     contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, destinationFileName);
-                    contentValues.put(MediaStore.MediaColumns.MIME_TYPE, mediaType == EXTRA_MEDIA_TYPE_VIDEO ? "video/*" : "image/*");
+                    contentValues.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
                     contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, destinationFileUriString);
                     contentValues.put(MediaStore.MediaColumns.IS_PENDING, 1);
 
