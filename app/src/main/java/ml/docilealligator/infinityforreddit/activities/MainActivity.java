@@ -1539,6 +1539,10 @@ public class MainActivity extends BaseActivity implements SortTypeSelectionCallb
         InsertReadPost.insertReadPost(mRedditDataRoomDatabase, mExecutor, mAccountName, post.getId());
     }
 
+    public void doNotShowRedditAPIInfoAgain() {
+        mInternalSharedPreferences.edit().putBoolean(SharedPreferencesUtils.DO_NOT_SHOW_REDDIT_API_INFO_V2_AGAIN, true).apply();
+    }
+
     private class SectionsPagerAdapter extends FragmentStateAdapter {
         int tabCount;
         boolean showFavoriteMultiReddits;

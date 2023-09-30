@@ -25,6 +25,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.inputmethod.EditorInfoCompat;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.AppBarLayout;
@@ -51,7 +52,6 @@ import ml.docilealligator.infinityforreddit.apis.RedditAPI;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.customviews.slidr.Slidr;
 import ml.docilealligator.infinityforreddit.events.SwitchAccountEvent;
-import ml.docilealligator.infinityforreddit.recentsearchquery.DeleteRecentSearchQuery;
 import ml.docilealligator.infinityforreddit.recentsearchquery.RecentSearchQuery;
 import ml.docilealligator.infinityforreddit.recentsearchquery.RecentSearchQueryViewModel;
 import ml.docilealligator.infinityforreddit.subreddit.ParseSubredditData;
@@ -346,21 +346,20 @@ public class SearchActivity extends BaseActivity {
             recyclerView.setAdapter(adapter);
 
         if (mSharedPreferences.getBoolean(SharedPreferencesUtils.ENABLE_SEARCH_HISTORY, true)) {
-            mRecentSearchQueryViewModel = new ViewModelProvider(this,
-                    new RecentSearchQueryViewModel.Factory(mRedditDataRoomDatabase, mAccountName))
+            mRecentSearchQueryViewModel = new ViewModelProvider((ViewModelStoreOwner) this,
+                    (ViewModelProvider.Factory) new RecentSearchQueryViewModel.Factory(mRedditDataRoomDatabase, mAccountName))
                     .get(RecentSearchQueryViewModel.class);
 
-                mRecentSearchQueryViewModel.getAllRecentSearchQueries().observe(this, recentSearchQueries -> {
-                    if (recentSearchQueries != null && !recentSearchQueries.isEmpty()) {
-                        divider.setVisibility(View.VISIBLE);
-                        deleteAllSearchesButton.setVisibility(View.VISIBLE);
-                    } else {
-                        divider.setVisibility(View.GONE);
-                        deleteAllSearchesButton.setVisibility(View.GONE);
-                    }
-                    adapter.setRecentSearchQueries(recentSearchQueries);
-                });
-            }
+            mRecentSearchQueryViewModel.getAllRecentSearchQueries().observe(this, recentSearchQueries -> {
+                if (recentSearchQueries != null && !recentSearchQueries.isEmpty()) {
+                    divider.setVisibility(View.VISIBLE);
+                    deleteAllSearchesButton.setVisibility(View.VISIBLE);
+                } else {
+                    divider.setVisibility(View.GONE);
+                    deleteAllSearchesButton.setVisibility(View.GONE);
+                }
+                adapter.setRecentSearchQueries(recentSearchQueries);
+            });
         }
     }
 

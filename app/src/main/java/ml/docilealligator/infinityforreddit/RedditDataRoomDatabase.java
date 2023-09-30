@@ -38,7 +38,7 @@ import ml.docilealligator.infinityforreddit.user.UserData;
 
 @Database(entities = {Account.class, SubredditData.class, SubscribedSubredditData.class, UserData.class,
         SubscribedUserData.class, MultiReddit.class, CustomTheme.class, RecentSearchQuery.class,
-        ReadPost.class, PostFilter.class, PostFilterUsage.class, AnonymousMultiredditSubreddit.class}, version = 24)
+        ReadPost.class, PostFilter.class, PostFilterUsage.class, AnonymousMultiredditSubreddit.class}, version = 25)
 public abstract class RedditDataRoomDatabase extends RoomDatabase {
 
     public static RedditDataRoomDatabase create(final Context context) {
@@ -49,7 +49,7 @@ public abstract class RedditDataRoomDatabase extends RoomDatabase {
                         MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13,
                         MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17,
                         MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21,
-                        MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24)
+                        MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25)
                 .build();
     }
 
@@ -389,6 +389,14 @@ public abstract class RedditDataRoomDatabase extends RoomDatabase {
         public void migrate(@NonNull SupportSQLiteDatabase database) {
             database.execSQL("ALTER TABLE accounts ADD COLUMN session_cookie TEXT DEFAULT NULL");
             database.execSQL("ALTER TABLE accounts ADD COLUMN session_expiry TEXT DEFAULT NULL");
+        }
+    };
+
+    private static final Migration MIGRATION_24_25 = new Migration(24, 25) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE custom_themes ADD COLUMN filled_card_view_background_color INTEGER DEFAULT " + Color.parseColor("#E6F4FF") + " NOT NULL");
+            database.execSQL("ALTER TABLE custom_themes ADD COLUMN read_post_filled_card_view_background_color INTEGER DEFAULT " + Color.parseColor("#F5F5F5") + " NOT NULL");
         }
     };
 }
