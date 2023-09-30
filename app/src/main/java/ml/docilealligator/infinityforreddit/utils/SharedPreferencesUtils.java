@@ -74,6 +74,7 @@ public class SharedPreferencesUtils {
     public static final int POST_LAYOUT_COMPACT = 1;
     public static final int POST_LAYOUT_GALLERY = 2;
     public static final int POST_LAYOUT_CARD_2 = 3;
+    public static final int POST_LAYOUT_CARD_3 = 4;
 
     public static final String FRONT_PAGE_SCROLLED_POSITION_SHARED_PREFERENCES_FILE = "ml.docilealligator.infinityforreddit.front_page_scrolled_position";
     public static final String FRONT_PAGE_SCROLLED_POSITION_FRONT_PAGE_BASE = "_front_page";
@@ -374,6 +375,7 @@ public class SharedPreferencesUtils {
 
     public static final String INTERNAL_SHARED_PREFERENCES_FILE = "ml.docilealligator.infinityforreddit.internal";
     public static final String HAS_REQUESTED_NOTIFICATION_PERMISSION = "has_requested_notification_permission";
+    public static final String DO_NOT_SHOW_REDDIT_API_INFO_V2_AGAIN = "do_not_show_reddit_api_info_v2_again";
 
     //Legacy Settings
     public static final String MAIN_PAGE_TAB_1_TITLE_LEGACY = "main_page_tab_1_title";
@@ -400,4 +402,6 @@ public class SharedPreferencesUtils {
     public static final String CONFIRM_TO_EXIT_LEGACY = "confirm_to_exit";
     public static final String OPEN_LINK_IN_APP_LEGACY = "open_link_in_app";
     public static final String WALLPAPER_ID = "wallpaper_id";
+
+    public static final String DO_NOT_SHOW_REDDIT_API_INFO_AGAIN_LEGACY = "do_not_show_reddit_api_info_again";
 }
