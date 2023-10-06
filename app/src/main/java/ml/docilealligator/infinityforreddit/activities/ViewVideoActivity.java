@@ -23,7 +23,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
-import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.OrientationEventListener;
@@ -171,9 +170,9 @@ public class ViewVideoActivity extends AppCompatActivity implements CustomFontRe
     @BindView(R.id.back_button_exo_playback_control_view)
     MaterialButton backButton;
     @BindView(R.id.download_image_view_exo_playback_control_view)
-    MaterialButton downloadImageView;
+    MaterialButton downloadButton;
     @BindView(R.id.playback_speed_image_view_exo_playback_control_view)
-    MaterialButton playbackSpeedImageView;
+    MaterialButton playbackSpeedButton;
     @BindView(R.id.lockable_nested_scroll_view_view_video_activity)
     LockableNestedScrollView nestedScrollView;
 
@@ -302,6 +301,12 @@ public class ViewVideoActivity extends AppCompatActivity implements CustomFontRe
         ButterKnife.bind(this);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
+        setTitle(" ");
+
+        if (typeface != null) {
+            titleTextView.setTypeface(typeface);
+        }
+
         Resources resources = getResources();
 
         getWindow().getDecorView().setSystemUiVisibility(
@@ -317,7 +322,7 @@ public class ViewVideoActivity extends AppCompatActivity implements CustomFontRe
                 finish();
             });
 
-            downloadImageView.setOnClickListener(view -> {
+            downloadButton.setOnClickListener(view -> {
                 if (isDownloading) {
                     return;
                 }
@@ -331,12 +336,8 @@ public class ViewVideoActivity extends AppCompatActivity implements CustomFontRe
                 requestPermissionAndDownload();
             });
 
-            playbackSpeedImageView.setOnClickListener(view -> {
-                PlaybackSpeedBottomSheetFragment playbackSpeedBottomSheetFragment = new PlaybackSpeedBottomSheetFragment();
-                Bundle bundle = new Bundle();
-                bundle.putInt(PlaybackSpeedBottomSheetFragment.EXTRA_PLAYBACK_SPEED, playbackSpeed);
-                playbackSpeedBottomSheetFragment.setArguments(bundle);
-                playbackSpeedBottomSheetFragment.show(getSupportFragmentManager(), playbackSpeedBottomSheetFragment.getTag());
+            playbackSpeedButton.setOnClickListener(view -> {
+                changePlaybackSpeed();
             });
         } else {
             ActionBar actionBar = getSupportActionBar();
@@ -413,8 +414,6 @@ public class ViewVideoActivity extends AppCompatActivity implements CustomFontRe
 
         Post post = intent.getParcelableExtra(EXTRA_POST);
         if (post != null) {
-            //setSmallTitle(post.getTitle());
-            setTitle(" ");
             titleTextView.setText(post.getTitle());
         }
 
@@ -615,20 +614,6 @@ public class ViewVideoActivity extends AppCompatActivity implements CustomFontRe
         }
     }
 
-    private void setSmallTitle(String title) {
-        if (title != null) {
-            if (useBottomAppBar) {
-                titleTextView.setText(Html.fromHtml(String.format("<font color=\"#FFFFFF\"><small>%s</small></font>", title)));
-            } else {
-                setTitle(Utils.getTabTextWithCustomFont(typeface, Html.fromHtml(String.format("<font color=\"#FFFFFF\"><small>%s</small></font>", title))));
-            }
-        } else {
-            if (!useBottomAppBar) {
-                setTitle("");
-            }
-        }
-    }
-
     private void preparePlayer(Bundle savedInstanceState) {
         if (mSharedPreferences.getBoolean(SharedPreferencesUtils.LOOP_VIDEO, true)) {
             player.setRepeatMode(Player.REPEAT_MODE_ALL);
@@ -717,6 +702,14 @@ public class ViewVideoActivity extends AppCompatActivity implements CustomFontRe
                 }
             }
         });
+    }
+
+    private void changePlaybackSpeed() {
+        PlaybackSpeedBottomSheetFragment playbackSpeedBottomSheetFragment = new PlaybackSpeedBottomSheetFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt(PlaybackSpeedBottomSheetFragment.EXTRA_PLAYBACK_SPEED, playbackSpeed);
+        playbackSpeedBottomSheetFragment.setArguments(bundle);
+        playbackSpeedBottomSheetFragment.show(getSupportFragmentManager(), playbackSpeedBottomSheetFragment.getTag());
     }
 
     private int inferPrimaryTrackType(Format format) {
@@ -901,7 +894,7 @@ public class ViewVideoActivity extends AppCompatActivity implements CustomFontRe
                             Toast.makeText(ViewVideoActivity.this, R.string.fetch_streamable_video_failed, Toast.LENGTH_SHORT).show();
                             return;
                         }
-                        setSmallTitle(streamableVideo.title);
+                        titleTextView.setText(streamableVideo.title);
                         progressBar.setVisibility(View.GONE);
                         videoDownloadUrl = streamableVideo.mp4 == null ? streamableVideo.mp4Mobile.url : streamableVideo.mp4.url;
                         mVideoUri = Uri.parse(videoDownloadUrl);
@@ -956,11 +949,7 @@ public class ViewVideoActivity extends AppCompatActivity implements CustomFontRe
             requestPermissionAndDownload();
             return true;
         } else if (itemId == R.id.action_playback_speed_view_video_activity) {
-            PlaybackSpeedBottomSheetFragment playbackSpeedBottomSheetFragment = new PlaybackSpeedBottomSheetFragment();
-            Bundle bundle = new Bundle();
-            bundle.putInt(PlaybackSpeedBottomSheetFragment.EXTRA_PLAYBACK_SPEED, playbackSpeed);
-            playbackSpeedBottomSheetFragment.setArguments(bundle);
-            playbackSpeedBottomSheetFragment.show(getSupportFragmentManager(), playbackSpeedBottomSheetFragment.getTag());
+            changePlaybackSpeed();
             return true;
         }
 

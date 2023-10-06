@@ -16,7 +16,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,6 +38,7 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource;
 import com.google.android.exoplayer2.upstream.cache.SimpleCache;
 import com.google.android.material.bottomappbar.BottomAppBar;
+import com.google.android.material.button.MaterialButton;
 import com.google.common.collect.ImmutableList;
 
 import javax.inject.Inject;
@@ -75,8 +75,12 @@ public class ViewRedditGalleryVideoFragment extends Fragment {
     BottomAppBar bottomAppBar;
     @BindView(R.id.title_text_view_exo_playback_control_view)
     TextView titleTextView;
+    @BindView(R.id.back_button_exo_playback_control_view)
+    MaterialButton backButton;
     @BindView(R.id.download_image_view_exo_playback_control_view)
-    ImageView downloadImageView;
+    MaterialButton downloadButton;
+    @BindView(R.id.playback_speed_image_view_exo_playback_control_view)
+    MaterialButton playbackSpeedButton;
     private ViewRedditGalleryActivity activity;
     private Post.Gallery galleryVideo;
     private String subredditName;
@@ -168,20 +172,35 @@ public class ViewRedditGalleryVideoFragment extends Fragment {
         Integer.parseInt(mSharedPreferences.getString(SharedPreferencesUtils.DEFAULT_PLAYBACK_SPEED, "100"));
         preparePlayer(savedInstanceState);
 
+        titleTextView.setText(getString(R.string.view_reddit_gallery_activity_video_label,
+                getArguments().getInt(EXTRA_INDEX) + 1, getArguments().getInt(EXTRA_MEDIA_COUNT)));
+
         if (activity.isUseBottomAppBar()) {
             bottomAppBar.setVisibility(View.VISIBLE);
-            titleTextView.setText(getString(R.string.view_reddit_gallery_activity_video_label,
-                    getArguments().getInt(EXTRA_INDEX) + 1, getArguments().getInt(EXTRA_MEDIA_COUNT)));
-            downloadImageView.setOnClickListener(view -> {
+            backButton.setOnClickListener(view -> {
+                activity.finish();
+            });
+            downloadButton.setOnClickListener(view -> {
                 if (isDownloading) {
                     return;
                 }
                 isDownloading = true;
                 requestPermissionAndDownload();
             });
+            playbackSpeedButton.setOnClickListener(view -> {
+                changePlaybackSpeed();
+            });
         }
 
         return rootView;
+    }
+
+    private void changePlaybackSpeed() {
+        PlaybackSpeedBottomSheetFragment playbackSpeedBottomSheetFragment = new PlaybackSpeedBottomSheetFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt(PlaybackSpeedBottomSheetFragment.EXTRA_PLAYBACK_SPEED, playbackSpeed);
+        playbackSpeedBottomSheetFragment.setArguments(bundle);
+        playbackSpeedBottomSheetFragment.show(getChildFragmentManager(), playbackSpeedBottomSheetFragment.getTag());
     }
 
     @Override
@@ -201,11 +220,7 @@ public class ViewRedditGalleryVideoFragment extends Fragment {
             requestPermissionAndDownload();
             return true;
         } else if (item.getItemId() == R.id.action_playback_speed_view_reddit_gallery_video_fragment) {
-            PlaybackSpeedBottomSheetFragment playbackSpeedBottomSheetFragment = new PlaybackSpeedBottomSheetFragment();
-            Bundle bundle = new Bundle();
-            bundle.putInt(PlaybackSpeedBottomSheetFragment.EXTRA_PLAYBACK_SPEED, playbackSpeed);
-            playbackSpeedBottomSheetFragment.setArguments(bundle);
-            playbackSpeedBottomSheetFragment.show(getChildFragmentManager(), playbackSpeedBottomSheetFragment.getTag());
+
             return true;
         }
         return false;

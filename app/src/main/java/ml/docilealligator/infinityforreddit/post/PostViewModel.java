@@ -67,14 +67,12 @@ public class PostViewModel extends ViewModel {
         this.postFilter = postFilter;
         this.readPostList = readPostList;
 
-        sortTypeLiveData = new MutableLiveData<>();
-        sortTypeLiveData.postValue(sortType);
-        postFilterLiveData = new MutableLiveData<>();
-        postFilterLiveData.postValue(postFilter);
+        sortTypeLiveData = new MutableLiveData<>(sortType);
+        postFilterLiveData = new MutableLiveData<>(postFilter);
 
         sortTypeAndPostFilterLiveData = new SortTypeAndPostFilterLiveData(sortTypeLiveData, postFilterLiveData);
 
-        Pager<String, Post> pager = new Pager<>(new PagingConfig(25, 25, false), this::returnPagingSoruce);
+        Pager<String, Post> pager = new Pager<>(new PagingConfig(100, 4, false, 10), this::returnPagingSoruce);
 
         posts = Transformations.switchMap(sortTypeAndPostFilterLiveData, sortAndPostFilter -> {
             changeSortTypeAndPostFilter(
@@ -110,14 +108,12 @@ public class PostViewModel extends ViewModel {
         this.readPostList = readPostList;
         this.name = subredditName;
 
-        sortTypeLiveData = new MutableLiveData<>();
-        sortTypeLiveData.postValue(sortType);
-        postFilterLiveData = new MutableLiveData<>();
-        postFilterLiveData.postValue(postFilter);
+        sortTypeLiveData = new MutableLiveData<>(sortType);
+        postFilterLiveData = new MutableLiveData<>(postFilter);
 
         sortTypeAndPostFilterLiveData = new SortTypeAndPostFilterLiveData(sortTypeLiveData, postFilterLiveData);
 
-        Pager<String, Post> pager = new Pager<>(new PagingConfig(25, 25, false), this::returnPagingSoruce);
+        Pager<String, Post> pager = new Pager<>(new PagingConfig(100, 4, false, 10), this::returnPagingSoruce);
 
         posts = Transformations.switchMap(sortTypeAndPostFilterLiveData, sortAndPostFilter -> {
             changeSortTypeAndPostFilter(
@@ -156,14 +152,12 @@ public class PostViewModel extends ViewModel {
         this.name = username;
         this.userWhere = userWhere;
 
-        sortTypeLiveData = new MutableLiveData<>();
-        sortTypeLiveData.postValue(sortType);
-        postFilterLiveData = new MutableLiveData<>();
-        postFilterLiveData.postValue(postFilter);
+        sortTypeLiveData = new MutableLiveData<>(sortType);
+        postFilterLiveData = new MutableLiveData<>(postFilter);
 
         sortTypeAndPostFilterLiveData = new SortTypeAndPostFilterLiveData(sortTypeLiveData, postFilterLiveData);
 
-        Pager<String, Post> pager = new Pager<>(new PagingConfig(25, 25, false), this::returnPagingSoruce);
+        Pager<String, Post> pager = new Pager<>(new PagingConfig(100, 4, false, 10), this::returnPagingSoruce);
 
         posts = Transformations.switchMap(sortTypeAndPostFilterLiveData, sortAndPostFilter -> {
             changeSortTypeAndPostFilter(
@@ -202,14 +196,12 @@ public class PostViewModel extends ViewModel {
         this.query = query;
         this.trendingSource = trendingSource;
 
-        sortTypeLiveData = new MutableLiveData<>();
-        sortTypeLiveData.postValue(sortType);
-        postFilterLiveData = new MutableLiveData<>();
-        postFilterLiveData.postValue(postFilter);
+        sortTypeLiveData = new MutableLiveData<>(sortType);
+        postFilterLiveData = new MutableLiveData<>(postFilter);
 
         sortTypeAndPostFilterLiveData = new SortTypeAndPostFilterLiveData(sortTypeLiveData, postFilterLiveData);
 
-        Pager<String, Post> pager = new Pager<>(new PagingConfig(25, 25, false), this::returnPagingSoruce);
+        Pager<String, Post> pager = new Pager<>(new PagingConfig(100, 4, false, 10), this::returnPagingSoruce);
 
         posts = Transformations.switchMap(sortTypeAndPostFilterLiveData, sortAndPostFilter -> {
             changeSortTypeAndPostFilter(
