@@ -88,6 +88,7 @@ public final class Utils {
     public static String inlineImages(String body, JSONObject mediaMetadata) {
         String value = body;
         JSONArray names = mediaMetadata.names();
+        if (names == null) { return "*Unable to render Collectible Expression.*\n\n"+value; }
         try{
             for(int i=0; i<names.length(); i++){
                 String id = names.getString(i);
@@ -110,7 +111,7 @@ public final class Utils {
                 value = value.replace(id, url);
             }
         }catch (JSONException e){
-
+            //e.printStackTrace();
         }
         return value;
     }
