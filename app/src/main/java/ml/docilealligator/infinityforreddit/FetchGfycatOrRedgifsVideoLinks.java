@@ -72,11 +72,11 @@ public class FetchGfycatOrRedgifsVideoLinks {
     }
 
     public static void fetchRedgifsV2VideoLinks(Context context, Executor executor, Handler handler, Retrofit redgifsRetrofit,
-                                                SharedPreferences currentAccountSharedPreferences,
+                                                SharedPreferences defaultSharedPreferences,
                                                 String rgId, FetchRedgifsV2VideoLinksListener fetchRedgifsV2VideoLinksListener) {
         executor.execute(() -> {
             try {
-                String rgToken = currentAccountSharedPreferences.getString(SharedPreferencesUtils.REDGIFS_ACCESS_TOKEN, "");
+                String rgToken = defaultSharedPreferences.getString(SharedPreferencesUtils.REDGIFS_ACCESS_TOKEN, "");
                 RedgifsAPI rgRetrofit = redgifsRetrofit.create(RedgifsAPI.class);
                 Response<String> dataResponse = rgRetrofit.getRedgifsData(APIUtils.getRedgifsOAuthHeader(rgToken), rgId).execute();
 
