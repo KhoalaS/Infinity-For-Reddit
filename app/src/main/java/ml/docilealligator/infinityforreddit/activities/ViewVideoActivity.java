@@ -581,9 +581,9 @@ public class ViewVideoActivity extends AppCompatActivity implements CustomFontRe
             // Prepare the player with the source.
             player.prepare();
             MediaItem mediaItem = MediaItem.fromUri(mVideoUri);
-            if(mVideoUri.toString().contains(".mpd")){
+            if (mVideoUri.toString().contains(".mpd")) {
                 player.setMediaSource(new DashMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem));
-            }else if (mVideoUri.toString().contains("format=mp4")){
+            } else if (mVideoUri.toString().contains("format=mp4")) {
                 player.setMediaSource(new ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(MediaItem.fromUri(mVideoUri)));
             } else {
                 player.setMediaSource(new HlsMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem));
@@ -723,9 +723,9 @@ public class ViewVideoActivity extends AppCompatActivity implements CustomFontRe
         FetchGfycatOrRedgifsVideoLinks.fetchRedgifsV2VideoLinks(this, mExecutor, new Handler(), redgifsRetrofit, mSharedPreferences, rgId, new FetchGfycatOrRedgifsVideoLinks.FetchRedgifsV2VideoLinksListener() {
             @Override
             public void success(String url, String mp4, Boolean useFallback) {
-                if(!useFallback){
+                if (!useFallback) {
                     mVideoUri = Uri.parse(url);
-                }else{
+                } else if (mVideoUri == null) {
                     mVideoUri = Uri.parse(mp4);
                 }
                 videoDownloadUrl = mp4;
