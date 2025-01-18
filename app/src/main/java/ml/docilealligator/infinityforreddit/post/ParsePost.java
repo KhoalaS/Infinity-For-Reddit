@@ -1054,6 +1054,11 @@ public class ParsePost {
             JSONObject download = data.getJSONObject(JSONUtils.MEDIA_KEY).getJSONObject("download");
             int postType = Post.VIDEO_TYPE;
 
+            post = new Post(id, fullName, subredditName, subredditNamePrefixed, author, authorFlair,
+                    authorFlairHTML, postTimeMillis, title, permalink, score, postType, voteType,
+                    nComments, upvoteRatio, flair, awards, nAwards, hidden, spoiler, nsfw, stickied,
+                    archived, locked, saved, isCrosspost, distinguished, suggestedSort);
+
             String videoUrl = Html.fromHtml(redditVideoObject.getString("dashUrl")).toString();
             String videoDownloadUrl = download.getString("url");
 
@@ -1061,15 +1066,10 @@ public class ParsePost {
                 Matcher m = rgIdRegex.matcher(url);
                 if (m.find()){
                     String rgId = m.group(1);
-                    videoUrl = String.format("https://api.redgifs.com/v2/gifs/%s/hd.m3u8", rgId);
-                    videoDownloadUrl = String.format("rg://%s", rgId);
+                    post.setIsRedgifs(true);
+                    post.setGfycatId(rgId);
                 }
             }
-
-            post = new Post(id, fullName, subredditName, subredditNamePrefixed, author, authorFlair,
-                    authorFlairHTML, postTimeMillis, title, permalink, score, postType, voteType,
-                    nComments, upvoteRatio, flair, awards, nAwards, hidden, spoiler, nsfw, stickied,
-                    archived, locked, saved, isCrosspost, distinguished, suggestedSort);
 
             post.setPreviews(previews);
             post.setVideoUrl(videoUrl);

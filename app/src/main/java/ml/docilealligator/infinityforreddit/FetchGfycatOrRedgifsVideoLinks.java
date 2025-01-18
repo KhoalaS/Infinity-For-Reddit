@@ -23,6 +23,13 @@ public class FetchGfycatOrRedgifsVideoLinks {
 
     public interface FetchGfycatOrRedgifsVideoLinksListener {
         void success(String webm, String mp4);
+
+        void failed(int errorCode);
+    }
+
+    public interface FetchRedgifsV2VideoLinksListener {
+        void success(String url, String mp4, Boolean useFallback);
+
         void failed(int errorCode);
     }
 
@@ -51,7 +58,7 @@ public class FetchGfycatOrRedgifsVideoLinks {
         executor.execute(() -> {
             try {
                 Response<String> response = redgifsRetrofit.create(RedgifsAPI.class).getRedgifsData(APIUtils.getRedgifsOAuthHeader(currentAccountSharedPreferences.getString(SharedPreferencesUtils.REDGIFS_ACCESS_TOKEN, "")),
-                         gfycatId).execute();
+                        gfycatId).execute();
                 if (response.isSuccessful()) {
                     parseRedgifsVideoLinks(handler, response.body(), fetchGfycatOrRedgifsVideoLinksListener);
                 } else {
@@ -60,6 +67,37 @@ public class FetchGfycatOrRedgifsVideoLinks {
             } catch (IOException e) {
                 e.printStackTrace();
                 handler.post(() -> fetchGfycatOrRedgifsVideoLinksListener.failed(-1));
+            }
+        });
+    }
+
+    public static void fetchRedgifsV2VideoLinks(Context context, Executor executor, Handler handler, Retrofit redgifsRetrofit,
+                                                SharedPreferences currentAccountSharedPreferences,
+                                                String rgId, FetchRedgifsV2VideoLinksListener fetchRedgifsV2VideoLinksListener) {
+        executor.execute(() -> {
+            try {
+                String rgToken = currentAccountSharedPreferences.getString(SharedPreferencesUtils.REDGIFS_ACCESS_TOKEN, "");
+                RedgifsAPI rgRetrofit = redgifsRetrofit.create(RedgifsAPI.class);
+                Response<String> dataResponse = rgRetrofit.getRedgifsData(APIUtils.getRedgifsOAuthHeader(rgToken), rgId).execute();
+
+                if (dataResponse.isSuccessful()) {
+                    String mp4 = new JSONObject(dataResponse.body()).getJSONObject(JSONUtils.GIF_KEY).getJSONObject(JSONUtils.URLS_KEY)
+                            .getString(JSONUtils.HD_KEY);
+
+                    String url = String.format("https://api.redgifs.com/v2/gifs/%s/hd.m3u8", rgId);
+
+                    Response<Void> hlsResponse = rgRetrofit.testHLS(APIUtils.getRedgifsOAuthHeader(rgToken), rgId).execute();
+                    if(!hlsResponse.isSuccessful()){
+                        handler.post(() -> fetchRedgifsV2VideoLinksListener.success(mp4, mp4,false));
+                    }else{
+                        handler.post(() -> fetchRedgifsV2VideoLinksListener.success(url, mp4,false));
+                    }
+                }else{
+                    handler.post(() -> fetchRedgifsV2VideoLinksListener.success("", "", true));
+                }
+            } catch (IOException | JSONException e) {
+                e.printStackTrace();
+                handler.post(() -> fetchRedgifsV2VideoLinksListener.failed(-1));
             }
         });
     }
@@ -122,7 +160,7 @@ public class FetchGfycatOrRedgifsVideoLinks {
     }
 
     private static void parseRedgifsVideoLinks(Handler handler, String response,
-                                              FetchGfycatOrRedgifsVideoLinksListener fetchGfycatOrRedgifsVideoLinksListener) {
+                                               FetchGfycatOrRedgifsVideoLinksListener fetchGfycatOrRedgifsVideoLinksListener) {
         try {
             String mp4 = new JSONObject(response).getJSONObject(JSONUtils.GIF_KEY).getJSONObject(JSONUtils.URLS_KEY)
                     .getString(JSONUtils.HD_KEY);
