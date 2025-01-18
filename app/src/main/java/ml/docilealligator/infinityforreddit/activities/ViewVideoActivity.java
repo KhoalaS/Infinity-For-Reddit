@@ -720,11 +720,13 @@ public class ViewVideoActivity extends AppCompatActivity implements CustomFontRe
     private void loadRedgifsVideoV2(String rgId, Bundle savedInstanceState) {
         progressBar.setVisibility(View.VISIBLE);
 
-        FetchGfycatOrRedgifsVideoLinks.fetchRedgifsV2VideoLinks(this, mExecutor, new Handler(), redgifsRetrofit, mCurrentAccountSharedPreferences, rgId, new FetchGfycatOrRedgifsVideoLinks.FetchRedgifsV2VideoLinksListener() {
+        FetchGfycatOrRedgifsVideoLinks.fetchRedgifsV2VideoLinks(this, mExecutor, new Handler(), redgifsRetrofit, mSharedPreferences, rgId, new FetchGfycatOrRedgifsVideoLinks.FetchRedgifsV2VideoLinksListener() {
             @Override
             public void success(String url, String mp4, Boolean useFallback) {
                 if(!useFallback){
                     mVideoUri = Uri.parse(url);
+                }else{
+                    mVideoUri = Uri.parse(mp4);
                 }
                 videoDownloadUrl = mp4;
                 progressBar.setVisibility(View.GONE);
