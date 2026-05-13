@@ -20,7 +20,7 @@ import okhttp3.RequestBody;
  */
 
 public class APIUtils {
-    public static final String OAUTH_URL = "https://www.reddit.com/api/v1/authorize.compact";
+    public static final String OAUTH_URL = "https://www.reddit.com/api/v1/authorize";
     public static final String OAUTH_API_BASE_URI = "https://oauth.reddit.com";
     public static final String API_BASE_URI = "https://www.reddit.com";
     public static final String API_UPLOAD_MEDIA_URI = "https://reddit-uploaded-media.s3-accelerate.amazonaws.com";
@@ -41,7 +41,8 @@ public class APIUtils {
     public static final String RESPONSE_TYPE_KEY = "response_type";
     public static final String RESPONSE_TYPE = "code";
     public static final String STATE_KEY = "state";
-    public static final String STATE = "23ro8xlxvzp4asqd";
+    // Generate a random state per-session to prevent CSRF on the OAuth redirect.
+    public static final String STATE = java.util.UUID.randomUUID().toString();
     public static final String REDIRECT_URI_KEY = "redirect_uri";
     public static final String REDIRECT_URI = "infinity://localhost";
     public static final String DURATION_KEY = "duration";
@@ -53,7 +54,11 @@ public class APIUtils {
     public static final String AUTHORIZATION_KEY = "Authorization";
     public static final String AUTHORIZATION_BASE = "bearer ";
     public static final String USER_AGENT_KEY = "User-Agent";
-    public static final String USER_AGENT = "android:ml.docilealligator.infinityforreddit:" + BuildConfig.VERSION_NAME + " (by /u/Hostilenemy)";
+    public static final String USER_AGENT = "android:ml.docilealligator.infinityforreddit:v5.3.0 (by /u/Hostilenemy)";
+    // Spoofs a desktop Chrome browser for the login WebView only — Reddit's OAuth page
+    // redirects the Reddit API user-agent to a broken mobile flow, so we need a real browser UA here.
+    public static final String LOGIN_WEBVIEW_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+   
     public static final String ANONYMOUS_USER_AGENT = "ml.docilealligator.infinityforreddit:" + BuildConfig.VERSION_NAME + " (by /u/Hostilenemy)";
     public static final String USERNAME_KEY = "username";
 

@@ -152,11 +152,13 @@ public class LoginActivity extends BaseActivity {
 
         binding.webviewLoginActivity.getSettings().setJavaScriptEnabled(true);
 
-        String userAgent = binding.webviewLoginActivity.getSettings().getUserAgentString();
-        String chromeUserAgent = userAgent
-                .replace("; wv)", ")")
-                .replace("Version/4.0 ", "");
-        binding.webviewLoginActivity.getSettings().setUserAgentString(chromeUserAgent);
+        if (enableDom) {
+            twoFAInfoTextView.setVisibility(View.GONE);
+        }
+
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setDomStorageEnabled(true);
+        webView.getSettings().setUserAgentString(APIUtils.DESKTOP_USER_AGENT);
 
         Uri baseUri = Uri.parse(APIUtils.OAUTH_URL);
         Uri.Builder uriBuilder = baseUri.buildUpon();
@@ -185,6 +187,11 @@ public class LoginActivity extends BaseActivity {
 
         CookieManager.getInstance().removeAllCookies(aBoolean -> {
         });
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                return shouldOverrideUrlLoading(view, request.getUrl().toString());
+            }
 
         binding.webviewLoginActivity.loadUrl(url);
         binding.webviewLoginActivity.setWebViewClient(new WebViewClient() {
